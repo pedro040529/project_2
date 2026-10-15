@@ -67,7 +67,7 @@ export const Config = {
     explodeDespiteGoodDecisionChance: 0.22,
     // probabilidad de que explote si la decisión fue mala
     explodeAfterBadDecisionChance: 0.55,
-    decisionWindowSeconds: 4.5,
+    decisionWindowSeconds: 5.5,
     points: {
       buenaDecision: 120,
       malaDecision: -80,
@@ -91,13 +91,14 @@ export const Config = {
   },
 
   camera: {
-    followDistance: 7.5,
+    followDistance: 6.5,
     followHeight: 4.2,
+    shoulderOffset: 0.9, // desplaza la cámara a la derecha: la mira queda libre del personaje
     lookHeight: 1.4,
     smoothing: 6.5,
     mouseSensitivity: 0.0015, // más suave: el valor viejo (0.0022) se sentía brusco
-    minPitch: -0.1,
-    maxPitch: 0.85
+    minPitch: -0.35,
+    maxPitch: 0.75
   },
 
   player: {

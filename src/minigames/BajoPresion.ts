@@ -25,6 +25,7 @@ function ballMesh(): THREE.Group {
   return g;
 }
 
+const PASS_WINDOW_SECONDS = 2.5;
 const flightEase = gsap.parseEase("power2.inOut");
 
 export class BajoPresion implements IMinigame {
@@ -146,7 +147,8 @@ export class BajoPresion implements IMinigame {
     if (this.holderId === "human") {
       this.decisionPanel.update(this.currentSituation.texto, this.currentSituation.opciones, (opt) => this.resolveDecision(opt));
     } else {
-      this.decisionPanel.hide();
+      // El panel siempre muestra qué pasa: quién decide y cuánto falta para que explote.
+      this.decisionPanel.update(`${this.participant(this.holderId).name} está decidiendo…`, [], () => {});
     }
   }
 
@@ -171,7 +173,7 @@ export class BajoPresion implements IMinigame {
     else if (opt.calidad === "mala") rig?.character.triggerReaction("lose", 0.7);
     holder.state = "acting";
 
-    this.decisionPanel.hide();
+    if (holder.controllerKind !== "human") this.decisionPanel.hide();
 
     // ¿explota, a pesar (o a causa) de la decisión? mantiene la incertidumbre real.
     const chargeRatio = Math.min(1, this.chargeSeconds / Config.bajoPresion.baseChargeSeconds);
@@ -195,7 +197,8 @@ export class BajoPresion implements IMinigame {
       // o E para pasar al más cercano por defecto) — no se pasa solo.
       this.phase = "awaiting_pass";
       this.pendingExtraDelay = extraDelay;
-      this.passWindowTimer = 3.5; // si no elige a nadie, pasa solo al más cercano (no se traba la ronda)
+      this.passWindowTimer = PASS_WINDOW_SECONDS;
+      this.decisionPanel.update("¡Lánzalo! E = rival al azar · clic = rival elegido", [], () => {}); // si no elige a nadie, pasa solo al más cercano (no se traba la ronda)
     } else {
       this.startPass(extraDelay);
     }
@@ -203,6 +206,7 @@ export class BajoPresion implements IMinigame {
 
   private explode(holder: Participant): void {
     this.phase = "exploding";
+    this.decisionPanel.hide();
     this.explosionCount++;
     this.ctx.scoreManager.award(holder, Config.bajoPresion.points.explosionPenalty, "explosion", "bajo_presion");
     this.ctx.audio.explosion();
@@ -219,7 +223,7 @@ export class BajoPresion implements IMinigame {
       holder.state = "idle";
       this.beginHolding();
       this.snapBallToHolder();
-    }, 900);
+    }, 700);
   }
 
   /** El objeto se lanza a un rival al azar (nunca a quien lo acaba de pasar). */
@@ -263,6 +267,7 @@ export class BajoPresion implements IMinigame {
   private startPass(extraDelay: number, explicitTargetId?: string): void {
     const targetId = explicitTargetId ?? this.randomOtherParticipant(this.holderId);
     this.phase = "in_flight";
+    this.decisionPanel.hide();
     this.flightFrom.copy(this.holderPosition(this.holderId));
     this.flightTo.copy(this.holderPosition(targetId));
     this.flightTargetId = targetId;
@@ -343,7 +348,7 @@ export class BajoPresion implements IMinigame {
 
       if (this.holderId !== "human") {
         const traits = this.participant(this.holderId).avatar.traits!;
-        if (this.decisionTimer <= Config.bajoPresion.decisionWindowSeconds - Math.max(2.8, traits.decisionDelay)) {
+        if (this.decisionTimer <= Config.bajoPresion.decisionWindowSeconds - Math.max(0.9, traits.decisionDelay * 0.5)) {
           const actsWell = this.rand() < traits.accuracy;
           const options = this.currentSituation.opciones;
           let pool = options.filter((o) => (actsWell ? o.calidad === "buena" : o.calidad !== "buena"));
@@ -363,6 +368,7 @@ export class BajoPresion implements IMinigame {
       }
     } else if (this.phase === "awaiting_pass") {
       this.passWindowTimer -= dt;
+      this.decisionPanel.setCharge(1 - Math.max(0, this.passWindowTimer) / PASS_WINDOW_SECONDS);
       if (this.passWindowTimer <= 0) {
         this.startPass(this.pendingExtraDelay);
       }

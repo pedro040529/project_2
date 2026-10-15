@@ -338,6 +338,7 @@ export class Cazaenganos implements IMinigame {
       // erró: igual se ve la bolita viajando, para que el disparo se sienta real.
       const humanRig = this.arenaRuntime.getHumanRig();
       if (humanRig) {
+        humanRig.faceTarget(ray.origin.clone().add(ray.direction.clone().multiplyScalar(18)));
         const handPos = humanRig.character.getRightHandWorldPosition(new THREE.Vector3());
         this.spawnTracer(handPos, ray.origin.clone().add(ray.direction.clone().multiplyScalar(18)));
       }

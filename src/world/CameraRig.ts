@@ -5,7 +5,7 @@ import type { InputManager } from "./InputManager";
 /** Cámara estable con giro explícito y posición física interpolada por CharacterRig. */
 export class CameraRig {
   private yaw = -Math.PI / 2;
-  private pitch = 0.55;
+  private pitch = 0.3;
   private currentPos = new THREE.Vector3();
   private currentLook = new THREE.Vector3();
   private raycaster = new THREE.Raycaster();
@@ -20,24 +20,33 @@ export class CameraRig {
     return this.yaw;
   }
 
+  /** Dirección en la que mira la cámara (yaw/pitch); la mira del centro apunta por aquí. */
+  private viewDirection(): THREE.Vector3 {
+    const cp = Math.cos(this.pitch);
+    return new THREE.Vector3(Math.sin(this.yaw) * cp, -Math.sin(this.pitch), Math.cos(this.yaw) * cp);
+  }
+
   snapTo(targetPos: THREE.Vector3): void {
-    const desired = this.computeDesiredPosition(targetPos);
-    this.currentPos.copy(desired);
-    this.currentLook.set(targetPos.x, targetPos.y + Config.camera.lookHeight, targetPos.z);
-    this.camera.position.copy(desired);
-    this.camera.lookAt(this.currentLook);
+    this.placeCamera(this.computeDesiredPosition(targetPos));
     this.initialized = true;
   }
 
+  /** Cámara al hombro: detrás y a la derecha del personaje, mirando hacia delante (no hacia él). */
   private computeDesiredPosition(targetPos: THREE.Vector3): THREE.Vector3 {
-    const { followDistance, followHeight } = Config.camera;
-    const horizontalDist = Math.cos(this.pitch) * followDistance;
-    const height = followHeight + Math.sin(this.pitch) * followDistance * 0.7;
-    return new THREE.Vector3(
-      targetPos.x - Math.sin(this.yaw) * horizontalDist,
-      targetPos.y + height,
-      targetPos.z - Math.cos(this.yaw) * horizontalDist
-    );
+    const { followDistance, lookHeight, shoulderOffset } = Config.camera;
+    const f = this.viewDirection();
+    const right = new THREE.Vector3(-Math.cos(this.yaw), 0, Math.sin(this.yaw));
+    const anchor = new THREE.Vector3(targetPos.x, targetPos.y + lookHeight, targetPos.z);
+    const pos = anchor.sub(f.multiplyScalar(followDistance)).add(right.multiplyScalar(shoulderOffset));
+    pos.y = Math.max(0.7, pos.y);
+    return pos;
+  }
+
+  private placeCamera(pos: THREE.Vector3): void {
+    this.currentPos.copy(pos);
+    this.camera.position.copy(pos);
+    this.currentLook.copy(pos).addScaledVector(this.viewDirection(), 30);
+    this.camera.lookAt(this.currentLook);
   }
 
   update(
@@ -54,7 +63,7 @@ export class CameraRig {
       const clampedDy = THREE.MathUtils.clamp(dy, -80, 80);
       this.yaw -= clampedDx * Config.camera.mouseSensitivity;
       this.pitch = THREE.MathUtils.clamp(
-        this.pitch - clampedDy * Config.camera.mouseSensitivity,
+        this.pitch + clampedDy * Config.camera.mouseSensitivity,
         Config.camera.minPitch,
         Config.camera.maxPitch
       );
@@ -84,10 +93,6 @@ export class CameraRig {
     }
 
     // Sin arrastre orbital ni desplazamiento residual después de soltar el mouse.
-    this.currentPos.copy(desired);
-    this.currentLook.set(targetPos.x, targetPos.y + Config.camera.lookHeight, targetPos.z);
-
-    this.camera.position.copy(this.currentPos);
-    this.camera.lookAt(this.currentLook);
+    this.placeCamera(desired);
   }
 }
