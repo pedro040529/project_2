@@ -1,0 +1,602 @@
+[
+  {
+    "scenarioID": "MSG-001",
+    "tipo": "legitima",
+    "autor": "Nico",
+    "texto": "¿Otra partida? Te mando invitación desde el juego.",
+    "contexto": "La invitación llega por el sistema de invitaciones del propio juego, como cualquier otra.",
+    "senales": [
+      "invitación generada por el juego, no por fuera de él",
+      "no pide nada además de jugar"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Es el flujo normal de invitar a jugar; no hay ninguna señal de riesgo.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-002",
+    "tipo": "legitima",
+    "autor": "Vale",
+    "texto": "Buena partida, ¿la revancha?",
+    "contexto": "Mensaje de cierre normal entre dos jugadores tras terminar una ronda.",
+    "senales": [
+      "no pide nada",
+      "coherente con lo que acaba de pasar en el juego"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Conversación típica de después de jugar, sin ninguna petición extraña.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-003",
+    "tipo": "legitima",
+    "autor": "Bruno",
+    "texto": "Ey, buen movimiento el de recién. ¿Cómo lo hiciste?",
+    "contexto": "Un rival pregunta por curiosidad sobre una jugada, sin pedir nada más.",
+    "senales": [
+      "pregunta sobre el juego mismo",
+      "no hay solicitud de datos ni objetos"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Interacción social normal centrada en el juego.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-004",
+    "tipo": "legitima",
+    "autor": "Sistema",
+    "texto": "Nuevo desafío disponible en el menú de eventos.",
+    "contexto": "Aviso generado por el propio juego, visible también en el menú si lo revisas.",
+    "senales": [
+      "viene del sistema, no de un jugador",
+      "se puede verificar en el menú del juego"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Aviso oficial y verificable dentro del propio juego.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo"
+  },
+  {
+    "scenarioID": "MSG-005",
+    "tipo": "legitima",
+    "autor": "Cami",
+    "texto": "¿Hacemos equipo la próxima ronda? Vamos parejo en puntos.",
+    "contexto": "Propuesta de cooperación puntual dentro de las reglas normales del juego.",
+    "senales": [
+      "no pide nada fuera del juego",
+      "coherente con el estado real del marcador"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Propuesta social normal, sin ninguna petición sospechosa.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-006",
+    "tipo": "legitima",
+    "autor": "Tomi",
+    "texto": "Se me fue la señal, ya vuelvo a la partida.",
+    "contexto": "Aviso normal de reconexión de un jugador que se desconectó brevemente.",
+    "senales": [
+      "no involucra a otros jugadores",
+      "no pide ninguna acción"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Comentario de contexto sin ninguna petición ni riesgo.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-007",
+    "tipo": "legitima",
+    "autor": "Sofi",
+    "texto": "Cuidado con la zona norte, ahí me atraparon dos veces.",
+    "contexto": "Un jugador comparte un aviso táctico sobre la arena actual.",
+    "senales": [
+      "información sobre el juego mismo",
+      "ayuda en vez de pedir algo"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Aviso táctico útil, típico de un jugador cooperando de palabra.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-008",
+    "tipo": "legitima",
+    "autor": "Ary",
+    "texto": "Buen intento, casi me ganás esta vuelta.",
+    "contexto": "Comentario deportivo tras una jugada reñida.",
+    "senales": [
+      "sin ninguna petición",
+      "coherente con la jugada reciente"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Comentario amistoso normal entre jugadores.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-009",
+    "tipo": "legitima",
+    "autor": "Sistema",
+    "texto": "Recuerda: nunca compartas tu contraseña, ni con soporte.",
+    "contexto": "Aviso educativo estándar que muestra el propio juego de vez en cuando.",
+    "senales": [
+      "viene del sistema",
+      "es información, no una petición"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Es un aviso de seguridad genuino del juego, no una solicitud.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo"
+  },
+  {
+    "scenarioID": "MSG-010",
+    "tipo": "legitima",
+    "autor": "Fran",
+    "texto": "¿Viste el nuevo mapa? Se ve genial.",
+    "contexto": "Comentario casual sobre contenido del juego.",
+    "senales": [
+      "tema neutro del juego",
+      "sin ninguna petición"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Charla trivial sin ninguna señal de riesgo.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-011",
+    "tipo": "legitima",
+    "autor": "Guille",
+    "texto": "Oye, se ve raro este mensaje de 'premio', no lo abras.",
+    "contexto": "Un jugador avisa a otros sobre un posible engaño que vio circular.",
+    "senales": [
+      "está advirtiendo, no pidiendo algo",
+      "comparte una alerta útil"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Es una advertencia entre jugadores, justo el comportamiento que el juego quiere fomentar.",
+    "dificultad": 2,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-012",
+    "tipo": "legitima",
+    "autor": "Lu",
+    "texto": "¿Jugamos en modo tranquilo un rato? Vengo perdiendo feo.",
+    "contexto": "Propuesta social normal de cambiar de ritmo dentro del juego.",
+    "senales": [
+      "propuesta dentro de las reglas normales",
+      "sin ninguna petición externa"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Interacción social común sin ninguna señal de riesgo.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-013",
+    "tipo": "legitima",
+    "autor": "Noe",
+    "texto": "Perdón por chocarte recién, fue sin querer jaja.",
+    "contexto": "Disculpa casual tras un choque accidental en la arena.",
+    "senales": [
+      "comentario social trivial",
+      "sin ninguna petición"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Comentario social normal sin nada que evaluar.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-014",
+    "tipo": "legitima",
+    "autor": "Robi",
+    "texto": "¿Cómo conseguiste esa skin? Se ve genial.",
+    "contexto": "Pregunta curiosa de un jugador sobre la apariencia del otro.",
+    "senales": [
+      "pregunta simple sobre el juego",
+      "no pide datos ni objetos"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Charla curiosa normal, sin ninguna solicitud de por medio.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-015",
+    "tipo": "ambigua",
+    "autor": "Dani",
+    "texto": "Oye, ¿jugamos otra vez? Esta vez elijo yo el mapa.",
+    "contexto": "Un jugador con el que perdiste dos veces seguidas propone revancha y elegir el mapa, algo permitido por las reglas normales.",
+    "senales": [
+      "propuesta dentro de lo que el juego permite",
+      "no pide nada fuera de jugar"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Elegir el mapa está dentro de las reglas del juego; no hay ninguna petición fuera de eso.",
+    "dificultad": 2,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-016",
+    "tipo": "ambigua",
+    "autor": "Max",
+    "texto": "Tengo otra cuenta con más nivel, ¿jugamos ahí después?",
+    "contexto": "Un jugador menciona tener otra cuenta, pero solo propone jugar juntos en otra sesión del mismo juego, sin pedir nada.",
+    "senales": [
+      "mencionar otra cuenta no es, por sí solo, una petición",
+      "no pide compartir nada ni salir del juego"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Tener 'otra cuenta' no es sospechoso en sí mismo; lo sería si pidiera algo a cambio, y aquí no lo hace.",
+    "dificultad": 3,
+    "categoria": "cuenta_extra"
+  },
+  {
+    "scenarioID": "MSG-017",
+    "tipo": "ambigua",
+    "autor": "Cande",
+    "texto": "Está bien, te creo, mándame el objeto a mí primero.",
+    "contexto": "Dentro de un intercambio ya acordado con reglas claras del propio minijuego, un jugador pide iniciar el turno.",
+    "senales": [
+      "el 'quién va primero' está resuelto por las reglas del propio juego, no por confianza personal",
+      "no hay ninguna petición fuera del sistema del juego"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Cuando el orden lo define el propio sistema del juego (no la palabra de un jugador), no es la señal de riesgo que parece a primera vista.",
+    "dificultad": 3,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-018",
+    "tipo": "ambigua",
+    "autor": "Fede",
+    "texto": "Vi que eres nuevo. ¿Quieres que te muestre unos trucos del juego?",
+    "contexto": "Un jugador desconocido ofrece ayuda dentro del propio juego, sin pedir nada a cambio ni salir de la partida.",
+    "senales": [
+      "ofrece ayuda dentro del juego, no pide nada",
+      "ser desconocido no es, por sí solo, una señal de riesgo"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Un desconocido ofreciendo ayuda dentro del juego, sin pedir nada, no es motivo de alarma: la clave sigue siendo qué pide, no quién lo dice.",
+    "dificultad": 2,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-019",
+    "tipo": "ambigua",
+    "autor": "Juli",
+    "texto": "Mira, gané un torneo la semana pasada, tengo capturas si quieres.",
+    "contexto": "Un jugador comparte un logro sin pedir nada, como parte normal de la charla previa a una partida.",
+    "senales": [
+      "comparte algo sin pedir nada a cambio",
+      "no hay ninguna solicitud detrás del comentario"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Compartir un logro sin pedir nada de vuelta es una interacción social normal, no un intento de generar confianza para pedir algo después.",
+    "dificultad": 2,
+    "categoria": "confianza_progresiva"
+  },
+  {
+    "scenarioID": "MSG-020",
+    "tipo": "ambigua",
+    "autor": "Pipa",
+    "texto": "Ojo que en la arena de hoy hay un bug con los puntos, avísale a un adulto si ves algo raro.",
+    "contexto": "Un jugador comparte una advertencia sobre un supuesto error técnico, sin pedir ninguna acción del receptor.",
+    "senales": [
+      "es una advertencia, no una petición",
+      "recomienda avisar a un adulto, comportamiento positivo"
+    ],
+    "accionEsperada": "ignorar",
+    "explicacion": "Es una alerta genuina sin ninguna petición; de hecho recomienda la conducta correcta ante algo raro.",
+    "dificultad": 2,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "MSG-021",
+    "tipo": "enganosa",
+    "autor": "Max",
+    "texto": "El intercambio falló. Mándame primero tu objeto y después te envío el mío.",
+    "contexto": "Dentro de un supuesto intercambio, el jugador insiste en recibir primero sin ofrecer ninguna garantía del sistema.",
+    "senales": [
+      "pide entregar primero, sin garantía del propio juego",
+      "usa un 'fallo' inventado para justificar la petición"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Pedir que la otra persona entregue primero, sin que lo garantice el sistema del juego, es la señal central de un intercambio no recíproco.",
+    "dificultad": 1,
+    "categoria": "intercambio_no_reciproco"
+  },
+  {
+    "scenarioID": "MSG-022",
+    "tipo": "enganosa",
+    "autor": "SoporteNexora",
+    "texto": "Detectamos un problema en tu cuenta. Envía tu código de verificación para resolverlo.",
+    "contexto": "Un mensaje se presenta como si fuera del equipo de soporte y pide un código de seguridad de la cuenta.",
+    "senales": [
+      "pide un código de verificación de la cuenta",
+      "el soporte real nunca lo pide por chat dentro de una partida"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Ningún soporte legítimo pide códigos de verificación por chat; esa solicitud es la señal decisiva, no el nombre que use.",
+    "dificultad": 1,
+    "categoria": "suplantacion"
+  },
+  {
+    "scenarioID": "MSG-023",
+    "tipo": "enganosa",
+    "autor": "Kai",
+    "texto": "Última ronda, van 2 minutos. Si no me pasás tu código de invitado ahora, perdés el bonus.",
+    "contexto": "El mensaje combina un límite de tiempo inventado con la petición de un código de cuenta.",
+    "senales": [
+      "mezcla urgencia con pedir un código de cuenta",
+      "el bonus 'se pierde' solo si no reaccionás rápido, típico de presión artificial"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "La combinación de urgencia inventada y pedir un código de cuenta es la señal, más allá de si el bonus suena tentador.",
+    "dificultad": 1,
+    "categoria": "urgencia_falsa"
+  },
+  {
+    "scenarioID": "MSG-024",
+    "tipo": "enganosa",
+    "autor": "Robi",
+    "texto": "Encontré una web que te da objetos gratis, solo inicia sesión con tu usuario del juego.",
+    "contexto": "El mensaje invita a salir del juego hacia una supuesta web externa e iniciar sesión ahí con las credenciales del juego.",
+    "senales": [
+      "pide salir del juego a un sitio externo",
+      "pide iniciar sesión ahí con datos del juego"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Salir del juego para iniciar sesión en otro sitio con tus datos es exactamente el patrón de robo de cuenta, sin importar la promesa.",
+    "dificultad": 1,
+    "categoria": "enlace_externo"
+  },
+  {
+    "scenarioID": "MSG-025",
+    "tipo": "enganosa",
+    "autor": "Vale2",
+    "texto": "Soy Vale, cambié de cuenta. Préstame tu objeto raro que ahora te lo devuelvo doble.",
+    "contexto": "Un jugador dice ser una cuenta conocida bajo un nombre distinto y pide un préstamo sin ninguna garantía del sistema.",
+    "senales": [
+      "afirma ser otra persona sin que el juego lo confirme",
+      "promete devolver 'doble' sin garantía real"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Afirmar ser alguien conocido desde una cuenta distinta, sin verificación del propio juego, es una suplantación clásica.",
+    "dificultad": 2,
+    "categoria": "suplantacion"
+  },
+  {
+    "scenarioID": "MSG-026",
+    "tipo": "enganosa",
+    "autor": "Nano",
+    "texto": "Eres muy bueno, deberías estar en mi equipo pro. Pásame tu contraseña y te subo de nivel yo.",
+    "contexto": "El mensaje halaga primero y luego pide directamente la contraseña, con la excusa de 'ayudar'.",
+    "senales": [
+      "pide la contraseña directamente",
+      "usa un halago para bajar la guardia antes de pedir algo"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "El halago es solo el envoltorio; la señal decisiva es pedir la contraseña, algo que nadie legítimo necesita.",
+    "dificultad": 1,
+    "categoria": "solicitud_credenciales"
+  },
+  {
+    "scenarioID": "MSG-027",
+    "tipo": "enganosa",
+    "autor": "Emi",
+    "texto": "Jugamos hace un rato y pareces buena onda. Necesito que me pases el código que te llegó al correo, es para verificarte como mi amigo en el evento.",
+    "contexto": "Tras varias partidas normales, el jugador pide un código externo enviado por correo, con una excusa que no forma parte del propio juego.",
+    "senales": [
+      "pide un código enviado a un correo, algo externo al juego",
+      "usa partidas previas normales para generar confianza antes de pedir algo"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Haber jugado juntos antes no vuelve legítimo pedir un código externo: esa conversación creciente es justo la señal a detectar.",
+    "dificultad": 2,
+    "categoria": "confianza_progresiva"
+  },
+  {
+    "scenarioID": "MSG-028",
+    "tipo": "enganosa",
+    "autor": "Toti",
+    "texto": "Somos moderadores del evento, dinos tu contraseña para revisar una denuncia falsa en tu contra.",
+    "contexto": "El mensaje se presenta como si fuera de un moderador oficial y pide la contraseña con la excusa de una denuncia.",
+    "senales": [
+      "se presenta como autoridad del juego sin que el sistema lo confirme",
+      "pide la contraseña con la excusa de 'ayudarte'"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Ningún moderador real necesita tu contraseña para revisar nada; la excusa de la denuncia solo agrega presión.",
+    "dificultad": 1,
+    "categoria": "suplantacion"
+  },
+  {
+    "scenarioID": "MSG-029",
+    "tipo": "enganosa",
+    "autor": "Ceci",
+    "texto": "Tengo una cuenta con objetos únicos que ya no uso. Pásame tu clave de recuperación y te la transfiero entera.",
+    "contexto": "Ofrece una cuenta completa a cambio de la clave de recuperación de la víctima, sin ningún mecanismo del juego de por medio.",
+    "senales": [
+      "pide la clave de recuperación de tu cuenta",
+      "el 'regalo' es una excusa para pedir acceso a tu cuenta"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Pedir la clave de recuperación es pedir el control total de tu cuenta, sin importar lo generosa que suene la oferta.",
+    "dificultad": 2,
+    "categoria": "solicitud_credenciales"
+  },
+  {
+    "scenarioID": "MSG-030",
+    "tipo": "enganosa",
+    "autor": "Bau",
+    "texto": "Quedan 30 segundos del evento secreto. Anotate en el link fijado en mi perfil para el premio grande.",
+    "contexto": "Combina una cuenta regresiva falsa con la invitación a salir del juego hacia un enlace externo.",
+    "senales": [
+      "cuenta regresiva inventada para apurar la decisión",
+      "pide salir del juego a un enlace externo"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "La cuenta regresiva y el enlace externo juntos son la señal, no si el 'evento secreto' suena creíble.",
+    "dificultad": 1,
+    "categoria": "urgencia_falsa"
+  },
+  {
+    "scenarioID": "MSG-031",
+    "tipo": "enganosa",
+    "autor": "Iker",
+    "texto": "Jugamos varias veces esta semana y confío en ti. Necesito que me prestes tu cuenta un rato para completar un desafío.",
+    "contexto": "Después de varias interacciones normales, pide acceso completo a la cuenta con la excusa de un desafío.",
+    "senales": [
+      "pide acceso completo a tu cuenta",
+      "usa el vínculo construido en varias partidas como excusa"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Ninguna cantidad de partidas juntos hace seguro entregar el acceso completo a tu cuenta.",
+    "dificultad": 2,
+    "categoria": "confianza_progresiva"
+  },
+  {
+    "scenarioID": "MSG-032",
+    "tipo": "enganosa",
+    "autor": "Pau",
+    "texto": "Soy amigo de Nico, me dijo que te pasara este link para el premio que ganaron juntos.",
+    "contexto": "Invoca a un tercero conocido para dar credibilidad a un enlace externo no verificado por el juego.",
+    "senales": [
+      "usa el nombre de alguien conocido sin que el juego lo confirme",
+      "lleva a un enlace fuera del juego"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Mencionar a un amigo en común no confirma nada por sí solo; la señal real es el enlace externo.",
+    "dificultad": 2,
+    "categoria": "enlace_externo"
+  },
+  {
+    "scenarioID": "MSG-033",
+    "tipo": "enganosa",
+    "autor": "Willy",
+    "texto": "Sistema: verificación pendiente. Escribe tu contraseña actual para continuar jugando.",
+    "contexto": "Un jugador copia el estilo de un mensaje de sistema para simular una advertencia oficial y pedir la contraseña.",
+    "senales": [
+      "imita el formato de un mensaje del sistema, pero lo envía un jugador",
+      "pide la contraseña directamente"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Los avisos reales del sistema nunca piden escribir tu contraseña como respuesta; imitar el formato no cambia la señal.",
+    "dificultad": 2,
+    "categoria": "suplantacion"
+  },
+  {
+    "scenarioID": "MSG-034",
+    "tipo": "enganosa",
+    "autor": "Nara",
+    "texto": "Disculpa la incomodidad, pero necesito que me confirmes tu fecha de nacimiento y tu correo para 'validar' el premio de la ronda.",
+    "contexto": "Pide datos personales con la excusa de 'validar' una recompensa que el propio juego debería entregar sin pedir nada.",
+    "senales": [
+      "pide datos personales concretos",
+      "usa la palabra 'validar' para sonar oficial sin serlo"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "El juego nunca necesita tus datos personales para entregarte algo dentro de una partida.",
+    "dificultad": 2,
+    "categoria": "solicitud_credenciales"
+  },
+  {
+    "scenarioID": "MSG-035",
+    "tipo": "enganosa",
+    "autor": "Cris",
+    "texto": "Ganaste un objeto especial. Haz clic en el enlace de mi biografía antes de que termine la ronda.",
+    "contexto": "Combina un premio inventado, presión de tiempo y un enlace externo fuera del propio juego.",
+    "senales": [
+      "urgencia de 'antes de que termine la ronda'",
+      "pide salir del juego a un enlace externo"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Un premio real del juego jamás depende de un enlace externo con reloj corriendo; ambas señales juntas lo delatan.",
+    "dificultad": 1,
+    "categoria": "urgencia_falsa"
+  },
+  {
+    "scenarioID": "MSG-036",
+    "tipo": "enganosa",
+    "autor": "Dylan",
+    "texto": "Somos el mismo equipo de siempre, vamos, pásame tu código dos minutos y te lo devuelvo con intereses.",
+    "contexto": "Apela a una relación de equipo inventada para pedir un código de cuenta con la promesa de devolverlo 'con intereses'.",
+    "senales": [
+      "promete devolver algo 'con intereses', señal de urgencia disfrazada de generosidad",
+      "pide un código de cuenta sin ninguna garantía del juego"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "'Devolver con intereses' es un anzuelo, no una garantía real; sigue siendo pedir un código de tu cuenta.",
+    "dificultad": 2,
+    "categoria": "solicitud_credenciales"
+  },
+  {
+    "scenarioID": "MSG-037",
+    "tipo": "enganosa",
+    "autor": "Fio",
+    "texto": "Última oportunidad del día: el juego regala objetos si envías tu clave a este número externo.",
+    "contexto": "Mezcla un supuesto regalo del propio juego con la petición de enviar una clave a un canal externo (número de contacto).",
+    "senales": [
+      "pide enviar tu clave a un canal externo al juego",
+      "usa 'última chance del día' como presión de tiempo"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "El juego jamás pide enviar claves fuera de sí mismo; el canal externo es la señal, no la promesa del regalo.",
+    "dificultad": 1,
+    "categoria": "enlace_externo"
+  },
+  {
+    "scenarioID": "MSG-038",
+    "tipo": "enganosa",
+    "autor": "Mora",
+    "texto": "Jugamos muy bien juntos hoy. Igual necesito que aceptes esta solicitud externa para poder seguir jugando en pareja.",
+    "contexto": "Usa una buena partida reciente como excusa para pedir aceptar algo fuera del propio sistema del juego.",
+    "senales": [
+      "pide aceptar algo fuera del sistema del juego",
+      "usa una partida positiva reciente para bajar la guardia"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Ninguna función real del juego para 'seguir jugando en pareja' requiere aceptar algo externo al propio juego.",
+    "dificultad": 3,
+    "categoria": "confianza_progresiva"
+  },
+  {
+    "scenarioID": "MSG-039",
+    "tipo": "enganosa",
+    "autor": "Gonza",
+    "texto": "Tranqui, no hace falta que me creas todo, solo dame acceso a tu cuenta 5 minutos para mostrarte algo.",
+    "contexto": "Simula honestidad ('no hace falta que me creas') para hacer más creíble una petición de acceso a la cuenta.",
+    "senales": [
+      "pide acceso a la cuenta, aunque sea 'solo un momento'",
+      "el tono de falsa honestidad no cambia lo que está pidiendo"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "El tono relajado no cambia la señal: sigue siendo una solicitud de acceso completo a tu cuenta.",
+    "dificultad": 2,
+    "categoria": "solicitud_credenciales"
+  },
+  {
+    "scenarioID": "MSG-040",
+    "tipo": "enganosa",
+    "autor": "Ian",
+    "texto": "Encontré un objeto legendario de más. Dime tu código de recuperación y te lo transfiero ya.",
+    "contexto": "Ofrece un objeto muy valioso a cambio del código de recuperación de la cuenta del receptor.",
+    "senales": [
+      "pide el código de recuperación de tu cuenta",
+      "usa un objeto muy valioso como anzuelo"
+    ],
+    "accionEsperada": "destruir",
+    "explicacion": "Ninguna transferencia real dentro del juego requiere el código de recuperación de tu cuenta.",
+    "dificultad": 1,
+    "categoria": "solicitud_credenciales"
+  }
+]

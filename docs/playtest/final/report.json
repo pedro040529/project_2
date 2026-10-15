@@ -1,0 +1,21 @@
+{
+  "testRoundDurations": [
+    75,
+    80,
+    80
+  ],
+  "camera": {
+    "before": -1.5707963267948966,
+    "after": -1.5707963267948966,
+    "dragged": -1.8707963267948968
+  },
+  "round0": "Resultados · Atrapa o Evita\nKiro\n3400 pts\n#1\nNova\n3400 pts\n#1\nPixel\n2600 pts\n#3\nPedro\n0 pts\n#4\n#1\nNova\n3400 pts\n#1\nKiro\n3400 pts\n#3\nPixel\n2600 pts\n#4\nPedro\n0 pts\nContinuar",
+  "initialMessageCount": 8,
+  "visibleMessages": 2,
+  "round1": "Resultados · Cazaengaños\nPixel\n600 pts\n#1\nKiro\n600 pts\n#1\nNova\n-40 pts\n#3\nPedro\n-100 pts\n#4\n#1\nKiro\n4000 pts\n#2\nNova\n3360 pts\n#3\nPixel\n3200 pts\n#4\nPedro\n-100 pts\nContinuar",
+  "round2": "Resultados · Bajo Presión\nNova\n140 pts\n#2\nKiro\n470 pts\n#1\nPixel\n-340 pts\n#3\nPedro\n-360 pts\n#4\n#1\nKiro\n4470 pts\n#2\nNova\n3500 pts\n#3\nPixel\n2860 pts\n#4\nPedro\n-460 pts\nVer ranking final",
+  "summary": "Tu partida\nDetectaste 0/1 señales engañosas o ambiguas\nMejor categoría: Interaccion Normal (0/1)\nBajo presión: 0/3 buenas decisiones\nRecuerda: si algo te incomoda, no es tu culpa. Puedes bloquear, reportar y contárselo a un adulto de confianza.\nJugar otra partida",
+  "replay": true,
+  "errors": [],
+  "durationVerification": "Duraciones reales confirmadas en las capturas de inicio de las tres rondas; la modificación en caliente del antiguo script no se aplicó. El script ahora prueba los tiempos normales sin modificación."
+}

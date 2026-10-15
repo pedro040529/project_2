@@ -1,0 +1,412 @@
+[
+  {
+    "scenarioID": "RW-001",
+    "tipo": "legitima",
+    "nombre": "Cofre de evento",
+    "texto": "EVENTO · Cofre 2/2",
+    "contexto": "Recompensa del evento activo del propio juego. Ya jugaste las 2 partidas que pedía el aviso al inicio de la ronda.",
+    "senales": [
+      "coincide con el evento anunciado en el juego",
+      "no pide nada a cambio",
+      "aparece dentro de la arena, no en un enlace"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Es una recompensa propia del juego: coincide con el evento anunciado y no exige nada fuera de jugar.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo",
+    "puntosBase": 100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-002",
+    "tipo": "legitima",
+    "nombre": "Cofre diario",
+    "texto": "Recompensa diaria",
+    "contexto": "Cofre de inicio de sesión, disponible una vez por día para cualquier jugador que entre a la arena.",
+    "senales": [
+      "es una recompensa rutinaria del juego",
+      "no requiere compartir nada"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Recompensa habitual y automática del propio juego, sin condiciones raras.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo",
+    "puntosBase": 100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-003",
+    "tipo": "legitima",
+    "nombre": "Bonus de racha",
+    "texto": "Bonus · 3 rondas seguidas",
+    "contexto": "Recompensa por haber completado tres rondas seguidas sin abandonar la arena.",
+    "senales": [
+      "premia algo que ya hiciste dentro del juego",
+      "el número coincide con tu racha real"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Premia un logro verificable dentro del propio juego.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo",
+    "puntosBase": 100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-004",
+    "tipo": "legitima",
+    "nombre": "Moneda de práctica",
+    "texto": "Moneda suelta",
+    "contexto": "Monedas comunes repartidas por la arena, sin dueño ni condición.",
+    "senales": [
+      "sin mensaje adjunto",
+      "sin condición para recogerla"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Es simplemente parte del terreno de juego, no hay nada que evaluar.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo",
+    "puntosBase": 100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-005",
+    "tipo": "legitima",
+    "nombre": "Regalo de bienvenida",
+    "texto": "Bienvenida · nuevo jugador",
+    "contexto": "El juego regala una recompensa pequeña a todo jugador que entra por primera vez a esta arena, sin pedir nada.",
+    "senales": [
+      "viene del sistema del juego, no de otro jugador",
+      "no exige acción externa"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Es una bienvenida estándar del propio juego, no de un jugador ni de un tercero.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo",
+    "puntosBase": 100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-006",
+    "tipo": "legitima",
+    "nombre": "Cofre de temporada",
+    "texto": "Temporada 4 · Cofre",
+    "contexto": "Recompensa de la temporada en curso, visible también en el menú de progreso del juego.",
+    "senales": [
+      "coincide con el progreso que puedes ver en tu perfil",
+      "no requiere compartir datos"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Coincide con el progreso real de temporada, verificable dentro del juego.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo",
+    "puntosBase": 100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-007",
+    "tipo": "legitima",
+    "nombre": "Premio de comunidad",
+    "texto": "Meta de comunidad · lograda",
+    "contexto": "El servidor alcanzó una meta grupal anunciada en el evento y reparte una recompensa especial a todos.",
+    "senales": [
+      "se anunció antes dentro del juego",
+      "aplica igual para todos, no es un trato personal"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Es un premio grupal anunciado oficialmente, no un trato individual sospechoso.",
+    "dificultad": 2,
+    "categoria": "evento_legitimo",
+    "puntosBase": 250,
+    "rareza": "especial"
+  },
+  {
+    "scenarioID": "RW-008",
+    "tipo": "legitima",
+    "nombre": "Cofre de campeón de ronda",
+    "texto": "Campeón de ronda anterior",
+    "contexto": "Recompensa por haber quedado primero en el minijuego anterior de esta misma partida.",
+    "senales": [
+      "premia un resultado real de la partida",
+      "aparece justo después de un resultado verificable"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Premia un logro que el propio juego puede verificar: tu posición real en el resultado anterior.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo",
+    "puntosBase": 250,
+    "rareza": "especial"
+  },
+  {
+    "scenarioID": "RW-009",
+    "tipo": "legitima",
+    "nombre": "Baúl brillante",
+    "texto": "Cofre especial",
+    "contexto": "Un cofre de aparición poco frecuente dentro de la arena, sin ningún mensaje ni condición adjunta.",
+    "senales": [
+      "aparece dentro del juego, sin texto de un jugador",
+      "no pide nada a cambio"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "No tiene ninguna condición: es simplemente contenido raro del propio juego.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo",
+    "puntosBase": 250,
+    "rareza": "especial"
+  },
+  {
+    "scenarioID": "RW-010",
+    "tipo": "legitima",
+    "nombre": "Cofre dorado de racha perfecta",
+    "texto": "Racha perfecta · Cofre dorado",
+    "contexto": "Aparece solo si nadie del equipo cometió errores en la ronda anterior; es un premio raro por buen desempeño colectivo.",
+    "senales": [
+      "condición clara y verificable por el juego",
+      "no involucra a otro jugador pidiendo algo"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Condición verificable y sin intermediarios: mérito real de la partida.",
+    "dificultad": 2,
+    "categoria": "evento_legitimo",
+    "puntosBase": 400,
+    "rareza": "rara"
+  },
+  {
+    "scenarioID": "RW-011",
+    "tipo": "legitima",
+    "nombre": "Reliquia del anfitrión",
+    "texto": "Reliquia de arena · rara",
+    "contexto": "Objeto de aparición muy poco frecuente en esta arena, documentado en las notas del juego.",
+    "senales": [
+      "está documentado dentro del propio juego",
+      "no pide compartir nada"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Es contenido raro pero legítimo del propio juego, sin ninguna condición externa.",
+    "dificultad": 2,
+    "categoria": "evento_legitimo",
+    "puntosBase": 400,
+    "rareza": "rara"
+  },
+  {
+    "scenarioID": "RW-012",
+    "tipo": "ambigua",
+    "nombre": "Regalo de Dani",
+    "texto": "Dani: te dejé esto, ¡corre!",
+    "contexto": "Un jugador con el que jugaste varias partidas seguidas dejó una recompensa en el suelo tras ganar una ronda. No pide nada a cambio.",
+    "senales": [
+      "viene de alguien con quien ya jugaste antes",
+      "no pide nada a cambio, solo avisa",
+      "el aviso de evento no lo menciona, así que no está confirmado por el juego"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Ambigua a propósito: viene de un jugador conocido y no pide nada, pero tampoco está confirmada por el sistema del juego. Recogerla es razonable; el punto de aprendizaje es no asumir que 'viene de un desconocido' sería peor ni que 'viene de un conocido' la hace automáticamente segura.",
+    "dificultad": 2,
+    "categoria": "confianza_progresiva",
+    "puntosBase": 150,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-013",
+    "tipo": "ambigua",
+    "nombre": "Cofre de reto grupal",
+    "texto": "Reto grupal · 3/4 completado",
+    "contexto": "Aparece un cofre que dice depender de un reto grupal, pero el contador (3/4) no coincide con lo que muestra tu HUD del evento activo.",
+    "senales": [
+      "el número no coincide con el progreso real que ves en pantalla",
+      "no hay quien lo esté ofreciendo, solo apareció"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "La señal está en el detalle: el contador no cuadra con el progreso real. No es 'obviamente falso', hay que fijarse en el dato concreto.",
+    "dificultad": 3,
+    "categoria": "evento_legitimo",
+    "puntosBase": 150,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-014",
+    "tipo": "ambigua",
+    "nombre": "Cofre de Mica",
+    "texto": "Mica: gané dos veces, quédatelo",
+    "contexto": "Una jugadora con la que compites hoy por primera vez dejó una recompensa tras ganar dos rondas seguidas, sin mensaje adicional ni condición.",
+    "senales": [
+      "primera vez que juegan juntos, pero no pide nada",
+      "el gesto es coherente con lo que pasó en la ronda"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "No conocer a alguien no la vuelve automáticamente engañosa: lo que importa es que no pide nada y es coherente con el resultado real de la ronda.",
+    "dificultad": 2,
+    "categoria": "confianza_progresiva",
+    "puntosBase": 150,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-015",
+    "tipo": "ambigua",
+    "nombre": "Cofre sin etiqueta",
+    "texto": "Cofre sin origen visible",
+    "contexto": "Un cofre apareció en la arena sin ningún texto ni mensaje adjunto; el aviso de evento de esta ronda no menciona cofres extra.",
+    "senales": [
+      "no hay ningún mensaje ni condición, solo silencio",
+      "no coincide con el evento anunciado"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "La falta de información también es una señal: si nada lo respalda ni lo contradice, conviene fijarse en si encaja con lo ya anunciado antes de asumir que es seguro.",
+    "dificultad": 3,
+    "categoria": "evento_legitimo",
+    "puntosBase": 150,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-016",
+    "tipo": "ambigua",
+    "nombre": "Cofre de alianza temporal",
+    "texto": "Kai: hagamos equipo, va primero",
+    "contexto": "Otro jugador propone dejar de competir un momento y turnarse cofres cercanos; deja el primero visible antes de pedir nada.",
+    "senales": [
+      "propone algo y cumple primero, antes de pedir algo a cambio",
+      "en un juego individual, 'hacer equipo' no cambia las reglas de puntaje"
+    ],
+    "accionEsperada": "recoger",
+    "explicacion": "Cumplir primero es una señal a favor, pero conviene recordar que el puntaje es individual: aceptar no obliga a nada después.",
+    "dificultad": 2,
+    "categoria": "confianza_progresiva",
+    "puntosBase": 150,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-017",
+    "tipo": "enganosa",
+    "nombre": "Premio VIP externo",
+    "texto": "Toca aquí para reclamar tu VIP",
+    "contexto": "Una recompensa flotante promete rango VIP, pero el texto pequeño dice 'reclama en la página del evento' fuera del juego.",
+    "senales": [
+      "pide salir del juego a un sitio externo",
+      "el juego nunca reparte premios fuera de la propia arena"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "El juego no entrega premios por fuera de sí mismo: pedir salir a un sitio externo es la señal, no el tamaño del premio.",
+    "dificultad": 1,
+    "categoria": "enlace_externo",
+    "puntosBase": -100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-018",
+    "tipo": "enganosa",
+    "nombre": "Sorteo de streamer",
+    "texto": "Sorteo del canal: +500 si compartes tu ID",
+    "contexto": "Una recompensa dice ser parte de un sorteo de un streamer y pide escribir tu nombre de usuario y correo en un formulario externo.",
+    "senales": [
+      "pide datos personales fuera del juego",
+      "ningún streamer reparte premios pidiendo datos por un cofre en la arena"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "Pedir datos personales a cambio de un premio dentro de una partida es la señal central, más allá de si suena a un streamer conocido.",
+    "dificultad": 2,
+    "categoria": "solicitud_credenciales",
+    "puntosBase": -100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-019",
+    "tipo": "enganosa",
+    "nombre": "Regalo de soporte técnico",
+    "texto": "Soporte NEXORA: cofre de compensación",
+    "contexto": "Un cofre dice venir del 'equipo de soporte' por una falla del servidor, pero pide confirmar tu código de acceso para entregarlo.",
+    "senales": [
+      "el soporte real nunca pide tu código de acceso",
+      "usa una excusa de 'compensación' para justificar la prisa"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "Ningún soporte legítimo necesita tu código de acceso para darte algo dentro del propio juego.",
+    "dificultad": 2,
+    "categoria": "suplantacion",
+    "puntosBase": -100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-020",
+    "tipo": "enganosa",
+    "nombre": "Intercambio adelantado",
+    "texto": "Robi: te dejo esto si me mandas el tuyo antes",
+    "contexto": "Un jugador ofrece un objeto a cambio de que tú entregues el tuyo primero, sin garantía de que él cumpla después.",
+    "senales": [
+      "pide que tú entregues primero, sin garantía",
+      "el trato solo funciona si confías a ciegas"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "Pedir que la otra persona entregue primero, sin ninguna garantía, es la señal clásica de un intercambio no recíproco.",
+    "dificultad": 1,
+    "categoria": "intercambio_no_reciproco",
+    "puntosBase": -100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-021",
+    "tipo": "enganosa",
+    "nombre": "Cofre de cuenta secundaria",
+    "texto": "Juli (cuenta 2): te regalo esto, solo dame tu código de invitado",
+    "contexto": "Un jugador dice tener una 'segunda cuenta' con premios de sobra, pero pide tu código de invitado para 'vincularte' el regalo.",
+    "senales": [
+      "pide tu código de invitado, que es información de tu cuenta",
+      "usa la excusa de 'tener de sobra' para bajar tu guardia"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "Pedir un código de tu cuenta para 'entregarte' algo es la señal, sin importar la excusa de la cuenta secundaria.",
+    "dificultad": 2,
+    "categoria": "cuenta_extra",
+    "puntosBase": -100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-022",
+    "tipo": "enganosa",
+    "nombre": "Cofre de tiempo limitado falso",
+    "texto": "¡Últimos 10 segundos! Ve al enlace del evento",
+    "contexto": "Aparece un aviso de urgencia con cuenta regresiva que empuja a salir del juego para 'no perderse' un premio en otro sitio.",
+    "senales": [
+      "combina urgencia con salir del juego",
+      "una recompensa real del juego se entrega dentro del juego, no en otro sitio"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "La urgencia artificial junto con la salida del juego es la combinación típica de una trampa, no el premio en sí.",
+    "dificultad": 2,
+    "categoria": "urgencia_falsa",
+    "puntosBase": -100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-023",
+    "tipo": "enganosa",
+    "nombre": "Cofre de 'objeto raro gratis'",
+    "texto": "Fede: encontré un truco para objetos raros, sígueme al link",
+    "contexto": "Un jugador asegura tener un 'truco' para conseguir objetos raros y deja un cofre que en realidad lleva a un enlace externo.",
+    "senales": [
+      "promete un atajo que no existe en las reglas del juego",
+      "termina llevando fuera del juego"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "Ningún 'truco' legítimo requiere salir del juego a un enlace externo para funcionar.",
+    "dificultad": 2,
+    "categoria": "enlace_externo",
+    "puntosBase": -100,
+    "rareza": "pequena"
+  },
+  {
+    "scenarioID": "RW-024",
+    "tipo": "enganosa",
+    "nombre": "Cofre de 'ya casi'",
+    "texto": "Solo falta tu contraseña para desbloquear",
+    "contexto": "Un cofre muestra una barra de progreso al 99% y un texto que pide 'confirmar tu contraseña' para completarlo.",
+    "senales": [
+      "pide directamente una contraseña",
+      "usa una barra casi completa para generar ansiedad de no perderlo"
+    ],
+    "accionEsperada": "evitar",
+    "explicacion": "Ninguna recompensa legítima del juego necesita tu contraseña; esa es siempre la señal decisiva.",
+    "dificultad": 1,
+    "categoria": "solicitud_credenciales",
+    "puntosBase": -100,
+    "rareza": "pequena"
+  }
+]

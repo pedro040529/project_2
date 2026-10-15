@@ -1,0 +1,36 @@
+{
+  "toggleCount": 0,
+  "targetPositions": [
+    {
+      "x": -5262.462890625,
+      "y": 1449.403564453125,
+      "text": "FedeVi que eres nuevo. ¿Quieres que te muestre unos trucos del juego?"
+    },
+    {
+      "x": -447.3297119140625,
+      "y": 501.63233947753906,
+      "text": "TomiSe me fue la señal, ya vuelvo a la partida."
+    },
+    {
+      "x": -1901.075439453125,
+      "y": 466.2142333984375,
+      "text": "TotiSomos moderadores del evento, dinos tu contraseña para revisar una denuncia falsa en tu contra."
+    },
+    {
+      "x": -481.3463134765625,
+      "y": 179.4398651123047,
+      "text": "MaxEl intercambio falló. Mándame primero tu objeto y después te envío el mío."
+    },
+    {
+      "x": -21773.46484375,
+      "y": 5886.8349609375,
+      "text": "MoraJugamos re bien juntos hoy. Igual necesito que aceptes esta solicitud externa para poder seguir jugando en pareja."
+    }
+  ],
+  "minDist": 323.9832090085134,
+  "firstChangeMs": 400,
+  "errors": [],
+  "pageErrors": [],
+  "finalText": "🏆 Ranking final\nKiro\n6110 pts\n#2\nNova\n10470 pts\n#1\nPixel\n5190 pts\n#3\nFeedback\n50 pts\n#4\nVer tu resumen",
+  "summaryText": "Tu partida\nDetectaste 3/7 señales engañosas o ambiguas\nMejor categoría: Solicitud Credenciales (1/1)\nPara reforzar: Cuenta Extra (0/1)\nBajo presión: 1/2 buenas decisiones\nRecuerda: si algo te incomoda, no es tu culpa. Puedes bloquear, reportar y contárselo a un adulto de confianza.\nJugar otra partida"
+}

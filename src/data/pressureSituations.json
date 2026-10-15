@@ -1,0 +1,452 @@
+[
+  {
+    "scenarioID": "PS-001",
+    "tipo": "enganosa",
+    "texto": "Estás en un intercambio con alguien con quien ya jugaste varias veces. Te dice que necesita el código que llegó a tu correo para completar el trato.",
+    "contexto": "El código de correo es información de tu cuenta; ningún intercambio dentro del juego lo necesita, sin importar cuántas veces hayan jugado juntos.",
+    "senales": [
+      "pide un código externo al juego (tu correo)",
+      "usa partidas previas para sonar confiable"
+    ],
+    "opciones": [
+      {
+        "id": "compartir",
+        "texto": "Compartir el código para cerrar el trato",
+        "calidad": "mala"
+      },
+      {
+        "id": "sistema",
+        "texto": "Proponer terminar el intercambio con las reglas del propio juego, sin códigos externos",
+        "calidad": "buena"
+      },
+      {
+        "id": "cancelar",
+        "texto": "Cancelar el intercambio sin dar explicaciones",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "El intercambio se puede resolver con las herramientas del propio juego; pedir un código de tu correo nunca es necesario.",
+    "dificultad": 1,
+    "categoria": "solicitud_credenciales"
+  },
+  {
+    "scenarioID": "PS-002",
+    "tipo": "legitima",
+    "texto": "Un compañero de ronda te pide reiniciar el conteo porque el marcador se congeló para los dos, algo que también ves en tu pantalla.",
+    "contexto": "El problema técnico es verificable: lo ves tú mismo en tu propio marcador, no es solo su palabra.",
+    "senales": [
+      "el problema es verificable en tu propia pantalla",
+      "no pide ningún dato ni objeto, solo reiniciar"
+    ],
+    "opciones": [
+      {
+        "id": "aceptar",
+        "texto": "Aceptar reiniciar el conteo, ya que el error se ve en ambos lados",
+        "calidad": "buena"
+      },
+      {
+        "id": "ignorar",
+        "texto": "Seguir jugando igual, ignorando el aviso",
+        "calidad": "neutra"
+      },
+      {
+        "id": "acusar",
+        "texto": "Acusarlo de hacer trampa sin mirar tu propio marcador",
+        "calidad": "mala"
+      }
+    ],
+    "explicacion": "Cuando el problema es verificable por ti mismo, no hace falta desconfiar de quien lo señala.",
+    "dificultad": 2,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "PS-003",
+    "tipo": "enganosa",
+    "texto": "Alguien te escribe diciendo ser moderador del evento. Dice que hay una denuncia en tu contra y que te pide tu contraseña para 'revisar tu cuenta y aclararlo'.",
+    "contexto": "Ningún moderador real necesita tu contraseña para revisar nada dentro del sistema del juego.",
+    "senales": [
+      "se presenta como autoridad sin que el juego lo confirme",
+      "pide la contraseña con la excusa de 'ayudarte'"
+    ],
+    "opciones": [
+      {
+        "id": "dar_clave",
+        "texto": "Darle la contraseña para resolverlo rápido",
+        "calidad": "mala"
+      },
+      {
+        "id": "reportar",
+        "texto": "No compartir nada y seguir jugando con normalidad",
+        "calidad": "buena"
+      },
+      {
+        "id": "discutir",
+        "texto": "Ponerte a discutir largo con la persona sobre la denuncia",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Ningún moderador legítimo pide tu contraseña; la urgencia de la 'denuncia' es solo presión añadida.",
+    "dificultad": 1,
+    "categoria": "suplantacion"
+  },
+  {
+    "scenarioID": "PS-004",
+    "tipo": "ambigua",
+    "texto": "Un jugador con el que competiste toda la tarde te pide prestado un objeto por dos minutos, prometiendo devolverlo, pero fuera del sistema de préstamos del juego.",
+    "contexto": "El juego tiene un sistema propio de préstamos con garantía automática; hacerlo por fuera de él pierde esa garantía, sin importar cuánto hayan jugado juntos.",
+    "senales": [
+      "evita el sistema de préstamos con garantía que ya existe en el juego",
+      "la confianza construida en la tarde no reemplaza una garantía real"
+    ],
+    "opciones": [
+      {
+        "id": "prestar_fuera",
+        "texto": "Prestarlo directamente, confiando en que ya jugaron mucho juntos",
+        "calidad": "mala"
+      },
+      {
+        "id": "usar_sistema",
+        "texto": "Proponer usar el sistema de préstamos del juego, que sí devuelve el objeto automáticamente",
+        "calidad": "buena"
+      },
+      {
+        "id": "negar",
+        "texto": "Negarte sin más y cambiar de tema",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "El punto no es desconfiar del jugador, sino preferir el mecanismo del juego que sí garantiza la devolución.",
+    "dificultad": 3,
+    "categoria": "confianza_progresiva"
+  },
+  {
+    "scenarioID": "PS-005",
+    "tipo": "enganosa",
+    "texto": "Recibís un mensaje: 'Premio doble si entrás a este enlace antes de que termine la cuenta regresiva del evento'.",
+    "contexto": "El juego nunca entrega premios por fuera de sí mismo, y menos con un reloj corriendo para forzar una decisión rápida.",
+    "senales": [
+      "pide salir del juego a un enlace externo",
+      "usa una cuenta regresiva para apurarte"
+    ],
+    "opciones": [
+      {
+        "id": "entrar",
+        "texto": "Entrar al enlace antes de que se acabe el tiempo",
+        "calidad": "mala"
+      },
+      {
+        "id": "ignorar_link",
+        "texto": "Ignorar el enlace y seguir jugando dentro del juego",
+        "calidad": "buena"
+      },
+      {
+        "id": "preguntar",
+        "texto": "Preguntarle a un compañero si vio el mismo mensaje antes de decidir",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Enlace externo más cuenta regresiva es la combinación clásica de una trampa, no el tamaño del premio.",
+    "dificultad": 1,
+    "categoria": "urgencia_falsa"
+  },
+  {
+    "scenarioID": "PS-006",
+    "tipo": "legitima",
+    "texto": "El propio juego te pregunta si quieres activar un recordatorio de privacidad al inicio de cada partida.",
+    "contexto": "Es una configuración normal del juego, sin pedir ningún dato personal.",
+    "senales": [
+      "viene del sistema del juego, no de otro jugador",
+      "no pide ningún dato"
+    ],
+    "opciones": [
+      {
+        "id": "activar",
+        "texto": "Responder con normalidad, sin darle más vueltas",
+        "calidad": "buena"
+      },
+      {
+        "id": "ignorar_config",
+        "texto": "Cerrar el aviso sin leerlo",
+        "calidad": "neutra"
+      },
+      {
+        "id": "sospechar",
+        "texto": "Negarte a tocar nada por miedo a que sea una trampa",
+        "calidad": "mala"
+      }
+    ],
+    "explicacion": "No todo lo que pregunta el juego es una amenaza: esta es una configuración normal y sin ningún dato de por medio.",
+    "dificultad": 2,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "PS-007",
+    "tipo": "enganosa",
+    "texto": "Un mensaje dice ser del equipo técnico: 'Detectamos actividad rara en tu cuenta, envíanos tu clave de recuperación para protegerla'.",
+    "contexto": "El equipo técnico real nunca necesita tu clave de recuperación para proteger tu cuenta; esa clave es justamente lo que hay que proteger.",
+    "senales": [
+      "pide la clave de recuperación, la información más sensible de la cuenta",
+      "usa la excusa de 'protegerte' para pedir justo lo contrario"
+    ],
+    "opciones": [
+      {
+        "id": "enviar_clave",
+        "texto": "Enviar la clave para 'proteger' la cuenta rápido",
+        "calidad": "mala"
+      },
+      {
+        "id": "no_enviar",
+        "texto": "No enviar nada y seguir jugando con normalidad",
+        "calidad": "buena"
+      },
+      {
+        "id": "cambiar_clave",
+        "texto": "Preocuparte y dejar de jugar el resto del día",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Pedir la clave de recuperación con la excusa de 'protegerte' es al revés de cómo funciona la seguridad real.",
+    "dificultad": 1,
+    "categoria": "solicitud_credenciales"
+  },
+  {
+    "scenarioID": "PS-008",
+    "tipo": "enganosa",
+    "texto": "Un jugador nuevo te pide ayuda para entender el minijuego. Después de un rato te pide tu usuario y contraseña 'para practicar juntos en tu cuenta'.",
+    "contexto": "Pedir ayuda es normal; lo que cambia la situación es la petición final de usuario y contraseña.",
+    "senales": [
+      "pedir ayuda al inicio es normal, la señal aparece después",
+      "termina pidiendo usuario y contraseña"
+    ],
+    "opciones": [
+      {
+        "id": "dar_datos",
+        "texto": "Darle tu usuario y contraseña para ayudarlo mejor",
+        "calidad": "mala"
+      },
+      {
+        "id": "explicar_sin_datos",
+        "texto": "Seguir ayudándolo a explicarle, sin compartir usuario ni contraseña",
+        "calidad": "buena"
+      },
+      {
+        "id": "dejar_de_ayudar",
+        "texto": "Dejar de responderle apenas pide ayuda",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Ayudar a alguien no implica entregarle acceso a tu cuenta; la señal está en el pedido final, no en pedir ayuda.",
+    "dificultad": 2,
+    "categoria": "confianza_progresiva"
+  },
+  {
+    "scenarioID": "PS-009",
+    "tipo": "enganosa",
+    "texto": "Un mensaje de 'mi cuenta secundaria' ofrece objetos raros a cambio de tu código de invitado.",
+    "contexto": "El código de invitado es información de tu cuenta; ninguna transferencia real del juego lo necesita.",
+    "senales": [
+      "pide el código de invitado de tu cuenta",
+      "usa la excusa de una 'cuenta secundaria' con objetos de sobra"
+    ],
+    "opciones": [
+      {
+        "id": "dar_codigo",
+        "texto": "Dar el código para recibir los objetos raros",
+        "calidad": "mala"
+      },
+      {
+        "id": "rechazar",
+        "texto": "Rechazar y seguir jugando en la ronda actual",
+        "calidad": "buena"
+      },
+      {
+        "id": "pedir_prueba",
+        "texto": "Pedirle una captura de los objetos antes de decidir",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "El código de invitado nunca hace falta para recibir algo; sin importar cuán tentadora sea la oferta.",
+    "dificultad": 2,
+    "categoria": "cuenta_extra"
+  },
+  {
+    "scenarioID": "PS-010",
+    "tipo": "legitima",
+    "texto": "Un compañero te grita que le pases el objeto rápido porque falta poco para que explote, según lo que ambos ven en pantalla.",
+    "contexto": "Es pura estrategia de juego, visible para los dos, sin ninguna petición de datos.",
+    "senales": [
+      "es una indicación de juego, no una petición de datos",
+      "coincide con lo que ves en tu propia pantalla"
+    ],
+    "opciones": [
+      {
+        "id": "pasar",
+        "texto": "Pasarle el objeto siguiendo la estrategia",
+        "calidad": "buena"
+      },
+      {
+        "id": "dudar",
+        "texto": "Quedarte dudando varios segundos sin hacer nada",
+        "calidad": "neutra"
+      },
+      {
+        "id": "desconfiar",
+        "texto": "Negarte a pasarlo por desconfianza sin motivo",
+        "calidad": "mala"
+      }
+    ],
+    "explicacion": "No toda indicación urgente es una trampa: esta es pura estrategia de juego verificable en tu propia pantalla.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "PS-011",
+    "tipo": "enganosa",
+    "texto": "'¡El evento cierra en 10 segundos! Envía tu clave ahora para no perderte el premio.'",
+    "contexto": "El juego nunca reparte premios pidiendo tu clave, sin importar el tiempo que quede.",
+    "senales": [
+      "pide una clave directamente",
+      "usa una cuenta regresiva agresiva para apurarte"
+    ],
+    "opciones": [
+      {
+        "id": "mandar_clave",
+        "texto": "Mandar la clave antes de que se acabe el tiempo",
+        "calidad": "mala"
+      },
+      {
+        "id": "no_mandar",
+        "texto": "No mandar nada y dejar pasar el supuesto evento",
+        "calidad": "buena"
+      },
+      {
+        "id": "esperar",
+        "texto": "Quedarte mirando el mensaje sin decidir hasta que desaparezca",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "La urgencia extrema junto con pedir una clave es la señal más clara de todas.",
+    "dificultad": 1,
+    "categoria": "urgencia_falsa"
+  },
+  {
+    "scenarioID": "PS-012",
+    "tipo": "legitima",
+    "texto": "Un jugador te propone un intercambio de objetos usando el sistema de trueque seguro del propio juego, que muestra ambos objetos antes de confirmar.",
+    "contexto": "El sistema de trueque del juego confirma el intercambio para los dos lados a la vez, sin que nadie entregue primero.",
+    "senales": [
+      "usa el sistema del propio juego, que confirma para ambos a la vez",
+      "no pide nada fuera de esa pantalla de confirmación"
+    ],
+    "opciones": [
+      {
+        "id": "aceptar_sistema",
+        "texto": "Revisar el trueque en pantalla y confirmarlo ahí mismo",
+        "calidad": "buena"
+      },
+      {
+        "id": "aceptar_fuera",
+        "texto": "Salir del sistema y mandarle tu objeto por fuera 'para ir más rápido'",
+        "calidad": "mala"
+      },
+      {
+        "id": "no_responder",
+        "texto": "Dejarlo esperando sin responder",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Cuando el propio sistema del juego garantiza el intercambio para ambos lados, no hace falta salir de él ni desconfiar sin motivo.",
+    "dificultad": 2,
+    "categoria": "intercambio_no_reciproco"
+  },
+  {
+    "scenarioID": "PS-013",
+    "tipo": "enganosa",
+    "texto": "'Estamos sorteando objetos en vivo. Escribe tu correo y contraseña para participar.'",
+    "contexto": "Ningún sorteo legítimo necesita la contraseña de tu cuenta para participar.",
+    "senales": [
+      "pide correo y contraseña para 'participar'",
+      "un sorteo real solo necesita tu nombre de jugador"
+    ],
+    "opciones": [
+      {
+        "id": "participar_clave",
+        "texto": "Escribir el correo y la contraseña para participar",
+        "calidad": "mala"
+      },
+      {
+        "id": "ignorar_sorteo",
+        "texto": "No participar de este sorteo",
+        "calidad": "buena"
+      },
+      {
+        "id": "solo_nombre",
+        "texto": "Responder solo con tu nombre de jugador, sin correo ni contraseña",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Pedir contraseña para 'participar' en un sorteo es la señal, sin importar lo real que suene el premio.",
+    "dificultad": 1,
+    "categoria": "solicitud_credenciales"
+  },
+  {
+    "scenarioID": "PS-014",
+    "tipo": "legitima",
+    "texto": "Un amigo con el que juegas seguido, cuya posición en el ranking coincide con lo que ves ahora, te pide ayuda para grabar un clip de la partida.",
+    "contexto": "La petición es coherente con lo que ves (su posición real) y no involucra ningún dato ni objeto.",
+    "senales": [
+      "coincide con datos que puedes verificar en pantalla",
+      "no pide ningún dato personal ni objeto"
+    ],
+    "opciones": [
+      {
+        "id": "ayudar",
+        "texto": "Ayudarlo a grabar el clip con normalidad",
+        "calidad": "buena"
+      },
+      {
+        "id": "ignorar_clip",
+        "texto": "No responder y seguir jugando",
+        "calidad": "neutra"
+      },
+      {
+        "id": "negarse_feo",
+        "texto": "Bloquearlo pensando que es una trampa",
+        "calidad": "mala"
+      }
+    ],
+    "explicacion": "Cuando la petición es coherente y verificable y no pide nada sensible, no hay motivo para tratarla como una amenaza.",
+    "dificultad": 2,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "PS-015",
+    "tipo": "enganosa",
+    "texto": "Un mensaje de 'soporte técnico' te pide una captura de pantalla de tu código de verificación en dos pasos para 'confirmar que eres tú'.",
+    "contexto": "El código de verificación en dos pasos sirve justamente para que nadie más entre a tu cuenta; compartirlo anula esa protección.",
+    "senales": [
+      "pide una captura del código de verificación en dos pasos",
+      "usa la excusa de 'confirmar tu identidad' para pedir justo lo que te protege"
+    ],
+    "opciones": [
+      {
+        "id": "mandar_captura",
+        "texto": "Mandar la captura para 'confirmar tu identidad'",
+        "calidad": "mala"
+      },
+      {
+        "id": "no_mandar_captura",
+        "texto": "No mandar la captura y seguir jugando",
+        "calidad": "buena"
+      },
+      {
+        "id": "preguntar_soporte",
+        "texto": "Pedirle que te contacte por el canal oficial del juego en vez del chat",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "El código de verificación en dos pasos nunca se comparte con nadie, ni con un supuesto soporte técnico.",
+    "dificultad": 2,
+    "categoria": "suplantacion"
+  }
+]

@@ -1,0 +1,340 @@
+{
+  "directional": [
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionA",
+      "key": "KeyA",
+      "esperado": "A = izquierda de pantalla (x disminuye)",
+      "dxScreenPx": -271,
+      "dyScreenPx": 0,
+      "worldDist": 3.26,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionA",
+      "key": "ArrowLeft",
+      "esperado": "← = izquierda de pantalla (x disminuye)",
+      "dxScreenPx": -251,
+      "dyScreenPx": -1,
+      "worldDist": 3.03,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionA",
+      "key": "KeyD",
+      "esperado": "D = derecha de pantalla (x aumenta)",
+      "dxScreenPx": 271,
+      "dyScreenPx": 1,
+      "worldDist": 3.26,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionA",
+      "key": "ArrowRight",
+      "esperado": "→ = derecha de pantalla (x aumenta)",
+      "dxScreenPx": 270,
+      "dyScreenPx": -2,
+      "worldDist": 3.26,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionA",
+      "key": "KeyW",
+      "esperado": "W = arriba en pantalla / se aleja (y disminuye)",
+      "dxScreenPx": -2,
+      "dyScreenPx": -131,
+      "worldDist": 3.26,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionA",
+      "key": "ArrowUp",
+      "esperado": "↑ = arriba en pantalla / se aleja (y disminuye)",
+      "dxScreenPx": 0,
+      "dyScreenPx": -127,
+      "worldDist": 3.15,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionA",
+      "key": "KeyS",
+      "esperado": "S = abajo en pantalla / se acerca (y aumenta)",
+      "dxScreenPx": 0,
+      "dyScreenPx": 218,
+      "worldDist": 3.04,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionA",
+      "key": "ArrowDown",
+      "esperado": "↓ = abajo en pantalla / se acerca (y aumenta)",
+      "dxScreenPx": 0,
+      "dyScreenPx": 246,
+      "worldDist": 3.26,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionB",
+      "key": "KeyA",
+      "esperado": "A = izquierda de pantalla (x disminuye)",
+      "dxScreenPx": -312,
+      "dyScreenPx": 90,
+      "worldDist": 3.38,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionB",
+      "key": "ArrowLeft",
+      "esperado": "← = izquierda de pantalla (x disminuye)",
+      "dxScreenPx": -252,
+      "dyScreenPx": -1,
+      "worldDist": 3.04,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionB",
+      "key": "KeyD",
+      "esperado": "D = derecha de pantalla (x aumenta)",
+      "dxScreenPx": 272,
+      "dyScreenPx": 1,
+      "worldDist": 3.27,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionB",
+      "key": "ArrowRight",
+      "esperado": "→ = derecha de pantalla (x aumenta)",
+      "dxScreenPx": 271,
+      "dyScreenPx": -2,
+      "worldDist": 3.27,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionB",
+      "key": "KeyW",
+      "esperado": "W = arriba en pantalla / se aleja (y disminuye)",
+      "dxScreenPx": -2,
+      "dyScreenPx": -132,
+      "worldDist": 3.27,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionB",
+      "key": "ArrowUp",
+      "esperado": "↑ = arriba en pantalla / se aleja (y disminuye)",
+      "dxScreenPx": 0,
+      "dyScreenPx": -134,
+      "worldDist": 3.39,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionB",
+      "key": "KeyS",
+      "esperado": "S = abajo en pantalla / se acerca (y aumenta)",
+      "dxScreenPx": 0,
+      "dyScreenPx": 230,
+      "worldDist": 3.16,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "AtrapaOEvita",
+      "orientation": "orientacionB",
+      "key": "ArrowDown",
+      "esperado": "↓ = abajo en pantalla / se acerca (y aumenta)",
+      "dxScreenPx": 0,
+      "dyScreenPx": 236,
+      "worldDist": 3.16,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "Cazaenganos",
+      "orientation": "orientacionA",
+      "key": "KeyA",
+      "esperado": "A = izquierda de pantalla (x disminuye)",
+      "dxScreenPx": -187,
+      "dyScreenPx": 0,
+      "worldDist": 2.25,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "Cazaenganos",
+      "orientation": "orientacionA",
+      "key": "ArrowLeft",
+      "esperado": "← = izquierda de pantalla (x disminuye)",
+      "dxScreenPx": -262,
+      "dyScreenPx": -1,
+      "worldDist": 3.16,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "Cazaenganos",
+      "orientation": "orientacionA",
+      "key": "KeyD",
+      "esperado": "D = derecha de pantalla (x aumenta)",
+      "dxScreenPx": 272,
+      "dyScreenPx": 1,
+      "worldDist": 3.27,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "Cazaenganos",
+      "orientation": "orientacionA",
+      "key": "ArrowRight",
+      "esperado": "→ = derecha de pantalla (x aumenta)",
+      "dxScreenPx": 281,
+      "dyScreenPx": -2,
+      "worldDist": 3.39,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "Cazaenganos",
+      "orientation": "orientacionA",
+      "key": "KeyW",
+      "esperado": "W = arriba en pantalla / se aleja (y disminuye)",
+      "dxScreenPx": -2,
+      "dyScreenPx": -125,
+      "worldDist": 3.06,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "Cazaenganos",
+      "orientation": "orientacionA",
+      "key": "ArrowUp",
+      "esperado": "↑ = arriba en pantalla / se aleja (y disminuye)",
+      "dxScreenPx": 0,
+      "dyScreenPx": -131,
+      "worldDist": 3.28,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "Cazaenganos",
+      "orientation": "orientacionA",
+      "key": "KeyS",
+      "esperado": "S = abajo en pantalla / se acerca (y aumenta)",
+      "dxScreenPx": 0,
+      "dyScreenPx": 220,
+      "worldDist": 3.06,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "Cazaenganos",
+      "orientation": "orientacionA",
+      "key": "ArrowDown",
+      "esperado": "↓ = abajo en pantalla / se acerca (y aumenta)",
+      "dxScreenPx": 0,
+      "dyScreenPx": 248,
+      "worldDist": 3.27,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "BajoPresion",
+      "orientation": "orientacionA",
+      "key": "KeyA",
+      "esperado": "A = izquierda de pantalla (x disminuye)",
+      "dxScreenPx": -264,
+      "dyScreenPx": 0,
+      "worldDist": 3.19,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "BajoPresion",
+      "orientation": "orientacionA",
+      "key": "ArrowLeft",
+      "esperado": "← = izquierda de pantalla (x disminuye)",
+      "dxScreenPx": -264,
+      "dyScreenPx": -1,
+      "worldDist": 3.19,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "BajoPresion",
+      "orientation": "orientacionA",
+      "key": "KeyD",
+      "esperado": "D = derecha de pantalla (x aumenta)",
+      "dxScreenPx": 245,
+      "dyScreenPx": 11,
+      "worldDist": 2.85,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "BajoPresion",
+      "orientation": "orientacionA",
+      "key": "ArrowRight",
+      "esperado": "→ = derecha de pantalla (x aumenta)",
+      "dxScreenPx": 273,
+      "dyScreenPx": -3,
+      "worldDist": 3.3,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "BajoPresion",
+      "orientation": "orientacionA",
+      "key": "KeyW",
+      "esperado": "W = arriba en pantalla / se aleja (y disminuye)",
+      "dxScreenPx": -4,
+      "dyScreenPx": -129,
+      "worldDist": 3.2,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "BajoPresion",
+      "orientation": "orientacionA",
+      "key": "ArrowUp",
+      "esperado": "↑ = arriba en pantalla / se aleja (y disminuye)",
+      "dxScreenPx": 0,
+      "dyScreenPx": -127,
+      "worldDist": 3.2,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "BajoPresion",
+      "orientation": "orientacionA",
+      "key": "KeyS",
+      "esperado": "S = abajo en pantalla / se acerca (y aumenta)",
+      "dxScreenPx": 0,
+      "dyScreenPx": 243,
+      "worldDist": 3.31,
+      "resultado": "PASA"
+    },
+    {
+      "minigame": "BajoPresion",
+      "orientation": "orientacionA",
+      "key": "ArrowDown",
+      "esperado": "↓ = abajo en pantalla / se acerca (y aumenta)",
+      "dxScreenPx": 0,
+      "dyScreenPx": 231,
+      "worldDist": 3.08,
+      "resultado": "PASA"
+    }
+  ],
+  "diagonal": [
+    {
+      "minigame": "AtrapaOEvita",
+      "straightDist": 3.49,
+      "diagonalDist": 3.85,
+      "ratio": 1.11,
+      "resultado": "PASA"
+    }
+  ],
+  "shooting": [],
+  "errors": [],
+  "pageErrors": [],
+  "humanScoreMG1": null,
+  "humanScoreMG2": null,
+  "finalRankingText": "🏆 Ranking final\nNova\n6980 pts\n#2\nKiro\n9400 pts\n#1\nPixel\n5020 pts\n#3\nControlFix\n940 pts\n#4\nVer tu resumen",
+  "summaryText": "Tu partida\nDetectaste 14/26 señales engañosas o ambiguas\nMejor categoría: Evento Legitimo (12/15)\nPara reforzar: Suplantacion (0/2)\nBajo presión: 1/2 buenas decisiones\nRecordá: si algo te incomoda, no es tu culpa. Podés bloquear, reportar y contárselo a un adulto de confianza.\nJugar otra partida"
+}
