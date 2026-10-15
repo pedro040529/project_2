@@ -15,7 +15,7 @@ export class AudioManager {
   private musicNodes: { stop: () => void } | null = null;
   private _muted = false;
 
-  private ensureCtx(): AudioContext {
+  private ensurxeCtx(): AudioContext {
     if (!this.ctx) {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.master = this.ctx.createGain();
