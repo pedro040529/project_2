@@ -104,6 +104,7 @@ export class ArenaRuntime {
   }
 
   dispose(): void {
+    this.ctx.input.exitPointerLock();
     for (const rig of this.rigs.values()) rig.dispose();
     this.physics.dispose();
     this.ctx.scene.remove(this.group);

@@ -162,7 +162,7 @@ export class AtrapaOEvita implements IMinigame {
       goal: "Corre por la arena y llévate las recompensas que te convengan. Fíjate en el mensaje de cada una antes de ir corriendo.",
       controls: [
         { key: "WASD", label: "Moverse" },
-        { key: "Botón derecho", label: "Arrastrar para girar la cámara" }
+        { key: "Mouse", label: "Mover para girar la cámara (primer clic lo captura, Esc lo libera)" }
       ]
     };
   }

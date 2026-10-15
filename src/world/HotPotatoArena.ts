@@ -25,7 +25,7 @@ export function buildHotPotatoArena(radius: number, _physics?: PhysicsWorld): Ar
   for (let i = 0; i < 4; i++) {
     const angle = (i / 4) * Math.PI * 2;
     const cushion = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.46, 0.14, 16), feltFlat(cushionColors[i], 0.9));
-    cushion.position.set(Math.cos(angle) * radius * 0.72, 0.07, Math.sin(angle) * radius * 0.72);
+    cushion.position.set(Math.cos(angle) * radius * 0.68, 0.07, Math.sin(angle) * radius * 0.68);
     cushion.castShadow = true;
     cushion.receiveShadow = true;
     group.add(cushion);

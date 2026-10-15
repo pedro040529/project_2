@@ -48,7 +48,7 @@ npm run typecheck # tsc --noEmit
 |---|---|
 | `WASD` | Moverse |
 | Mouse | Apuntar con cursor libre |
-| Botón derecho + arrastrar | Girar la cámara |
+| Mover el mouse | Girar la cámara (el primer clic captura el mouse; `Esc` lo libera) |
 | Clic izquierdo | Disparar (Cazaengaños); también puedes hacer clic en el mensaje visible |
 | `E` | Pasar el objeto (Bajo Presión) |
 | `1` `2` `3` | Elegir opción bajo presión |

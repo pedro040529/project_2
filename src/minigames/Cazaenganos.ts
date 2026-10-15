@@ -98,11 +98,11 @@ export class Cazaenganos implements IMinigame {
     this.ctx = ctx;
     this.arenaRuntime = new ArenaRuntime(ctx, Config.arena.sharedRadius);
     this.hud = ctx.ui.mountHUD();
-    this.hud.setObjective("Apunta con el cursor y haz click para destruir los mensajes engañosos. No dispares a los legítimos.");
+    this.hud.setObjective("Haz click una vez para capturar el mouse; apunta con la mira y haz click para destruir los mensajes engañosos. No dispares a los legítimos.");
     // El cursor del sistema hace de mira: no se necesita pointer lock ni
     // capturar el mouse para apuntar, así que un crosshair fijo al centro
     // de pantalla ya no representaría dónde apunta realmente el disparo.
-    this.ctx.renderer.domElement.style.cursor = "crosshair";
+    this.hud.showCrosshair(true);
 
     // Blaster de juguete en la mano de los 4 — antes disparaban "de la nada".
     for (const rig of this.arenaRuntime.rigs.values()) {
@@ -202,7 +202,7 @@ export class Cazaenganos implements IMinigame {
         { key: "🖱️", label: "Apuntar" },
         { key: "Click", label: "Disparar" },
         { key: "WASD", label: "Moverse" },
-        { key: "Botón derecho", label: "Arrastrar para girar la cámara" }
+        { key: "Mouse", label: "Mover para girar la cámara (primer clic lo captura, Esc lo libera)" }
       ]
     };
   }

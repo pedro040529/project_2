@@ -90,6 +90,13 @@ export class InputManager {
   private handleContextMenu = (e: Event) => e.preventDefault();
 
   private handleMouseDown = (e: MouseEvent) => {
+    // El primer clic sobre la escena captura el mouse: desde ahí la cámara
+    // sigue el movimiento del mouse sin mantener ningún botón. Ese clic solo
+    // captura (no cuenta como disparo/pase). Esc devuelve el cursor.
+    if (!this._pointerLocked) {
+      this.requestPointerLock();
+      return;
+    }
     if (e.button === 0) this.clickPending = true;
   };
 

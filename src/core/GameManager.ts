@@ -1,4 +1,14 @@
 import * as THREE from "three";
+import {
+  EffectComposer,
+  RenderPass,
+  EffectPass,
+  BloomEffect,
+  VignetteEffect,
+  SMAAEffect,
+  ToneMappingEffect,
+  ToneMappingMode
+} from "postprocessing";
 import { UIManager } from "./UIManager";
 import { AudioManager } from "../audio/AudioManager";
 import { InputManager } from "../world/InputManager";
@@ -12,6 +22,23 @@ import { LobbyShowcase } from "../world/LobbyShowcase";
  * (se reutilizan entre minijuegos — solo el contenido de la escena cambia),
  * monta el bucle de render y delega todo el flujo de partida a MatchManager.
  */
+/** Cielo de papel: degradado vertical crema→durazno→celeste suave. */
+function makeSkyTexture(): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 4;
+  c.height = 256;
+  const ctx = c.getContext("2d")!;
+  const g = ctx.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, "#9fd8d0");
+  g.addColorStop(0.55, "#fde3b8");
+  g.addColorStop(1, "#fcebd0");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 4, 256);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 export class GameManager {
   private renderer!: THREE.WebGLRenderer;
   private scene!: THREE.Scene;
@@ -23,6 +50,7 @@ export class GameManager {
   private matchManager!: MatchManager;
   private timer = new THREE.Timer();
   private lobbyShowcase: LobbyShowcase | null = null;
+  private composer!: EffectComposer;
 
   async start(): Promise<void> {
     const canvas = document.getElementById("scene") as HTMLCanvasElement;
@@ -38,12 +66,13 @@ export class GameManager {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xfbf1de);
-    this.scene.fog = new THREE.Fog(0xfbf1de, 32, 62);
+    this.scene.background = makeSkyTexture();
+    this.scene.fog = new THREE.Fog(0xfcebd0, 38, 78);
 
     this.camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 200);
 
     this.setupLights();
+    this.setupPostFX();
 
     this.labelRenderer = new LabelRenderer(labelsContainer);
     this.input = new InputManager(canvas);
@@ -73,8 +102,23 @@ export class GameManager {
     await this.runFlow();
   }
 
+  /** Bloom suave + viñeta + SMAA + tono de película, fusionados en un solo paso. */
+  private setupPostFX(): void {
+    this.composer = new EffectComposer(this.renderer, { multisampling: 4 });
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.composer.addPass(
+      new EffectPass(
+        this.camera,
+        new BloomEffect({ intensity: 0.45, luminanceThreshold: 0.82, luminanceSmoothing: 0.25, mipmapBlur: true }),
+        new VignetteEffect({ offset: 0.35, darkness: 0.45 }),
+        new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC }),
+        new SMAAEffect()
+      )
+    );
+  }
+
   private setupLights(): void {
-    const hemi = new THREE.HemisphereLight(0xfff6df, 0x6b4a2e, 0.9);
+    const hemi = new THREE.HemisphereLight(0xfff6df, 0xb08a5e, 1.15);
     this.scene.add(hemi);
 
     const sun = new THREE.DirectionalLight(0xfff1cf, 1.35);
@@ -125,6 +169,7 @@ export class GameManager {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.composer.setSize(window.innerWidth, window.innerHeight);
     this.labelRenderer.setSize(window.innerWidth, window.innerHeight);
   };
 
@@ -136,7 +181,7 @@ export class GameManager {
       const dt = Math.min(0.05, this.timer.getDelta());
       if (this.lobbyShowcase) this.lobbyShowcase.update(dt);
       else this.matchManager.frame(dt);
-      this.renderer.render(this.scene, this.camera);
+      this.composer.render(dt);
       this.labelRenderer.render(this.scene, this.camera);
     };
     tick();

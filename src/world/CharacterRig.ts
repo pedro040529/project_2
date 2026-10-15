@@ -16,6 +16,8 @@ export class CharacterRig {
   private currentHeading = 0;
   private lastSpeed01 = 0;
   private aimTime = 0;
+  /** Con el movimiento bloqueado el personaje se queda en su puesto (Bajo Presión). */
+  movementLocked = false;
 
   faceTarget(target: THREE.Vector3, duration = 0.35): void {
     this.currentHeading = Math.atan2(target.x - this.root.position.x, target.z - this.root.position.z);
@@ -50,10 +52,17 @@ export class CharacterRig {
     this.participant.setPosition(x, 0, z);
   }
 
+  /** Mira hacia un punto y conserva ese rumbo mientras está quieto. */
+  lookAt(target: THREE.Vector3): void {
+    this.currentHeading = Math.atan2(target.x - this.root.position.x, target.z - this.root.position.z);
+    this.character.setHeading(this.currentHeading);
+    this.participant.heading = this.currentHeading;
+  }
+
   /** Llamar antes de physics.step(): traduce la decisión del controlador en velocidad física. */
   preStep(dt: number): void {
     this.controller.update(dt);
-    const { x, z } = this.controller.moveIntent;
+    const { x, z } = this.movementLocked ? { x: 0, z: 0 } : this.controller.moveIntent;
     const speedScale = this.controller.kind === "ai" ? 1 : 1;
     this.physics.driveVelocity(this.participant.id, x, z, this.maxSpeed * speedScale);
     void speedScale;

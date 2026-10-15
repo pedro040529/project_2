@@ -1,3 +1,4 @@
+import { gsap } from "gsap";
 import type { Participant } from "../entities/Participant";
 import type { RankingEntry } from "./ScoreManager";
 import type { MatchSummaryStats, PressureOption } from "./types";
@@ -47,6 +48,12 @@ export interface DecisionHandle {
  * revés, y los estilos de UI nunca codifican si algo es legítimo o
  * engañoso (esa regla vive en main.css).
  */
+/** Entrada escalonada del podio (se omite con "reducir movimiento"). */
+function revealPodium(podium: HTMLElement): void {
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  gsap.from(podium.children, { y: 60, opacity: 0, duration: 0.6, ease: "back.out(1.6)", stagger: 0.18 });
+}
+
 export class UIManager {
   private root: HTMLElement;
 
@@ -286,7 +293,7 @@ export class UIManager {
     const streak = el("div", "hud-streak");
     hud.appendChild(streak);
 
-    const pointerHint = el("div", "pointer-hint", "WASD · Moverte   |   Botón derecho + arrastrar · Cámara");
+    const pointerHint = el("div", "pointer-hint", "WASD · Moverte   |   Mouse · Cámara (clic para capturar, Esc libera)");
     hud.appendChild(pointerHint);
 
     this.root.appendChild(hud);
@@ -427,6 +434,7 @@ export class UIManager {
         podium.appendChild(step);
       }
       card.appendChild(podium);
+      revealPodium(podium);
 
       const summing = el("div", "summing-label", "SUMANDO AL TOTAL…");
       card.appendChild(summing);
@@ -479,6 +487,7 @@ export class UIManager {
         podium.appendChild(step);
       }
       card.appendChild(podium);
+      revealPodium(podium);
 
       const btn = el("button", "btn", "Ver tu resumen") as HTMLButtonElement;
       btn.onclick = () => resolve();

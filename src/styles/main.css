@@ -1170,3 +1170,89 @@ body {
  .pointer-hint { font-size: 10px; max-width: 75vw; text-align: center; }
 }
 @media (max-height: 650px) { .lobby-card { gap: 10px; padding: 20px; } .lobby-title { font-size: 42px; } .lobby-round { padding: 6px; } }
+
+/* ---------- Acabado visual (pulido final) ---------- */
+
+.hud-timer {
+  background: linear-gradient(180deg, #fffdf6, var(--white-thread));
+  border-width: 3px;
+  border-radius: 16px;
+  box-shadow: 0 5px 0 var(--cardboard-dark), 0 12px 18px var(--shadow);
+}
+
+.hud-timer::before {
+  font-size: 9px;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-weight: 800;
+}
+
+.hud-objective {
+  border: 2px solid var(--cardboard);
+  border-left: 8px solid var(--felt-teal);
+  border-radius: 14px;
+  box-shadow: 0 5px 0 rgba(168, 111, 60, 0.55), 0 10px 16px var(--shadow);
+}
+
+.hud-ranking {
+  background: linear-gradient(180deg, #fbefd6, var(--paper));
+  border: 3px solid var(--white-thread);
+  border-radius: 16px;
+  box-shadow: 0 5px 0 var(--cardboard), 0 12px 18px var(--shadow);
+  padding: 12px 14px;
+}
+
+.hud-ranking-row {
+  padding: 3px 6px;
+  border-radius: 8px;
+}
+
+.hud-ranking-row:first-child {
+  background: rgba(226, 168, 60, 0.28);
+}
+
+.hud-event-banner {
+  box-shadow: 0 4px 0 #a3781f, 0 10px 16px var(--shadow);
+}
+
+.screen:not(.lobby-screen) {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(47, 158, 143, 0.18) 0 14%, transparent 15%),
+    radial-gradient(circle at 82% 78%, rgba(226, 112, 58, 0.18) 0 16%, transparent 17%),
+    radial-gradient(circle at 75% 15%, rgba(226, 168, 60, 0.22) 0 9%, transparent 10%),
+    linear-gradient(180deg, #fdf3df, #f5dfb8);
+}
+
+.podium-avatar {
+  width: 64px;
+  height: 64px;
+  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.14), 0 6px 10px var(--shadow);
+  animation: podiumBob 2.4s ease-in-out infinite;
+}
+
+.podium-step:nth-child(2n) .podium-avatar {
+  animation-delay: -1.2s;
+}
+
+@keyframes podiumBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.podium-block {
+  box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.28), 0 8px 12px var(--shadow);
+  border-radius: 14px 14px 0 0;
+}
+
+.podium-block.rank-1::after {
+  content: "👑";
+  position: absolute;
+  margin-top: -64px;
+  font-size: 30px;
+}
+
+.podium-block { position: relative; }
+
+@media (prefers-reduced-motion: reduce) {
+  .podium-avatar { animation: none; }
+}

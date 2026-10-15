@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { gsap } from "gsap";
 import { Config } from "../core/Config";
 import type { PressureOption, PressureSituationDef } from "../core/types";
 import type { InstructionsSpec, HudHandle, DecisionHandle } from "../core/UIManager";
@@ -24,6 +25,8 @@ function ballMesh(): THREE.Group {
   return g;
 }
 
+const flightEase = gsap.parseEase("power2.inOut");
+
 export class BajoPresion implements IMinigame {
   readonly id = "bajo_presion" as const;
   readonly title = "Bajo Presión";
@@ -33,6 +36,7 @@ export class BajoPresion implements IMinigame {
   private hud!: HudHandle;
   private decisionPanel!: DecisionHandle;
   private ball!: THREE.Group;
+  private holderRing!: THREE.Mesh;
 
   private situations: PressureSituationDef[] = [];
   private situationCursor = 0;
@@ -42,6 +46,7 @@ export class BajoPresion implements IMinigame {
   private rand = mulberry32((Date.now() + 999) & 0xffffffff);
 
   private holderId = "human";
+  private lastHolderId = "";
   private phase: Phase = "idle_holding";
   private decisionTimer = 0;
   private currentSituation: PressureSituationDef | null = null;
@@ -61,13 +66,29 @@ export class BajoPresion implements IMinigame {
     this.arenaRuntime = new ArenaRuntime(ctx, Config.arena.hotPotatoRadius, buildHotPotatoArena, 0.68);
     this.hud = ctx.ui.mountHUD();
     this.hud.showPointerHint(null);
-    this.hud.setObjective("Recibes el objeto, decides rápido qué hacer y lo pasas antes de que explote.");
+    this.hud.setObjective("Elige una opción y lanza el objeto antes de que explote. Aro amarillo = quien lo tiene.");
     this.decisionPanel = ctx.ui.mountDecisionPanel();
 
     this.situations = ctx.scenarios.drawPressureSequence(Config.bajoPresion.situationsPerMatch);
 
     this.ball = ballMesh();
     this.arenaRuntime.group.add(this.ball);
+
+    // Cada quien se queda en su puesto mirando al centro: el objeto viaja, los jugadores no.
+    const center = new THREE.Vector3(0, 0, 0);
+    for (const rig of this.arenaRuntime.rigs.values()) {
+      rig.movementLocked = true;
+      rig.lookAt(center);
+    }
+
+    // Aro bajo el jugador que tiene el objeto
+    this.holderRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.62, 0.86, 40),
+      new THREE.MeshBasicMaterial({ color: 0xffd23c, side: THREE.DoubleSide, transparent: true, opacity: 0.95 })
+    );
+    this.holderRing.rotation.x = -Math.PI / 2;
+    this.holderRing.position.y = 0.04;
+    this.arenaRuntime.group.add(this.holderRing);
 
     // empieza el humano sosteniendo el objeto
     this.holderId = "human";
@@ -77,11 +98,11 @@ export class BajoPresion implements IMinigame {
   getInstructions(): InstructionsSpec {
     return {
       title: "Bajo Presión",
-      goal: "Cuando tengas el objeto, va a aparecer una situación con 3 opciones. Elige rápido y pásalo con E antes de que explote.",
+      goal: "Todos quedan en su puesto. Quien tiene el objeto (aro amarillo) elige una de 3 opciones y lo lanza a un rival al azar antes de que explote.",
       controls: [
-        { key: "1-3", label: "Elegir opción / rival" },
-        { key: "E", label: "Pasar al más cercano" },
-        { key: "Click", label: "Pasar a un rival puntual" }
+        { key: "1-3", label: "Elegir opción" },
+        { key: "E", label: "Lanzar a un rival al azar" },
+        { key: "Click", label: "Lanzar a un rival puntual" }
       ]
     };
   }
@@ -104,7 +125,7 @@ export class BajoPresion implements IMinigame {
 
   private holderPosition(id: string): THREE.Vector3 {
     const p = this.participant(id).position;
-    return new THREE.Vector3(p[0], 1.1, p[2]);
+    return new THREE.Vector3(p[0], 1.75, p[2]);
   }
 
   private snapBallToHolder(): void {
@@ -201,8 +222,12 @@ export class BajoPresion implements IMinigame {
     }, 900);
   }
 
-  private nearestOtherParticipant(fromId: string): string {
-    return this.othersByDistance(fromId)[0] ?? fromId;
+  /** El objeto se lanza a un rival al azar (nunca a quien lo acaba de pasar). */
+  private randomOtherParticipant(fromId: string): string {
+    const others = this.othersByDistance(fromId);
+    const pool = others.filter((id) => id !== this.lastHolderId);
+    const list = pool.length > 0 ? pool : others;
+    return list[Math.floor(this.rand() * list.length)] ?? fromId;
   }
 
   /** Los otros 3 participantes ordenados de más cerca a más lejos de `fromId`. */
@@ -236,11 +261,13 @@ export class BajoPresion implements IMinigame {
   }
 
   private startPass(extraDelay: number, explicitTargetId?: string): void {
-    const targetId = explicitTargetId ?? this.nearestOtherParticipant(this.holderId);
+    const targetId = explicitTargetId ?? this.randomOtherParticipant(this.holderId);
     this.phase = "in_flight";
     this.flightFrom.copy(this.holderPosition(this.holderId));
     this.flightTo.copy(this.holderPosition(targetId));
     this.flightTargetId = targetId;
+    this.lastHolderId = this.holderId;
+    this.arenaRuntime.rigs.get(this.holderId)?.lookAt(this.holderPosition(targetId));
     this.flightT = -extraDelay * 0.6; // delay negativo = espera antes de salir volando
     const dist = this.flightFrom.distanceTo(this.flightTo);
     this.flightDuration = Math.max(0.35, dist / Config.bajoPresion.passSpeed + extraDelay);
@@ -256,12 +283,18 @@ export class BajoPresion implements IMinigame {
       this.ball.position.copy(this.flightFrom);
       return;
     }
-    const pos = this.flightFrom.clone().lerp(this.flightTo, t);
-    pos.y += Math.sin(t * Math.PI) * 1.1;
+    const eased = flightEase(t);
+    const pos = this.flightFrom.clone().lerp(this.flightTo, eased);
+    pos.y += Math.sin(eased * Math.PI) * 1.1;
+    const squash = 1 + Math.sin(eased * Math.PI) * 0.18;
+    this.ball.scale.set(1 / Math.sqrt(squash), squash, 1 / Math.sqrt(squash));
     this.ball.position.copy(pos);
 
     if (t >= 1) {
       this.holderId = this.flightTargetId;
+      this.ball.scale.setScalar(1);
+      gsap.fromTo(this.ball.scale, { x: 1.5, y: 0.6, z: 1.5 }, { x: 1, y: 1, z: 1, duration: 0.5, ease: "elastic.out(1, 0.45)" });
+      this.arenaRuntime.rigs.get(this.holderId)?.lookAt(new THREE.Vector3(0, 0, 0));
       this.beginHolding();
     }
   }
@@ -283,16 +316,7 @@ export class BajoPresion implements IMinigame {
     }
 
     if (this.phase === "awaiting_pass") {
-      const others = this.othersByDistance("human");
-
-      // Teclas 1/2/3 = pasar al rival en esa posición de cercanía (1=más cercano).
-      const key = human.consumeNumberKey();
-      if (key && others[key - 1]) {
-        this.startPass(this.pendingExtraDelay, others[key - 1]);
-        return;
-      }
-
-      // Click = pasar directamente al rival que está bajo el cursor.
+            // Click = pasar directamente al rival que está bajo el cursor.
       if (human.consumeClick()) {
         const clicked = this.pickRivalUnderCursor();
         this.startPass(this.pendingExtraDelay, clicked ?? undefined);
@@ -349,6 +373,10 @@ export class BajoPresion implements IMinigame {
     this.handleHumanPassInput();
     this.arenaRuntime.update(dt);
     this.ball.rotation.y += dt * 1.5;
+    const hp = this.participant(this.holderId).position;
+    this.holderRing.position.set(hp[0], 0.04, hp[2]);
+    this.holderRing.scale.setScalar(1 + Math.sin(performance.now() / 160) * 0.08);
+    this.holderRing.visible = this.phase !== "in_flight";
 
     this.hud.setRanking(
       [...this.ctx.participants]
