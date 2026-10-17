@@ -7,6 +7,8 @@ export interface ArenaBuild {
   /** meshes sólidos contra los que la cámara no debe atravesar */
   collidables: THREE.Object3D[];
   radius: number;
+  /** animación ambiental opcional (t en segundos) */
+  update?: (t: number) => void;
 }
 
 function cardboardTree(): THREE.Group {

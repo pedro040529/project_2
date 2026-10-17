@@ -581,7 +581,7 @@ body {
 
 .hud-event-banner {
   position: absolute;
-  top: 68px;
+  top: 96px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--felt-mustard);
@@ -1255,4 +1255,22 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .podium-avatar { animation: none; }
+}
+
+.charge-caption {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--white-thread);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  margin-bottom: -6px;
+}
+
+.charge-meter-fill.time {
+  background: linear-gradient(90deg, var(--felt-teal), #7fe0c4);
+}
+
+.decision-panel .charge-meter-track {
+  height: 12px;
 }

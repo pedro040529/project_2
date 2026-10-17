@@ -22,16 +22,16 @@ import { LobbyShowcase } from "../world/LobbyShowcase";
  * (se reutilizan entre minijuegos — solo el contenido de la escena cambia),
  * monta el bucle de render y delega todo el flujo de partida a MatchManager.
  */
-/** Cielo de papel: degradado vertical crema→durazno→celeste suave. */
+/** Cielo nocturno de NEXORA: degradado vertical azul noche → violeta. */
 function makeSkyTexture(): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 4;
   c.height = 256;
   const ctx = c.getContext("2d")!;
   const g = ctx.createLinearGradient(0, 0, 0, 256);
-  g.addColorStop(0, "#9fd8d0");
-  g.addColorStop(0.55, "#fde3b8");
-  g.addColorStop(1, "#fcebd0");
+  g.addColorStop(0, "#0a0e2a");
+  g.addColorStop(0.6, "#2a2670");
+  g.addColorStop(1, "#7a4fa0");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 4, 256);
   const tex = new THREE.CanvasTexture(c);
@@ -59,7 +59,7 @@ export class GameManager {
     this.ui.setLoadingProgress(0.15, "Preparando el motor 3D…");
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -67,7 +67,7 @@ export class GameManager {
 
     this.scene = new THREE.Scene();
     this.scene.background = makeSkyTexture();
-    this.scene.fog = new THREE.Fog(0xfcebd0, 38, 78);
+    this.scene.fog = new THREE.Fog(0x2a2670, 40, 90);
 
     this.camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 200);
 
@@ -104,7 +104,7 @@ export class GameManager {
 
   /** Bloom suave + viñeta + SMAA + tono de película, fusionados en un solo paso. */
   private setupPostFX(): void {
-    this.composer = new EffectComposer(this.renderer, { multisampling: 4 });
+    this.composer = new EffectComposer(this.renderer, { multisampling: 0 });
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.composer.addPass(
       new EffectPass(
@@ -118,7 +118,7 @@ export class GameManager {
   }
 
   private setupLights(): void {
-    const hemi = new THREE.HemisphereLight(0xfff6df, 0xb08a5e, 1.15);
+    const hemi = new THREE.HemisphereLight(0xd6dcff, 0x5b4a8f, 1.1);
     this.scene.add(hemi);
 
     const sun = new THREE.DirectionalLight(0xfff1cf, 1.35);

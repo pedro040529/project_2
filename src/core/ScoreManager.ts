@@ -16,6 +16,9 @@ export interface MinigameScoreLog {
   timestamp: number;
 }
 
+/** Puntaje mínimo que puede tener un participante dentro de un minijuego. */
+export const MINIGAME_SCORE_FLOOR = -200;
+
 /**
  * Única fuente de verdad del puntaje. Los minijuegos NUNCA tocan
  * participant.totalScore directamente: siempre pasan por award().
@@ -25,8 +28,10 @@ export class ScoreManager {
   private log: MinigameScoreLog[] = [];
 
   award(participant: Participant, points: number, reason: string, minigameId: MinigameId, now = Date.now()): number {
-    const newTotal = participant.addPoints(points);
-    this.log.push({ minigameId, participantId: participant.id, points, reason, timestamp: now });
+    // Piso por minijuego: un mal tramo no hunde a nadie sin remedio (no hay puntajes negativos excesivos).
+    const applied = Math.max(points, MINIGAME_SCORE_FLOOR - participant.minigameScore);
+    const newTotal = participant.addPoints(applied);
+    this.log.push({ minigameId, participantId: participant.id, points: applied, reason, timestamp: now });
     return newTotal;
   }
 

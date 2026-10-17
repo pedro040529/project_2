@@ -88,7 +88,11 @@ export class ArenaRuntime {
     return rig?.controller instanceof HumanController ? rig.controller : undefined;
   }
 
+  private t = 0;
+
   update(dt: number): void {
+    this.t += dt;
+    this.arena.update?.(this.t);
     for (const rig of this.rigs.values()) rig.preStep(dt);
     this.physics.step(dt);
     for (const rig of this.rigs.values()) rig.postStep(dt);

@@ -23,14 +23,17 @@ export const Config = {
     // separación mínima entre spawns para que no queden amontonados
     minSpawnDistance: 3.2,
     points: {
-      legitimaPequena: 100,
-      legitimaEspecial: 250,
-      legitimaRara: 400,
-      enganosaRecogida: -100,
-      ambiguaBuena: 150,
-      ambiguaMala: -100
+      legitimaPequena: 25,
+      legitimaEspecial: 60,
+      legitimaRara: 100,
+      enganosaRecogida: -30,
+      ambiguaBuena: 40,
+      ambiguaMala: -30
     },
-    respawnCooldown: 6.5
+    respawnCooldown: 5,
+    // progreso (0..1) en que se disparan los eventos: lluvia de recompensas y apuestas dobles
+    eventAtProgress: [0.25, 0.55, 0.8],
+    stakesSeconds: 10
   },
 
   cazaenganos: {
@@ -40,14 +43,14 @@ export const Config = {
     totalPoolPerMatch: 12,
     composition: { legitima: 4, enganosa: 5, ambigua: 3 },
     points: {
-      enganosoDestruido: 200,
-      legitimoDestruido: -100,
-      ambiguoDestruidoBien: 180,
-      ambiguoDestruidoMal: -120
+      enganosoDestruido: 300,
+      legitimoDestruido: -150,
+      ambiguoDestruidoBien: 250,
+      ambiguoDestruidoMal: -150
     },
     streak: {
       enabled: true,
-      bonuses: [100, 150, 200],
+      bonuses: [150, 250, 350],
       breakOnWrongHit: true
     },
     aimAssist: {
@@ -55,29 +58,37 @@ export const Config = {
       snapStrength: 0.35
     },
     respawnCooldown: 3.2,
-    projectileSpeed: 30
+    projectileSpeed: 30,
+    shotCooldownSeconds: 0.45,
+    // progreso (0..1) de la ronda al que arranca cada oleada y cuánto dura
+    waveAtProgress: [0.3, 0.6, 0.85],
+    waveSeconds: 9
   },
 
   bajoPresion: {
     durationSeconds: 80,
     situationsPerMatch: 15,
-    baseChargeSeconds: 9, // tiempo total desde que se recibe hasta que "puede" explotar
-    explosionsTarget: 3,
-    // probabilidad de que explote incluso tras una decisión correcta (mantiene la incertidumbre)
-    explodeDespiteGoodDecisionChance: 0.22,
-    // probabilidad de que explote si la decisión fue mala
-    explodeAfterBadDecisionChance: 0.55,
-    decisionWindowSeconds: 5.5,
+    // El orbe explota cuando su carga llega a 1; la mecha se sortea en este rango (segundos
+    // acumulados, incluso entre pases). No depende de si las respuestas fueron correctas.
+    minFuseSeconds: 12,
+    maxFuseSeconds: 20,
+    decisionWindowSeconds: 7,
+    feedbackSeconds: 1.5,
+    npcHoldSeconds: { min: 1.1, max: 2.0 },
+    flightSeconds: 0.5,
+    explosionPauseSeconds: 1.5,
+    // una buena decisión calma el orbe (ventaja): reduce esta fracción de la carga
+    stabilizeOnGood: 0.12,
+    // máximo de NPC seguidos con el orbe antes de que le toque al humano
+    maxNpcHolds: 2,
     points: {
-      buenaDecision: 120,
-      malaDecision: -80,
+      buenaDecision: 180,
+      malaDecision: -120,
       neutra: 0,
+      tiempoAgotado: -60,
       explosionPenalty: -150,
-      passBonus: 20
-    },
-    passSpeed: 60,
-    // retraso extra al pase si la decisión fue mala
-    badDecisionExtraDelay: 1.2
+      passBonus: 0
+    }
   },
 
   npc: {

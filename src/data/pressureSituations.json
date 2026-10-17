@@ -448,5 +448,315 @@
     "explicacion": "El código de verificación en dos pasos nunca se comparte con nadie, ni con un supuesto soporte técnico.",
     "dificultad": 2,
     "categoria": "suplantacion"
+  },
+  {
+    "scenarioID": "PS-016",
+    "tipo": "enganosa",
+    "texto": "Un jugador del chat te manda un enlace: 'entra aquí y reclama la skin gratis de la temporada, solo hoy'. La página pide iniciar sesión con tu cuenta del juego.",
+    "contexto": "El enlace no es del sitio oficial y te pide tu cuenta; las skins oficiales se reclaman dentro del propio juego.",
+    "senales": [
+      "enlace fuera del juego",
+      "pide iniciar sesión con tu cuenta",
+      "regalo 'solo hoy'"
+    ],
+    "opciones": [
+      {
+        "id": "entrar",
+        "texto": "Entrar al enlace y poner tu usuario y contraseña",
+        "calidad": "mala"
+      },
+      {
+        "id": "juego",
+        "texto": "Revisar si la skin aparece en la tienda o eventos del juego, sin abrir el enlace",
+        "calidad": "buena"
+      },
+      {
+        "id": "ignorar",
+        "texto": "Ignorar el mensaje sin más",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Las recompensas oficiales aparecen dentro del juego. Un enlace que pide tu cuenta busca robarla.",
+    "dificultad": 2,
+    "categoria": "enlace_externo"
+  },
+  {
+    "scenarioID": "PS-017",
+    "tipo": "legitima",
+    "texto": "El juego te avisa dentro de la partida, en el panel oficial de eventos, que hay doble experiencia este fin de semana. Un compañero te comenta lo mismo.",
+    "contexto": "El aviso viene del propio juego y del lugar oficial; tu compañero solo repite algo que puedes comprobar.",
+    "senales": [
+      "viene del panel oficial",
+      "no pide datos ni objetos",
+      "puedes verificarlo tú mismo"
+    ],
+    "opciones": [
+      {
+        "id": "aprovechar",
+        "texto": "Aprovechar el evento y seguir jugando normal",
+        "calidad": "buena"
+      },
+      {
+        "id": "desconfiar",
+        "texto": "Desconfiar de todo y no jugar este fin de semana",
+        "calidad": "neutra"
+      },
+      {
+        "id": "pagar",
+        "texto": "Pagarle algo a tu compañero 'por el dato'",
+        "calidad": "mala"
+      }
+    ],
+    "explicacion": "No todo aviso es una trampa: si viene del lugar oficial del juego y no te pide nada, puedes confiar.",
+    "dificultad": 1,
+    "categoria": "evento_legitimo"
+  },
+  {
+    "scenarioID": "PS-018",
+    "tipo": "enganosa",
+    "texto": "Recibes un mensaje de 'Soporte del juego': tu cuenta será suspendida en 10 minutos si no confirmas tu contraseña respondiendo a este chat.",
+    "contexto": "Soporte oficial nunca te pide la contraseña por chat, y la prisa es una forma de presión.",
+    "senales": [
+      "pide la contraseña",
+      "urgencia de 10 minutos",
+      "llega por chat privado"
+    ],
+    "opciones": [
+      {
+        "id": "responder",
+        "texto": "Enviar la contraseña para no perder la cuenta",
+        "calidad": "mala"
+      },
+      {
+        "id": "reportar",
+        "texto": "No responder, reportar al usuario y cambiar tu contraseña desde el menú oficial",
+        "calidad": "buena"
+      },
+      {
+        "id": "preguntar",
+        "texto": "Preguntarle cómo sabe que tu cuenta está en riesgo",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Nadie legítimo te pide la contraseña. Ante la presión, para, reporta y usa los canales oficiales.",
+    "dificultad": 1,
+    "categoria": "suplantacion"
+  },
+  {
+    "scenarioID": "PS-019",
+    "tipo": "ambigua",
+    "texto": "Un jugador que no conoces te ofrece intercambiar un objeto común por uno raro tuyo, pero usando el menú de intercambio del juego, donde ambos ven lo que se entrega.",
+    "contexto": "Al usar el menú oficial ambos ven lo que se entrega; aun así, el trato es desigual y conviene evaluarlo.",
+    "senales": [
+      "usa el sistema oficial de intercambio",
+      "ambos ven lo que se entrega",
+      "el valor es muy desigual"
+    ],
+    "opciones": [
+      {
+        "id": "aceptar",
+        "texto": "Aceptar sin mirar, porque es el menú oficial",
+        "calidad": "mala"
+      },
+      {
+        "id": "evaluar",
+        "texto": "Comparar el valor de ambos objetos y rechazar si el trato es desigual",
+        "calidad": "buena"
+      },
+      {
+        "id": "cancelar",
+        "texto": "Cancelar el intercambio y salir de la sala",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Que el intercambio sea oficial te protege de engaños, pero no de un mal trato: revisa qué entregas y qué recibes.",
+    "dificultad": 3,
+    "categoria": "intercambio_no_reciproco"
+  },
+  {
+    "scenarioID": "PS-020",
+    "tipo": "enganosa",
+    "texto": "Un jugador al que acabas de conocer te dice que es amigo de un streamer famoso y que, si le pasas tu código de invitación y tu cuenta, te consigue un pase premium.",
+    "contexto": "Usa un nombre famoso para ganar confianza y te pide acceso a tu cuenta; no hay forma de verificarlo.",
+    "senales": [
+      "nombre famoso sin prueba",
+      "pide acceso a tu cuenta",
+      "promete un beneficio grande"
+    ],
+    "opciones": [
+      {
+        "id": "dar",
+        "texto": "Pasarle tu cuenta, total es amigo de un famoso",
+        "calidad": "mala"
+      },
+      {
+        "id": "rechazar",
+        "texto": "Rechazar y avisar que no compartes tu cuenta con nadie",
+        "calidad": "buena"
+      },
+      {
+        "id": "seguir",
+        "texto": "Seguir hablando para ver qué más ofrece",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Nombrar a alguien famoso no prueba nada. Tu cuenta nunca se comparte, sin importar la promesa.",
+    "dificultad": 2,
+    "categoria": "suplantacion"
+  },
+  {
+    "scenarioID": "PS-021",
+    "tipo": "legitima",
+    "texto": "Un amigo de tu lista, con el que juegas seguido, te pide por el chat de voz que le dejes entrar a tu sala privada porque se desconectó.",
+    "contexto": "Es alguien conocido, la petición es la normal (volver a una sala) y no pide datos ni objetos.",
+    "senales": [
+      "es un contacto conocido",
+      "pide algo que cualquier jugador pide",
+      "no hay datos sensibles de por medio"
+    ],
+    "opciones": [
+      {
+        "id": "invitar",
+        "texto": "Invitarlo de nuevo a la sala desde el menú",
+        "calidad": "buena"
+      },
+      {
+        "id": "negar",
+        "texto": "Negarte porque 'nunca se sabe'",
+        "calidad": "neutra"
+      },
+      {
+        "id": "codigo",
+        "texto": "Mandarle además tu código de verificación 'por si acaso'",
+        "calidad": "mala"
+      }
+    ],
+    "explicacion": "Con amistades reales y peticiones normales no hace falta sospechar; solo evita compartir datos de más.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
+  },
+  {
+    "scenarioID": "PS-022",
+    "tipo": "enganosa",
+    "texto": "Alguien te escribe: 'Tengo otra cuenta con objetos únicos que ya no uso. Pásame tu clave de recuperación y te los transfiero todos'.",
+    "contexto": "Pedir tu clave de recuperación es pedir el control de tu cuenta; las transferencias no la necesitan.",
+    "senales": [
+      "pide la clave de recuperación",
+      "regalo sin motivo",
+      "fuera del sistema de intercambio"
+    ],
+    "opciones": [
+      {
+        "id": "pasar",
+        "texto": "Darle la clave para que haga la transferencia",
+        "calidad": "mala"
+      },
+      {
+        "id": "sistema",
+        "texto": "Decir que solo aceptas transferencias por el sistema oficial",
+        "calidad": "buena"
+      },
+      {
+        "id": "callar",
+        "texto": "No responder y seguir jugando",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "La clave de recuperación equivale a las llaves de tu cuenta. Jamás se comparte.",
+    "dificultad": 1,
+    "categoria": "cuenta_extra"
+  },
+  {
+    "scenarioID": "PS-023",
+    "tipo": "ambigua",
+    "texto": "Un jugador de tu equipo te pide que le prestes tu arma legendaria durante la misión, usando la función oficial 'Compartir equipo', que se devuelve sola al terminar.",
+    "contexto": "La función oficial la devuelve automáticamente; el riesgo es mínimo, pero conviene saber a quién se la das.",
+    "senales": [
+      "usa la función oficial",
+      "se devuelve sola",
+      "es parte de tu equipo actual"
+    ],
+    "opciones": [
+      {
+        "id": "compartir",
+        "texto": "Compartirla con la función oficial durante la misión",
+        "calidad": "buena"
+      },
+      {
+        "id": "regalar",
+        "texto": "Regalársela de forma definitiva para quedar bien",
+        "calidad": "mala"
+      },
+      {
+        "id": "negar",
+        "texto": "Negarte por si acaso, aunque lo pida el equipo",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Una función oficial con devolución automática reduce el riesgo; regalar de forma definitiva sí lo aumenta.",
+    "dificultad": 2,
+    "categoria": "confianza_progresiva"
+  },
+  {
+    "scenarioID": "PS-024",
+    "tipo": "enganosa",
+    "texto": "Un mensaje con aspecto de aviso del juego te dice: 'Ganaste un sorteo. Escribe tu fecha de nacimiento y tu correo para recibir el premio en 5 minutos'.",
+    "contexto": "El aviso llega por chat y pide datos personales con prisa; los premios oficiales aparecen en el juego y no piden datos.",
+    "senales": [
+      "pide datos personales",
+      "prisa de 5 minutos",
+      "sorteo en el que no te inscribiste"
+    ],
+    "opciones": [
+      {
+        "id": "datos",
+        "texto": "Escribir tus datos para no perder el premio",
+        "calidad": "mala"
+      },
+      {
+        "id": "ignorar",
+        "texto": "Ignorarlo y reportarlo como mensaje sospechoso",
+        "calidad": "buena"
+      },
+      {
+        "id": "preguntar",
+        "texto": "Pedirle más detalles del sorteo",
+        "calidad": "neutra"
+      }
+    ],
+    "explicacion": "Un premio de verdad no necesita tus datos personales por chat. Si no te inscribiste, es un anzuelo.",
+    "dificultad": 1,
+    "categoria": "urgencia_falsa"
+  },
+  {
+    "scenarioID": "PS-025",
+    "tipo": "legitima",
+    "texto": "Un moderador visible, con su insignia oficial en la sala, te avisa que tu apodo incumple las normas y te pide cambiarlo desde la configuración del juego.",
+    "contexto": "La insignia es oficial, la petición es cambiar algo dentro del juego y no te pide datos ni contraseñas.",
+    "senales": [
+      "insignia oficial verificable",
+      "el cambio se hace en el menú del juego",
+      "no pide datos personales"
+    ],
+    "opciones": [
+      {
+        "id": "cambiar",
+        "texto": "Cambiar el apodo desde la configuración del juego",
+        "calidad": "buena"
+      },
+      {
+        "id": "discutir",
+        "texto": "Discutir con él y seguir igual",
+        "calidad": "neutra"
+      },
+      {
+        "id": "pass",
+        "texto": "Darle tu contraseña para que lo cambie él",
+        "calidad": "mala"
+      }
+    ],
+    "explicacion": "Un aviso de moderación legítimo te pide hacer algo dentro del juego, nunca darle tus datos.",
+    "dificultad": 1,
+    "categoria": "interaccion_normal"
   }
 ]

@@ -38,6 +38,8 @@ export interface HudHandle {
 export interface DecisionHandle {
   update(situationText: string, options: PressureOption[], onPick: (opt: PressureOption) => void): void;
   setCharge(progress01: number): void;
+  /** Tiempo restante para decidir (1 = todo el tiempo, 0 = agotado); null oculta la barra. */
+  setTimeLeft(progress01: number | null): void;
   hide(): void;
 }
 
@@ -375,7 +377,16 @@ export class UIManager {
     const chargeTrack = el("div", "charge-meter-track");
     const chargeFill = el("div", "charge-meter-fill");
     chargeTrack.appendChild(chargeFill);
+    const chargeCaption = el("div", "charge-caption", "CARGA DEL ORBE");
+    panel.appendChild(chargeCaption);
     panel.appendChild(chargeTrack);
+    const timeCaption = el("div", "charge-caption", "TIEMPO PARA DECIDIR");
+    const timeTrack = el("div", "charge-meter-track time");
+    const timeFill = el("div", "charge-meter-fill time");
+    timeTrack.appendChild(timeFill);
+    timeCaption.style.display = timeTrack.style.display = "none";
+    panel.appendChild(timeCaption);
+    panel.appendChild(timeTrack);
     this.root.appendChild(panel);
 
     return {
@@ -397,6 +408,11 @@ export class UIManager {
       },
       setCharge: (progress01: number) => {
         chargeFill.style.width = `${Math.round(THREE_clamp01(progress01) * 100)}%`;
+      },
+      setTimeLeft: (p: number | null) => {
+        const show = p !== null;
+        timeCaption.style.display = timeTrack.style.display = show ? "block" : "none";
+        if (show) timeFill.style.width = `${Math.round(THREE_clamp01(p) * 100)}%`;
       },
       hide: () => {
         panel.style.display = "none";

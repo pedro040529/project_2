@@ -4,11 +4,16 @@ import type { MessageDef } from "../core/types";
 import type { InstructionsSpec, HudHandle } from "../core/UIManager";
 import type { IMinigame, MinigameContext } from "./IMinigame";
 import { ArenaRuntime } from "./common/ArenaRuntime";
+import { gsap } from "gsap";
 import { feltFlat, CraftPalette } from "../world/Materials";
+import { buildHoloRange } from "../world/ThemedArenas";
+import { BurstSystem } from "../world/Burst";
 import { mulberry32, shuffle } from "../utils/rng";
 
 interface TargetSlot {
   position: THREE.Vector3;
+  /** posición de la estación; `position` oscila alrededor de ella */
+  base: THREE.Vector3;
   filled: boolean;
   cooldown: number;
   current: MessageDef | null;
@@ -63,11 +68,11 @@ function orbMesh(): THREE.Group {
   const g = new THREE.Group();
   const core = new THREE.Mesh(
     new THREE.IcosahedronGeometry(0.32, 1),
-    new THREE.MeshStandardMaterial({ color: CraftPalette.white, roughness: 0.35, metalness: 0.05, transparent: true, opacity: 0.92 })
+    new THREE.MeshStandardMaterial({ color: 0xdfe8ff, emissive: 0x4f6bff, emissiveIntensity: 0.9, roughness: 0.3, transparent: true, opacity: 0.92 })
   );
   core.castShadow = true;
   g.add(core);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.02, 6, 20), feltFlat(CraftPalette.cardboard, 0.7));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.02, 6, 20), new THREE.MeshStandardMaterial({ color: 0x39e1ff, emissive: 0x39e1ff, emissiveIntensity: 1.8 }));
   ring.rotation.x = Math.PI / 2.4;
   g.add(ring);
   return g;
@@ -93,10 +98,16 @@ export class Cazaenganos implements IMinigame {
   private streak = 0;
   private raycaster = new THREE.Raycaster();
   private tracers: Tracer[] = [];
+  private bursts!: BurstSystem;
+  private lastShotAt = -10;
+  private clock = 0;
+  private waveTimeLeft = 0;
+  private wavesTriggered = 0;
 
   async load(ctx: MinigameContext): Promise<void> {
     this.ctx = ctx;
-    this.arenaRuntime = new ArenaRuntime(ctx, Config.arena.sharedRadius);
+    this.arenaRuntime = new ArenaRuntime(ctx, Config.arena.sharedRadius, buildHoloRange);
+    this.bursts = new BurstSystem(this.arenaRuntime.group);
     this.hud = ctx.ui.mountHUD();
     this.hud.setObjective("Haz click una vez para capturar el mouse; apunta con la mira y haz click para destruir los mensajes engañosos. No dispares a los legítimos.");
     // El cursor del sistema hace de mira: no se necesita pointer lock ni
@@ -116,6 +127,7 @@ export class Cazaenganos implements IMinigame {
       const angle = (i / Config.cazaenganos.targetsOnScreen) * Math.PI * 2;
       this.slots.push({
         position: new THREE.Vector3(Math.cos(angle) * radius * 0.6, 1.6, Math.sin(angle) * radius * 0.6),
+        base: new THREE.Vector3(),
         filled: false,
         cooldown: this.rand() * 1.5,
         current: null,
@@ -137,7 +149,7 @@ export class Cazaenganos implements IMinigame {
    */
   private pickSpreadPosition(): THREE.Vector3 {
     // Nueve estaciones fijas: no existe un fallback que coloque mensajes pegados.
-    const occupied = this.slots.filter(s => s.filled).map(s => s.position);
+    const occupied = this.slots.filter(s => s.filled).map(s => s.base);
     const stations: THREE.Vector3[] = [];
     for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) {
       stations.push(new THREE.Vector3(x * 8, 1.7, z * 8));
@@ -157,7 +169,8 @@ export class Cazaenganos implements IMinigame {
   private fillSlot(slot: TargetSlot): void {
     const msg = this.nextDeckMessage();
     slot.current = msg;
-    slot.position.copy(this.pickSpreadPosition());
+    slot.base.copy(this.pickSpreadPosition());
+    slot.position.copy(slot.base);
     slot.filled = true;
     slot.age = 0;
     slot.claimed = false;
@@ -167,6 +180,8 @@ export class Cazaenganos implements IMinigame {
     mesh.position.copy(slot.position);
     this.arenaRuntime.group.add(mesh);
     slot.mesh = mesh;
+    gsap.fromTo(mesh.scale, { x: 0.01, y: 0.01, z: 0.01 }, { x: 1, y: 1, z: 1, duration: 0.55, ease: "back.out(2)" });
+    this.bursts.emit(slot.position.clone(), 0x39e1ff, 10, 2.5, 0.7);
 
     const label = this.ctx.labelRenderer.createLabel(msg.autor, msg.texto);
     label.position.set(0, 0.55, 0);
@@ -197,10 +212,10 @@ export class Cazaenganos implements IMinigame {
   getInstructions(): InstructionsSpec {
     return {
       title: "Cazaengaños",
-      goal: "Lee el mensaje que aparece sobre cada objetivo. Si suena a un intento de engaño, destrúyelo. Si es un mensaje normal, déjalo tranquilo.",
+      goal: "Lee el mensaje de cada objetivo. Si es un intento de engaño, destrúyelo antes que tus rivales. Si es un mensaje normal, déjalo: destruirlo resta puntos, y disparar sin leer rompe tu racha.",
       controls: [
-        { key: "🖱️", label: "Apuntar" },
-        { key: "Click", label: "Disparar" },
+        { key: "Mira", label: "Apuntar con el centro de la pantalla" },
+        { key: "Click", label: "Disparar (hay un breve enfriamiento)" },
         { key: "WASD", label: "Moverse" },
         { key: "Mouse", label: "Mover para girar la cámara (primer clic lo captura, Esc lo libera)" }
       ]
@@ -268,6 +283,7 @@ export class Cazaenganos implements IMinigame {
     const rig = this.arenaRuntime.rigs.get(participantId);
     rig?.character.triggerReaction(wasCorrect ? "celebrate" : "lose", 0.8);
 
+    this.bursts.emit(slot.position.clone(), wasCorrect ? 0x8dff6a : 0xff4f6a, 34, 6, 1.1);
     this.clearSlot(slot);
     // Los lectores cancelan su acción en el siguiente frame si desaparece el objetivo.
   }
@@ -276,7 +292,7 @@ export class Cazaenganos implements IMinigame {
   private spawnTracer(fromWorld: THREE.Vector3, toWorld: THREE.Vector3, onImpact?: () => void): void {
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.14, 8, 8),
-      new THREE.MeshStandardMaterial({ color: CraftPalette.white, emissive: CraftPalette.mustardFelt, emissiveIntensity: 0.9, roughness: 0.3 })
+      new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x39e1ff, emissiveIntensity: 2.4, roughness: 0.3 })
     );
     mesh.position.copy(fromWorld);
     this.arenaRuntime.group.add(mesh);
@@ -305,6 +321,9 @@ export class Cazaenganos implements IMinigame {
     const human = this.arenaRuntime.getHumanController();
     if (!human) return;
     if (!human.consumeClick()) return;
+    // Enfriamiento: disparar sin leer no sale a cuenta (además, un fallo rompe la racha).
+    if (this.clock - this.lastShotAt < Config.cazaenganos.shotCooldownSeconds) return;
+    this.lastShotAt = this.clock;
 
     const ray = human.getAimRay(this.ctx.camera);
     let best: { slot: TargetSlot; screenDist: number } | null = null;
@@ -333,6 +352,8 @@ export class Cazaenganos implements IMinigame {
     if (best) {
       this.fire(best.slot, "human");
     } else {
+      this.streak = 0;
+      this.hud.hideStreak();
       this.ctx.audio.shoot();
       this.arenaRuntime.getHumanRig()?.character.triggerShot();
       // erró: igual se ve la bolita viajando, para que el disparo se sienta real.
@@ -376,7 +397,7 @@ export class Cazaenganos implements IMinigame {
         rig.faceTarget(slot.position);
         pending.timeLeft -= dt;
         if (pending.timeLeft <= 0 && slot.age >= 7) {
-          const correct = this.rand() < traits.accuracy;
+          const correct = this.rand() < Math.max(0.2, traits.accuracy - 0.1 * ((slot.current!.dificultad ?? 1) - 1));
           const wantsShot = slot.current!.accionEsperada === "destruir";
           if (correct ? wantsShot : !wantsShot) this.fire(slot, participant.id);
           this.pendingAiShots = this.pendingAiShots.filter(s => s !== pending);
@@ -403,19 +424,39 @@ export class Cazaenganos implements IMinigame {
     }
   }
 
+  /** Oleadas: tres momentos de mayor intensidad en los que los objetivos reaparecen mucho más rápido. */
+  private updateWaves(dt: number): void {
+    if (this.waveTimeLeft > 0) this.waveTimeLeft -= dt;
+    const elapsed = 1 - this.timeRemaining / Config.cazaenganos.durationSeconds;
+    const marks = Config.cazaenganos.waveAtProgress;
+    if (this.wavesTriggered < marks.length && elapsed >= marks[this.wavesTriggered]) {
+      this.wavesTriggered++;
+      this.waveTimeLeft = Config.cazaenganos.waveSeconds;
+      this.hud.showEventBanner(`¡Oleada ${this.wavesTriggered}! Aparecen objetivos más rápido: lee antes de disparar.`, 3500);
+      this.ctx.audio.transition();
+    }
+  }
+
   update(dt: number): void {
     if (!this.started || this.finished) return;
     this.timeRemaining -= dt;
+    this.clock += dt;
     this.hud.setTimer(this.timeRemaining);
+    this.updateWaves(dt);
 
     for (const slot of this.slots) {
       if (!slot.filled) {
-        slot.cooldown -= dt;
+        slot.cooldown -= dt * (this.waveTimeLeft > 0 ? 3 : 1);
         if (slot.cooldown <= 0) this.fillSlot(slot);
       } else if (slot.mesh) {
         slot.age += dt;
         if (slot.age > 26 && !slot.claimed && !this.pendingAiShots.some(s => s.instanceId === slot.instanceId)) { this.clearSlot(slot); continue; }
         slot.bobSeed += dt;
+        // deriva lenta y legible alrededor de su estación
+        slot.position.x = slot.base.x + Math.sin(slot.bobSeed * 0.55) * 1.3;
+        slot.position.z = slot.base.z + Math.cos(slot.bobSeed * 0.42) * 1.3;
+        slot.mesh.position.x = slot.position.x;
+        slot.mesh.position.z = slot.position.z;
         slot.mesh.position.y = slot.position.y + Math.sin(slot.bobSeed * 1.6) * 0.08;
         slot.mesh.rotation.y += dt * 0.8;
       }
@@ -425,6 +466,7 @@ export class Cazaenganos implements IMinigame {
     this.arenaRuntime.update(dt);
     this.handleHumanShoot();
     this.updateTracers(dt);
+    this.bursts.update(dt);
 
     this.hud.setRanking(
       [...this.ctx.participants]
@@ -442,6 +484,7 @@ export class Cazaenganos implements IMinigame {
 
   dispose(): void {
     for (const slot of this.slots) this.clearSlot(slot);
+    this.bursts.dispose();
     for (const tr of this.tracers) tr.mesh.removeFromParent();
     this.tracers = [];
     this.hud.hideStreak();

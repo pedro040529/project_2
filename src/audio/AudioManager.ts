@@ -125,6 +125,24 @@ export class AudioManager {
     this.tone(90, 0.35, "sawtooth", 0.4, 40);
   }
 
+  /** Pulso de tensión del orbe: más agudo y más fuerte cuanto mayor es la carga (0..1). */
+  tensionTick(charge01: number): void {
+    const c = Math.min(1, Math.max(0, charge01));
+    this.tone(180 + c * 520, 0.07 + (1 - c) * 0.05, c > 0.7 ? "sawtooth" : "square", 0.12 + c * 0.2);
+  }
+
+  orbCatch(): void {
+    this.tone(330, 0.08, "triangle", 0.3, 520);
+  }
+
+  feedbackGood(): void {
+    this.tone(660, 0.1, "triangle", 0.35, 990);
+  }
+
+  feedbackBad(): void {
+    this.tone(260, 0.2, "sawtooth", 0.3, 130);
+  }
+
   transition(): void {
     this.tone(300, 0.3, "sine", 0.3, 700);
   }

@@ -34,3 +34,12 @@ También se corrigió un fallo previo del podio que omitía participantes cuando
 - Se agregaron regresiones para el primer giro horizontal y para apuntar mientras se camina.
 
 - Se retiró la ayuda de cámara de Bajo Presión para despejar el panel de decisiones.
+
+## Rediseño de los tres minijuegos (octubre 2026)
+
+- **Bajo Presión**: nueva máquina de estados (`holding → feedback → flight → exploding`) con watchdog; lógica pura y probada en `src/core/OrbCircuit.ts`. Jugadores en plataformas fijas; el orbe circula solo, el humano lo recibe como máximo cada 3 turnos, explota por carga/tiempo en cualquier mano (independiente de las respuestas) y reaparece en otro participante. Las buenas decisiones calman el orbe.
+- **Atrapa o Evita**: Plaza de Recompensas, cubos de datos idénticos para todo tipo de contenido, animaciones de aparición/recogida con partículas, eventos (lluvia de recompensas, apuestas dobles), NPC con percepción falible y cambio de objetivo cuando otro se lleva el suyo.
+- **Cazaengaños**: Campo de Entrenamiento Holográfico, objetivos con deriva lenta, oleadas, enfriamiento de disparo y rotura de racha al fallar.
+- **Puntuación**: piso de −200 por minijuego (`MINIGAME_SCORE_FLOOR`) y valores reequilibrados entre minijuegos.
+- **Contenido**: 25 situaciones de Bajo Presión (8 legítimas, 14 engañosas, 3 ambiguas).
+- **Verificación**: `npm test` (33 pruebas) y `node scripts/full-playtest.mjs` (partida completa contra el build, capturas en `docs/playtest/redesign/`).

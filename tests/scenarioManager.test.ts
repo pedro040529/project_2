@@ -3,11 +3,11 @@ import { ScenarioManager } from "../src/core/ScenarioManager";
 import { Config } from "../src/core/Config";
 
 describe("ScenarioManager — contenido y sorteo", () => {
-  it("expone el tamaño de pool pedido por el brief (24 rewards / 40 messages / 15 pressure)", () => {
+  it("expone el tamaño de pool pedido por el brief (24 rewards / 40 messages / 25 pressure)", () => {
     const sm = new ScenarioManager(1);
     expect(sm.getAllRewards()).toHaveLength(24);
     expect(sm.getAllMessages()).toHaveLength(40);
-    expect(sm.getAllPressureSituations()).toHaveLength(15);
+    expect(sm.getAllPressureSituations()).toHaveLength(25);
   });
 
   it("cada escenario está clasificado como legitima, ambigua o enganosa", () => {

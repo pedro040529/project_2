@@ -5,7 +5,9 @@ import type { InstructionsSpec } from "../core/UIManager";
 import type { HudHandle } from "../core/UIManager";
 import type { IMinigame, MinigameContext } from "./IMinigame";
 import { ArenaRuntime } from "./common/ArenaRuntime";
-import { craftMaterial, feltFlat, CraftPalette } from "../world/Materials";
+import { gsap } from "gsap";
+import { buildRewardPlaza } from "../world/ThemedArenas";
+import { BurstSystem } from "../world/Burst";
 import { AIController } from "../entities/controllers/AIController";
 import { mulberry32, shuffle } from "../utils/rng";
 
@@ -22,21 +24,22 @@ interface Slot {
   wobble: number;
 }
 
-function pouchMesh(): THREE.Group {
-  // Bolsita de fieltro uniforme: MISMO aspecto para legítimas, ambiguas y engañosas (RNF06).
+function rewardMesh(): THREE.Group {
+  // Cubo de datos idéntico para legítimas, ambiguas y engañosas (RNF06): nada en su
+  // aspecto delata el contenido; solo el texto flotante permite evaluarlo.
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 8), feltFlat(CraftPalette.paper, 0.85));
-  body.scale.set(1, 0.85, 1);
-  body.position.y = 0.26;
-  body.castShadow = true;
-  g.add(body);
-  const tie = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.03, 6, 12), craftMaterial("cardboard", { repeat: 0.5 }));
-  tie.position.y = 0.46;
-  tie.rotation.x = Math.PI / 2;
-  g.add(tie);
-  const bow = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), feltFlat(CraftPalette.coralFelt, 0.9));
-  bow.position.y = 0.5;
-  g.add(bow);
+  const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.5, 0.5),
+    new THREE.MeshStandardMaterial({ color: 0xdfe8ff, emissive: 0x6f8bff, emissiveIntensity: 1.1, roughness: 0.25, metalness: 0.2 })
+  );
+  cube.position.y = 0.7;
+  cube.rotation.set(0.5, 0.4, 0);
+  cube.castShadow = true;
+  g.add(cube);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.03, 8, 32), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.2 }));
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.2;
+  g.add(ring);
   return g;
 }
 
@@ -63,18 +66,22 @@ export class AtrapaOEvita implements IMinigame {
   private rand = mulberry32(Date.now() & 0xffffffff);
   private aiTimers = new Map<string, number>();
   private clock = { total: 0 };
+  private bursts!: BurstSystem;
+  private aiTargets = new Map<string, Slot>();
+  private stakesMultiplier = 1;
+  private stakesTimeLeft = 0;
+  private eventsTriggered = 0;
 
   async load(ctx: MinigameContext): Promise<void> {
     this.ctx = ctx;
-    this.arenaRuntime = new ArenaRuntime(ctx, Config.arena.sharedRadius);
+    this.arenaRuntime = new ArenaRuntime(ctx, Config.arena.sharedRadius, buildRewardPlaza);
+    this.bursts = new BurstSystem(this.arenaRuntime.group);
     this.hud = ctx.ui.mountHUD();
     this.hud.setObjective("Corre hacia las recompensas para llevártelas. Evita las que parezcan un engaño.");
 
     this.buildSlots();
 
-    setTimeout(() => {
-      this.hud.showEventBanner("Evento activo: hay cofres especiales de evento en la arena esta ronda.");
-    }, 600);
+    this.hud.showEventBanner("Plaza de Recompensas: lee cada mensaje antes de llevártelo. ¡Habrá eventos sorpresa!", 4000);
   }
 
   private buildSlots(): void {
@@ -129,10 +136,12 @@ export class AtrapaOEvita implements IMinigame {
     slot.filled = true;
     slot.cooldown = 0;
 
-    const mesh = pouchMesh();
+    const mesh = rewardMesh();
     mesh.position.copy(slot.position);
     this.arenaRuntime.group.add(mesh);
     slot.mesh = mesh;
+    gsap.fromTo(mesh.scale, { x: 0.01, y: 0.01, z: 0.01 }, { x: 1, y: 1, z: 1, duration: 0.5, ease: "back.out(2.2)" });
+    this.bursts.emit(slot.position.clone().add(new THREE.Vector3(0, 0.6, 0)), 0x9fb4ff, 10, 2.2, 0.7);
 
     const shortLabel = reward.texto.length > 34 ? `${reward.texto.slice(0, 32)}…` : reward.texto;
     const label = this.ctx.labelRenderer.createLabel("RECOMPENSA", shortLabel);
@@ -159,7 +168,7 @@ export class AtrapaOEvita implements IMinigame {
   getInstructions(): InstructionsSpec {
     return {
       title: "Atrapa o Evita",
-      goal: "Corre por la arena y llévate las recompensas que te convengan. Fíjate en el mensaje de cada una antes de ir corriendo.",
+      goal: "Corre por la plaza y llévate las recompensas que te convengan, antes que tus rivales. Las legítimas suman y las engañosas restan: lee el mensaje de cada cubo antes de tocarlo. Habrá eventos sorpresa.",
       controls: [
         { key: "WASD", label: "Moverse" },
         { key: "Mouse", label: "Mover para girar la cámara (primer clic lo captura, Esc lo libera)" }
@@ -203,7 +212,7 @@ export class AtrapaOEvita implements IMinigame {
     if (!slot.current) return;
     const reward = slot.current;
     const participant = this.ctx.participants.find((p) => p.id === participantId)!;
-    const points = this.pointsFor(reward);
+    const points = this.pointsFor(reward) * this.stakesMultiplier;
     this.ctx.scoreManager.award(participant, points, reward.scenarioID, "atrapa_o_evita");
 
     const screenPos = this.screenPosOf(slot.position.clone().add(new THREE.Vector3(0, 1, 0)));
@@ -220,11 +229,19 @@ export class AtrapaOEvita implements IMinigame {
     if (points >= 0) this.ctx.audio.pickupGood();
     else this.ctx.audio.pickupBad();
 
+    this.bursts.emit(slot.position.clone().add(new THREE.Vector3(0, 0.7, 0)), points >= 0 ? 0x8dff6a : 0xff4f6a, 30, 5, 1);
     this.clearSlot(slot);
   }
 
   private updateAI(dt: number): void {
     for (const { participant, controller } of this.arenaRuntime.getAIControllers()) {
+      // Compiten por lo mismo: si otro se llevó su objetivo, cambian de plan al instante.
+      const target = this.aiTargets.get(participant.id);
+      if (target && (!target.filled || target.current === null)) {
+        this.aiTargets.delete(participant.id);
+        controller.setTarget(null);
+        this.aiTimers.set(participant.id, 0.25 + this.rand() * 0.4);
+      }
       const timer = (this.aiTimers.get(participant.id) ?? 2.5) - dt;
       const needsDecision = timer <= 0 && (!controller.hasTarget() || this.targetSlotConsumed(controller));
       if (needsDecision) {
@@ -249,23 +266,48 @@ export class AtrapaOEvita implements IMinigame {
       return;
     }
 
-    const actsCorrectly = this.rand() < traits.accuracy;
-    let candidates = visible;
-    if (actsCorrectly) {
-      candidates = visible.filter((s) => s.current!.accionEsperada === "recoger");
-      if (candidates.length === 0) candidates = visible; // si no hay ninguna "buena" visible, igual reacciona a algo
-    }
+    // Cada NPC "lee" cada recompensa por separado y puede juzgarla mal: su acierto baja con la
+    // dificultad del mensaje. No conocen la respuesta; solo tienen una impresión.
+    const believedGood = visible.filter((s) => {
+      const acc = Math.max(0.2, traits.accuracy - 0.1 * (s.current!.dificultad - 1));
+      const truth = s.current!.accionEsperada === "recoger";
+      return this.rand() < acc ? truth : !truth;
+    });
+    const candidates = believedGood.length > 0 ? believedGood : visible;
 
     // riskTolerance: prefiere puntaje alto aunque esté más lejos; baja riskTolerance prefiere lo más cercano.
     const scored = candidates.map((s) => {
       const value = Math.abs(this.pointsFor(s.current!));
       const dist = s.position.distanceTo(pos) + 0.001;
-      const score = value * (0.4 + traits.riskTolerance) - dist * (1.3 - traits.riskTolerance);
+      const score = value * (0.4 + traits.riskTolerance) - dist * (1.3 - traits.riskTolerance) + this.rand() * 25;
       return { slot: s, score };
     });
     scored.sort((a, b) => b.score - a.score);
     const chosen = scored[0].slot;
+    this.aiTargets.set(participantId, chosen);
     controller.setTarget(chosen.position, Config.npc.pickupRadius);
+  }
+
+  /** Eventos breves que cambian el ritmo sin revelar cuáles recompensas son engañosas. */
+  private updateEvents(dt: number): void {
+    if (this.stakesTimeLeft > 0) {
+      this.stakesTimeLeft -= dt;
+      if (this.stakesTimeLeft <= 0) this.stakesMultiplier = 1;
+    }
+    const elapsed = 1 - this.timeRemaining / Config.atrapaOEvita.durationSeconds;
+    const marks = Config.atrapaOEvita.eventAtProgress;
+    if (this.eventsTriggered >= marks.length || elapsed < marks[this.eventsTriggered]) return;
+    const kind = this.eventsTriggered % 2 === 0 ? "rain" : "stakes";
+    this.eventsTriggered++;
+    this.ctx.audio.transition();
+    if (kind === "rain") {
+      this.hud.showEventBanner("¡Lluvia de recompensas! Aparecen muchas nuevas a la vez.", 3500);
+      for (const slot of this.slots) if (!slot.filled) slot.cooldown = this.rand() * 0.8;
+    } else {
+      this.stakesMultiplier = 2;
+      this.stakesTimeLeft = Config.atrapaOEvita.stakesSeconds;
+      this.hud.showEventBanner(`¡Apuestas dobles ${Config.atrapaOEvita.stakesSeconds} s! Todo vale el doble, para bien o para mal.`, 3500);
+    }
   }
 
   update(dt: number): void {
@@ -285,6 +327,8 @@ export class AtrapaOEvita implements IMinigame {
       }
     }
 
+    this.updateEvents(dt);
+    this.bursts.update(dt);
     this.updateAI(dt);
     this.arenaRuntime.update(dt);
 
@@ -305,6 +349,8 @@ export class AtrapaOEvita implements IMinigame {
         if (slot.filled && slot.position.distanceTo(pos) <= Config.npc.pickupRadius) {
           this.collect(slot, participant.id);
           controller.setTarget(null);
+          // pausa para "mirar a su alrededor": evita que recojan sin parar, uno tras otro
+          this.aiTimers.set(participant.id, 1.2 + participant.avatar.traits!.reactionTime + this.rand());
           break;
         }
       }
@@ -326,6 +372,7 @@ export class AtrapaOEvita implements IMinigame {
 
   dispose(): void {
     for (const slot of this.slots) this.clearSlot(slot);
+    this.bursts.dispose();
     this.hud.unmount();
     this.arenaRuntime.dispose();
   }
