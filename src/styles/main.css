@@ -1274,3 +1274,46 @@ body {
 .decision-panel .charge-meter-track {
   height: 12px;
 }
+
+/* Teclas de las instrucciones */
+.key-cluster {
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  gap: 4px;
+}
+
+.key-row {
+  display: flex;
+  gap: 4px;
+}
+
+.keycap {
+  width: 40px;
+  height: 40px;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  line-height: 1;
+  box-shadow: 0 3px 0 #1a0f08;
+}
+
+.keycap-label {
+  font-size: 14px;
+}
+
+.keycap-arrow {
+  font-size: 10px;
+  color: var(--felt-mustard);
+}
+
+.mouse-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  background: var(--ink);
+}
+
+.control-chip {
+  max-width: 260px;
+  text-align: center;
+}

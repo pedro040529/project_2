@@ -15,6 +15,33 @@ function colorHex(n: number): string {
   return `#${n.toString(16).padStart(6, "0")}`;
 }
 
+/** Dibuja la tecla como se ve en el teclado; WASD y 1-3 se muestran como grupo con flechas de dirección. */
+function keyVisual(key: string): HTMLElement {
+  const cap = (label: string, arrow?: string): HTMLElement => {
+    const k = el("div", "key-badge keycap");
+    k.appendChild(el("span", "keycap-label", label));
+    if (arrow) k.appendChild(el("span", "keycap-arrow", arrow));
+    return k;
+  };
+  if (key === "WASD") {
+    const pad = el("div", "key-cluster");
+    pad.appendChild(el("span", "key-spacer"));
+    pad.appendChild(cap("W", "▲"));
+    pad.appendChild(el("span", "key-spacer"));
+    pad.appendChild(cap("A", "◀"));
+    pad.appendChild(cap("S", "▼"));
+    pad.appendChild(cap("D", "▶"));
+    return pad;
+  }
+  if (key === "1-3") {
+    const row = el("div", "key-row");
+    ["1", "2", "3"].forEach((n) => row.appendChild(cap(n)));
+    return row;
+  }
+  if (key === "Mouse") return el("div", "key-badge mouse-icon", "🖱️");
+  return el("div", "key-badge", key);
+}
+
 export interface InstructionsSpec {
   title: string;
   goal: string;
@@ -231,7 +258,7 @@ export class UIManager {
       const controls = el("div", "instructions-controls");
       for (const c of spec.controls) {
         const chip = el("div", "control-chip");
-        chip.appendChild(el("div", "key-badge", c.key));
+        chip.appendChild(keyVisual(c.key));
         chip.appendChild(el("span", undefined, c.label));
         controls.appendChild(chip);
       }
