@@ -5,11 +5,11 @@ import {
   EffectPass,
   BloomEffect,
   VignetteEffect,
-  SMAAEffect,
   ToneMappingEffect,
   ToneMappingMode
 } from "postprocessing";
 import { UIManager } from "./UIManager";
+import { QualityMonitor, readQualityOverride, type QualityTier } from "./Quality";
 import { AudioManager } from "../audio/AudioManager";
 import { InputManager } from "../world/InputManager";
 import { LabelRenderer } from "../world/LabelRenderer";
@@ -50,7 +50,11 @@ export class GameManager {
   private matchManager!: MatchManager;
   private timer = new THREE.Timer();
   private lobbyShowcase: LobbyShowcase | null = null;
-  private composer!: EffectComposer;
+  private composerHigh!: EffectComposer;
+  private composerMedium!: EffectComposer;
+  private sun!: THREE.DirectionalLight;
+  private quality!: QualityMonitor;
+  private tier: QualityTier = "high";
 
   async start(): Promise<void> {
     const canvas = document.getElementById("scene") as HTMLCanvasElement;
@@ -102,19 +106,63 @@ export class GameManager {
     await this.runFlow();
   }
 
-  /** Bloom suave + viñeta + SMAA + tono de película, fusionados en un solo paso. */
+  /** Dos cadenas de postprocesado (alta y media); la baja renderiza directo. */
   private setupPostFX(): void {
-    this.composer = new EffectComposer(this.renderer, { multisampling: 0 });
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.composer.addPass(
-      new EffectPass(
-        this.camera,
-        new BloomEffect({ intensity: 0.45, luminanceThreshold: 0.82, luminanceSmoothing: 0.25, mipmapBlur: true }),
-        new VignetteEffect({ offset: 0.35, darkness: 0.45 }),
-        new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC }),
-        new SMAAEffect()
-      )
-    );
+    const make = (effects: ConstructorParameters<typeof EffectPass>[1][]): EffectComposer => {
+      const c = new EffectComposer(this.renderer, { multisampling: 0 });
+      c.addPass(new RenderPass(this.scene, this.camera));
+      c.addPass(new EffectPass(this.camera, ...effects));
+      return c;
+    };
+    const tone = () => new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC });
+    const vignette = () => new VignetteEffect({ offset: 0.35, darkness: 0.45 });
+    this.composerHigh = make([
+      new BloomEffect({ intensity: 0.45, luminanceThreshold: 0.82, luminanceSmoothing: 0.25, mipmapBlur: true }),
+      vignette(),
+      tone()
+    ]);
+    this.composerMedium = make([vignette(), tone()]);
+
+    const forced = readQualityOverride(window.location.search);
+    const start = forced ?? (this.isWeakDevice() ? "medium" : "high");
+    this.quality = new QualityMonitor((t) => this.applyQuality(t), start, forced === null);
+    this.applyQuality(start);
+  }
+
+  /** GPU integrada/por software o pocos núcleos: arranca directamente en calidad media. */
+  private isWeakDevice(): boolean {
+    const gl = this.renderer.getContext();
+    const info = gl.getExtension("WEBGL_debug_renderer_info");
+    const name = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+    const weakGpu = /swiftshader|llvmpipe|software|intel\(r\) (uhd|hd)|mali|adreno|powervr/i.test(name);
+    return weakGpu || (navigator.hardwareConcurrency ?? 8) <= 4;
+  }
+
+  private applyQuality(tier: QualityTier): void {
+    this.tier = tier;
+    const dpr = window.devicePixelRatio || 1;
+    const ratio = tier === "high" ? Math.min(dpr, 1.5) : tier === "medium" ? Math.min(dpr, 1.25) : 1;
+    this.renderer.setPixelRatio(ratio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.composerHigh.setSize(window.innerWidth, window.innerHeight);
+    this.composerMedium.setSize(window.innerWidth, window.innerHeight);
+
+    const shadows = tier !== "low";
+    this.renderer.shadowMap.enabled = shadows;
+    this.sun.castShadow = shadows;
+    const size = tier === "high" ? 1024 : 512;
+    if (this.sun.shadow.mapSize.x !== size) {
+      this.sun.shadow.mapSize.set(size, size);
+      this.sun.shadow.map?.dispose();
+      this.sun.shadow.map = null;
+    }
+    // sin postprocesado, el tono de película lo aplica el renderer directamente
+    this.renderer.toneMapping = tier === "low" ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
+    this.scene.traverse((o) => {
+      const m = (o as THREE.Mesh).material as THREE.Material | THREE.Material[] | undefined;
+      if (m) (Array.isArray(m) ? m : [m]).forEach((x) => (x.needsUpdate = true));
+    });
+    console.info(`[NEXORA] calidad gráfica: ${tier}`);
   }
 
   private setupLights(): void {
@@ -122,9 +170,10 @@ export class GameManager {
     this.scene.add(hemi);
 
     const sun = new THREE.DirectionalLight(0xfff1cf, 1.35);
+    this.sun = sun;
     sun.position.set(14, 22, 10);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(1536, 1536);
+    sun.shadow.mapSize.set(1024, 1024);
     sun.shadow.camera.left = -32;
     sun.shadow.camera.right = 32;
     sun.shadow.camera.top = 32;
@@ -169,7 +218,8 @@ export class GameManager {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.composer.setSize(window.innerWidth, window.innerHeight);
+    this.composerHigh.setSize(window.innerWidth, window.innerHeight);
+    this.composerMedium.setSize(window.innerWidth, window.innerHeight);
     this.labelRenderer.setSize(window.innerWidth, window.innerHeight);
   };
 
@@ -178,10 +228,15 @@ export class GameManager {
     const tick = () => {
       requestAnimationFrame(tick);
       this.timer.update();
-      const dt = Math.min(0.05, this.timer.getDelta());
+      const rawDt = this.timer.getDelta();
+      this.quality.sample(rawDt);
+      // Tope de 0.1 s: con FPS bajos el juego avanza a velocidad real (antes se veía en cámara lenta).
+      const dt = Math.min(0.1, rawDt);
       if (this.lobbyShowcase) this.lobbyShowcase.update(dt);
       else this.matchManager.frame(dt);
-      this.composer.render(dt);
+      if (this.tier === "high") this.composerHigh.render(dt);
+      else if (this.tier === "medium") this.composerMedium.render(dt);
+      else this.renderer.render(this.scene, this.camera);
       this.labelRenderer.render(this.scene, this.camera);
     };
     tick();

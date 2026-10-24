@@ -344,7 +344,8 @@ export class Cazaenganos implements IMinigame {
       const my = view.top + (1 - ndc.y) * view.height / 2;
       const labelHit = slot.label?.element.style.visibility !== "hidden" && rect && mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom;
       if (labelHit) { best = { slot, screenDist: 0 }; break; }
-      if (angularDist < 0.035) {
+      // tolerancia proporcional al tamaño aparente del objetivo (más generosa de lejos)
+      if (angularDist < Math.min(0.12, Math.max(0.05, 0.75 / dist))) {
         if (!best || angularDist < best.screenDist) best = { slot, screenDist: angularDist };
       }
     }

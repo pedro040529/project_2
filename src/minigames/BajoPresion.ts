@@ -55,6 +55,7 @@ export class BajoPresion implements IMinigame {
   private started = false;
   private rand = mulberry32((Date.now() + 999) & 0xffffffff);
   private clock = 0;
+  private tmpColor = new THREE.Color();
 
   private circuit!: OrbCircuit;
   private charge!: OrbCharge;
@@ -417,7 +418,7 @@ export class BajoPresion implements IMinigame {
       }
       this.orb.position.copy(base);
     }
-    const col = chargeColor(c, new THREE.Color());
+    const col = chargeColor(c, this.tmpColor);
     (this.orbCore.material as THREE.MeshStandardMaterial).color.copy(col);
     (this.orbCore.material as THREE.MeshStandardMaterial).emissive.copy(col);
     (this.orbCore.material as THREE.MeshStandardMaterial).emissiveIntensity = 1.6 + c * 3.4;

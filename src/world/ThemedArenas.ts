@@ -71,8 +71,17 @@ function screenTexture(title: string, accent: string): THREE.CanvasTexture {
   return tex;
 }
 
+const glowCache = new Map<string, THREE.MeshStandardMaterial>();
+
+/** Materiales de neón compartidos por color/intensidad: menos objetos y menos cambios de estado en la GPU. */
 function glow(color: number, intensity = 1.6): THREE.MeshStandardMaterial {
-  return new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: intensity, roughness: 0.4 });
+  const key = `${color}:${intensity}`;
+  let m = glowCache.get(key);
+  if (!m) {
+    m = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: intensity, roughness: 0.4 });
+    glowCache.set(key, m);
+  }
+  return m;
 }
 
 function floorDisc(radius: number, baseCss: string, lineCss: string, cells: number, repeat: number): THREE.Mesh {

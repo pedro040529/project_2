@@ -9,6 +9,7 @@ import { CSS2DObject, CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer
  */
 export class LabelRenderer {
   readonly renderer = new CSS2DRenderer();
+  private frame = 0;
 
   constructor(container: HTMLElement) {
     this.renderer.domElement.style.position = "absolute";
@@ -25,6 +26,8 @@ export class LabelRenderer {
 
   render(scene: THREE.Scene, camera: THREE.Camera): void {
     this.renderer.render(scene, camera);
+    // La selección de etiquetas legibles mide el DOM (reflow): se hace a ~10 Hz, no en cada fotograma.
+    if (this.frame++ % 6 !== 0) return;
     // Descartar etiquetas fuera del encuadre y priorizar las cercanas al centro.
     // Se conservan los objetivos 3D: acercarse o girar permite leer los demás.
     const width = this.renderer.domElement.clientWidth;

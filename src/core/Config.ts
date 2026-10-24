@@ -97,7 +97,7 @@ export const Config = {
     // conciencia omnisciente de toda la arena, para que el humano pueda
     // encontrar recompensas que ellos todavía no "vieron".
     detectionRadius: 16,
-    pickupRadius: 1.1,
+    pickupRadius: 1.4,
     reachThreshold: 0.6
   },
 

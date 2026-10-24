@@ -69,7 +69,7 @@ export class PhysicsWorld {
   }
 
   step(dt: number): void {
-    this.world.step(1 / 60, dt, 5);
+    this.world.step(1 / 60, dt, 8);
     // límite circular de la arena: clamp manual (más simple/robusto que un muro físico segmentado)
     for (const body of this.bodies.values()) {
       const distSq = body.position.x * body.position.x + body.position.z * body.position.z;

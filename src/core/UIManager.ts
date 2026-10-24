@@ -315,6 +315,8 @@ export class UIManager {
     const ranking = el("div", "hud-ranking");
     hud.appendChild(ranking);
 
+    let lastTimerSecond = -1;
+    let lastRankingKey = "";
     const crosshair = el("div", "hud-crosshair");
     crosshair.style.display = "none";
     hud.appendChild(crosshair);
@@ -332,12 +334,18 @@ export class UIManager {
     return {
       setTimer: (seconds: number) => {
         const s = Math.max(0, Math.ceil(seconds));
+        if (s === lastTimerSecond) return; // solo toca el DOM cuando cambia el segundo
+        lastTimerSecond = s;
         const m = Math.floor(s / 60);
         const r = s % 60;
         timer.textContent = `${m}:${r.toString().padStart(2, "0")}`;
         timer.classList.toggle("low", s <= 10);
       },
       setRanking: (entries: RankingEntry[], colorOf: (id: string) => number) => {
+        // se llama en cada fotograma: reconstruir solo si cambió algo
+        const key = entries.map((e) => `${e.participantId}:${e.score}`).join("|");
+        if (key === lastRankingKey) return;
+        lastRankingKey = key;
         ranking.innerHTML = "";
         for (const entry of entries) {
           const row = el("div", "hud-ranking-row");

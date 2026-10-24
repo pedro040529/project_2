@@ -4,22 +4,22 @@
       "humanTurns": 0,
       "explosions": 0,
       "feedback": 0,
-      "text": "Resultados · Atrapa o Evita\nNova\n1475 pts\n#2\nPixel\n1550 pts\n#1\nKiro\n1375 pts\n#3\nPedro\n-60 pts\n#4\n#1\nPixel\n1550 pts\n#2\nNova\n1475 pts\n#3\nKiro\n1375 pts\n#4\nPedro\n-60 pts\nContinuar"
+      "text": "Resultados · Atrapa o Evita\nKiro\n1195 pts\n#2\nNova\n1245 pts\n#1\nPixel\n755 pts\n#3\nPedro\n-60 pts\n#4\n#1\nNova\n1245 pts\n#2\nKiro\n1195 pts\n#3\nPixel\n755 pts\n#4\nPedro\n-60 pts\nContinuar"
     },
     "1": {
       "humanTurns": 0,
       "explosions": 0,
       "feedback": 0,
-      "text": "Resultados · Cazaengaños\nPixel\n600 pts\n#2\nKiro\n750 pts\n#1\nPedro\n0 pts\n#3\nNova\n-200 pts\n#4\n#1\nPixel\n2150 pts\n#2\nKiro\n2125 pts\n#3\nNova\n1275 pts\n#4\nPedro\n-60 pts\nContinuar"
+      "text": "Resultados · Cazaengaños\nPedro\n0 pts\n#2\nKiro\n1200 pts\n#1\nNova\n-150 pts\n#3\nPixel\n-150 pts\n#3\n#1\nKiro\n2395 pts\n#2\nNova\n1095 pts\n#3\nPixel\n605 pts\n#4\nPedro\n-60 pts\nContinuar"
     },
     "2": {
       "humanTurns": 17,
       "explosions": 3,
-      "feedback": 33,
-      "text": "Resultados · Bajo Presión\nKiro\n420 pts\n#2\nPixel\n960 pts\n#1\nPedro\n-20 pts\n#3\nNova\n-20 pts\n#3\n#1\nPixel\n3110 pts\n#2\nKiro\n2545 pts\n#3\nNova\n1255 pts\n#4\nPedro\n-80 pts\nVer ranking final"
+      "feedback": 31,
+      "text": "Resultados · Bajo Presión\nPixel\n720 pts\n#2\nKiro\n930 pts\n#1\nNova\n160 pts\n#3\nPedro\n-60 pts\n#4\n#1\nKiro\n3325 pts\n#2\nPixel\n1325 pts\n#3\nNova\n1255 pts\n#4\nPedro\n-120 pts\nVer ranking final"
     }
   },
-  "final": "🏆 Ranking final\nKiro\n2545 pts\n#2\nPixel\n3110 pts\n#1\nNova\n1255 pts\n#3\nPedro\n-80 pts\n#4\nVer tu resumen\n🔊",
+  "final": "🏆 Ranking final\nPixel\n1325 pts\n#2\nKiro\n3325 pts\n#1\nNova\n1255 pts\n#3\nPedro\n-120 pts\n#4\nVer tu resumen\n🔊",
   "restarted": true,
   "errors": []
 }
