@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Config } from "../core/Config";
 import type { InputManager } from "./InputManager";
+import { Settings } from "../core/Settings";
 
 /** Cámara estable con giro explícito y posición física interpolada por CharacterRig. */
 export class CameraRig {
@@ -61,9 +62,9 @@ export class CameraRig {
       // de pestaña, etc.) no debe girar la cámara de golpe.
       const clampedDx = THREE.MathUtils.clamp(dx, -80, 80);
       const clampedDy = THREE.MathUtils.clamp(dy, -80, 80);
-      this.yaw -= clampedDx * Config.camera.mouseSensitivity;
+      this.yaw -= clampedDx * Config.camera.mouseSensitivity * Settings.get().mouseSensitivity;
       this.pitch = THREE.MathUtils.clamp(
-        this.pitch + clampedDy * Config.camera.mouseSensitivity,
+        this.pitch + clampedDy * Config.camera.mouseSensitivity * Settings.get().mouseSensitivity,
         Config.camera.minPitch,
         Config.camera.maxPitch
       );

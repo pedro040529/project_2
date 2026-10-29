@@ -14,49 +14,20 @@ export const Config = {
   },
 
   atrapaOEvita: {
-    durationSeconds: 75,
-    countInLegitima: 12,
-    countInEspecial: 4,
-    countInRara: 2,
-    countInEnganosa: 8,
-    countInAmbigua: 6,
-    // separación mínima entre spawns para que no queden amontonados
+    durationSeconds: 90,
+    // recompensas (mensajes) simultáneas en la plaza
+    simultaneous: 14,
     minSpawnDistance: 3.2,
-    points: {
-      legitimaPequena: 25,
-      legitimaEspecial: 60,
-      legitimaRara: 100,
-      enganosaRecogida: -30,
-      ambiguaBuena: 40,
-      ambiguaMala: -30
-    },
-    respawnCooldown: 5,
-    // progreso (0..1) en que se disparan los eventos: lluvia de recompensas y apuestas dobles
-    eventAtProgress: [0.25, 0.55, 0.8],
-    stakesSeconds: 10
+    points: { correcta: 100, incorrecta: -50 },
+    respawnCooldown: 4,
+    // progreso (0..1) en que llueven recompensas nuevas de golpe
+    rainAtProgress: [0.3, 0.65]
   },
 
   cazaenganos: {
-    durationSeconds: 80,
+    durationSeconds: 90,
     targetsOnScreen: 8,
-    minTargetSeparation: 4.2, // separación mínima entre objetivos, para que no se amontonen ni se rocen
-    totalPoolPerMatch: 12,
-    composition: { legitima: 4, enganosa: 5, ambigua: 3 },
-    points: {
-      enganosoDestruido: 300,
-      legitimoDestruido: -150,
-      ambiguoDestruidoBien: 250,
-      ambiguoDestruidoMal: -150
-    },
-    streak: {
-      enabled: true,
-      bonuses: [150, 250, 350],
-      breakOnWrongHit: true
-    },
-    aimAssist: {
-      radius: 0.9, // radio de "imán" del cursor sobre objetivos, en unidades de pantalla normalizadas*10
-      snapStrength: 0.35
-    },
+    points: { correcta: 100, incorrecta: -50 },
     respawnCooldown: 3.2,
     projectileSpeed: 30,
     shotCooldownSeconds: 0.45,
@@ -66,28 +37,29 @@ export const Config = {
   },
 
   bajoPresion: {
-    durationSeconds: 80,
-    situationsPerMatch: 15,
-    // El orbe explota cuando su carga llega a 1; la mecha se sortea en este rango (segundos
-    // acumulados, incluso entre pases). No depende de si las respuestas fueron correctas.
-    minFuseSeconds: 12,
-    maxFuseSeconds: 20,
-    decisionWindowSeconds: 7,
-    feedbackSeconds: 1.5,
-    npcHoldSeconds: { min: 1.1, max: 2.0 },
-    flightSeconds: 0.5,
-    explosionPauseSeconds: 1.5,
-    // una buena decisión calma el orbe (ventaja): reduce esta fracción de la carga
-    stabilizeOnGood: 0.12,
-    // máximo de NPC seguidos con el orbe antes de que le toque al humano
+    // Duración aproximada de la partida (el orbe NO tiene cronómetro propio: explota por energía).
+    durationSeconds: 180,
+    // Energía del orbe, en porcentaje. Valores iniciales: deben probarse y ajustarse.
+    initialEnergy: 40,
+    energyOnCorrect: -10,
+    energyOnWrong: 25,
+    energyOnTimeout: 25,
+    decisionSeconds: 15,
+    // pausa para leer el feedback tras responder el humano; los bots pasan casi de inmediato
+    feedbackSeconds: 2.6,
+    npcFeedbackSeconds: 0.9,
+    npcThinkSeconds: { min: 2.2, max: 6 },
+    flightSeconds: 0.55,
+    // pausa tras explotar o estabilizarse, antes de que reaparezca un orbe nuevo
+    roundBreakSeconds: 2.4,
     maxNpcHolds: 2,
     points: {
-      buenaDecision: 180,
-      malaDecision: -120,
-      neutra: 0,
-      tiempoAgotado: -60,
-      explosionPenalty: -150,
-      passBonus: 0
+      correcta: 100,
+      incorrecta: -50,
+      sinRespuesta: -50,
+      // PENDIENTES DE DEFINIR en el documento de contenido: valores provisionales a validar.
+      explosionExtra: -100,
+      estabilizacionBono: 50
     }
   },
 

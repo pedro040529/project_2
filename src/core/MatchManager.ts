@@ -8,7 +8,9 @@ import type { AudioManager } from "../audio/AudioManager";
 import type { InputManager } from "../world/InputManager";
 import type { LabelRenderer } from "../world/LabelRenderer";
 import { Participant } from "../entities/Participant";
-import { NPC_AVATARS, buildHumanAvatar, type PlayerAvatarOption } from "../data/characters";
+import { NPC_AVATARS, buildHumanAvatar } from "../data/characters";
+import type { PlayerProfile } from "./Profile";
+import { PodiumStage, RosterStage, type Stage } from "../world/Stages";
 import { MinigameManager } from "../minigames/MinigameManager";
 import type { IMinigame, MinigameContext } from "../minigames/IMinigame";
 import { makeSeed } from "../utils/rng";
@@ -21,7 +23,8 @@ export interface MatchDeps {
   input: InputManager;
   ui: UIManager;
   audio: AudioManager;
-  disposeLobbyShowcase?: () => void;
+  /** Cambia el escenario 3D de fondo de los menús (null = ninguno, p. ej. durante un minijuego). */
+  setStage: (stage: Stage | null) => void;
 }
 
 /**
@@ -48,8 +51,8 @@ export class MatchManager {
     return (id: string) => participants.find((p) => p.id === id)!.avatar.primaryColor;
   }
 
-  private buildParticipants(nickname: string, avatarOption: PlayerAvatarOption): Participant[] {
-    const human = new Participant("human", buildHumanAvatar(avatarOption, nickname), "human");
+  private buildParticipants(profile: PlayerProfile): Participant[] {
+    const human = new Participant("human", buildHumanAvatar(profile.appearance, profile.nickname), "human");
     const nova = new Participant("nova", NPC_AVATARS.nova, "ai");
     const kiro = new Participant("kiro", NPC_AVATARS.kiro, "ai");
     const pixel = new Participant("pixel", NPC_AVATARS.pixel, "ai");
@@ -66,14 +69,18 @@ export class MatchManager {
     });
   }
 
-  async runMatch(nickname: string, avatarOption: PlayerAvatarOption): Promise<void> {
+  /** Una competencia completa (3 desafíos en orden fijo). Devuelve cuando el jugador vuelve al menú. */
+  async runMatch(profile: PlayerProfile): Promise<"menu"> {
     const { ui, audio } = this.deps;
 
     for (;;) {
-      const participants = this.buildParticipants(nickname, avatarOption);
+      // Todo se crea de nuevo en cada competencia: ningún puntaje ni estadística se arrastra.
+      const participants = this.buildParticipants(profile);
       const scoreManager = new ScoreManager();
       const scenarios = new ScenarioManager(makeSeed());
       const summary = new SummaryAccumulator();
+      const avatars = new Map(participants.map((p) => [p.id, p.avatar]));
+      const order = Config.match.minigameOrder;
 
       const ctx: MinigameContext = {
         scene: this.deps.scene,
@@ -89,10 +96,11 @@ export class MatchManager {
         participants
       };
 
-      await ui.showRosterIntro(participants);
-      this.deps.disposeLobbyShowcase?.();
+      // Presentación de participantes
+      this.deps.setStage(new RosterStage(this.deps.scene, this.deps.camera, this.deps.labelRenderer, participants));
+      await ui.showRosterIntro();
+      this.deps.setStage(null);
 
-      const order = Config.match.minigameOrder;
       for (let i = 0; i < order.length; i++) {
         const id = order[i];
         participants.forEach((p) => p.resetForNewMinigame());
@@ -107,28 +115,37 @@ export class MatchManager {
         this.playing = true;
         await this.waitForFinish(mg);
         this.playing = false;
-
-        const roundRanking = ScoreManager.rankByMinigame(participants);
-        const totalRanking = ScoreManager.rankByTotal(participants);
         mg.dispose();
         this.currentMinigame = null;
-
         audio.stopMusic();
         audio.victory();
+
+        // Podio y tabla salen de la MISMA clasificación calculada una sola vez.
+        const round = ScoreManager.rankByMinigame(participants);
+        const totals = new Map(participants.map((p) => [p.id, p.totalScore]));
+        this.deps.setStage(new PodiumStage(this.deps.scene, this.deps.camera, this.deps.labelRenderer, round, avatars, false, 0.42));
         await ui.showMinigameResults({
+          step: i + 1,
           minigameTitle: mg.title,
-          roundRanking,
-          totalRanking,
-          colorOf: this.colorOf(participants),
+          round,
+          totals,
+          humanId: "human",
           isLast: i === order.length - 1
         });
+        this.deps.setStage(null);
       }
 
-      const finalRanking = ScoreManager.rankByTotal(participants);
+      const ranking = ScoreManager.rankByTotal(participants);
       audio.victory();
-      await ui.showFinalResults(finalRanking, this.colorOf(participants), summary.build());
-      const action = await ui.showMatchSummary(summary.build());
-      if (action !== "replay") break;
+      this.deps.setStage(new PodiumStage(this.deps.scene, this.deps.camera, this.deps.labelRenderer, ranking, avatars, true, 0.5));
+      const action = await ui.showFinalResults({
+        ranking,
+        perMinigame: scoreManager.perMinigame(participants, order),
+        humanId: "human",
+        stats: summary.build()
+      });
+      this.deps.setStage(null);
+      if (action === "menu") return "menu";
     }
   }
 }

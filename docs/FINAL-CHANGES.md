@@ -43,3 +43,11 @@ También se corrigió un fallo previo del podio que omitía participantes cuando
 - **Puntuación**: piso de −200 por minijuego (`MINIGAME_SCORE_FLOOR`) y valores reequilibrados entre minijuegos.
 - **Contenido**: 25 situaciones de Bajo Presión (8 legítimas, 14 engañosas, 3 ambiguas).
 - **Verificación**: `npm test` (33 pruebas) y `node scripts/full-playtest.mjs` (partida completa contra el build, capturas en `docs/playtest/redesign/`).
+
+## Rediseño de interfaces y experiencia (octubre 2026)
+
+- **Guardián Digital**: modelo base único (robot con visor y expresiones), 8 colores, 5 accesorios de cabeza y 3 adicionales; los 3 bots usan el mismo modelo con otra apariencia. Animaciones: quieto, caminar, girar, recoger, celebrar, error, apuntar/disparar, sostener y lanzar el orbe.
+- **Flujo**: menú (con ajustes reales de volumen, sensibilidad y calidad) → personalización con vista previa 3D → presentación de participantes → instrucciones por desafío → partida → resultados con podio 3D → ranking final con desglose verificable → volver al menú / nueva competencia. La apariencia y el apodo se conservan.
+- **Banco educativo v2.1 (72 situaciones)** integrado con +100/−50; Bajo Presión con la mecánica de energía del orbe (40 %, +25/−10, 15 s por decisión). CA-20 y CA-22 excluidas hasta su revisión.
+- **Sistema visual común** (`src/styles/nexora.css`): mismos paneles, botones, tablas y tipografía en todas las pantallas.
+- **Pruebas**: 55 pruebas unitarias; `scripts/full-playtest.mjs` recorre la competencia completa y comprueba que podio, tabla, acumulados y desglose coinciden. Se eliminaron los scripts de playtest anteriores, que dependían de pantallas que ya no existen.

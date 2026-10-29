@@ -39,6 +39,21 @@ export class ScoreManager {
     return minigameId ? this.log.filter((l) => l.minigameId === minigameId) : [...this.log];
   }
 
+  /**
+   * Puntos de cada participante por minijuego, en el orden dado (p. ej. el de la competencia),
+   * calculados desde el registro de movimientos. La suma coincide siempre con `totalScore`.
+   */
+  perMinigame(participants: Participant[], order: readonly MinigameId[]): Map<string, number[]> {
+    const out = new Map<string, number[]>();
+    for (const p of participants) {
+      out.set(
+        p.id,
+        order.map((m) => this.log.filter((l) => l.participantId === p.id && l.minigameId === m).reduce((a, l) => a + l.points, 0))
+      );
+    }
+    return out;
+  }
+
   /** Ranking por puntaje TOTAL de la partida (para tabla entre minijuegos / final). */
   static rankByTotal(participants: Participant[]): RankingEntry[] {
     return ScoreManager.rank(participants, (p) => p.totalScore);

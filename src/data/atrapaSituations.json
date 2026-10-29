@@ -1,0 +1,218 @@
+[
+  {
+    "id": "AT-01",
+    "dificultad": 1,
+    "categoria": "datos_personales",
+    "remitente": "Nico_27",
+    "contexto": "Privado",
+    "texto": "¡Buena partida! ¿A qué hora sales del colegio? Así nos conectamos juntos.",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-02",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "LunaPlay",
+    "contexto": "Equipo",
+    "texto": "¡Casi ganamos! Voy a crear otra sala. ¿Quién se apunta?",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-03",
+    "dificultad": 1,
+    "categoria": "datos_personales",
+    "remitente": "Dani_22",
+    "contexto": "Privado",
+    "texto": "Encontré un mapa buenísimo. ¿Me pasas tu correo para mandarte la invitación?",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-04",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "Kiro_21",
+    "contexto": "Equipo",
+    "texto": "Me falta una misión del evento. ¿La completamos juntos?",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-05",
+    "dificultad": 1,
+    "categoria": "datos_personales",
+    "remitente": "MaxPlay",
+    "contexto": "Privado",
+    "texto": "Creo que vivimos cerca, jaja. ¿En qué colegio estudias?",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-06",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "Pixel_14",
+    "contexto": "Privado",
+    "texto": "Ya abrí la sala. Te envié la invitación por el juego.",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-07",
+    "dificultad": 1,
+    "categoria": "datos_personales",
+    "remitente": "Torneo_NX",
+    "contexto": "Privado",
+    "texto": "¡Quedaron finalistas! ¿Qué número de teléfono usamos para avisarles del premio?",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-08",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "Alex_09",
+    "contexto": "Equipo",
+    "texto": "La llave está detrás de la torre azul. ¡Casi nadie la ve!",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-09",
+    "dificultad": 2,
+    "categoria": "datos_personales",
+    "remitente": "xMati_07",
+    "contexto": "Privado",
+    "texto": "Estamos formando un equipo para el sábado. El capitán necesita nuestros nombres completos para inscribirnos.",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-10",
+    "dificultad": 2,
+    "categoria": "interacciones_seguras",
+    "remitente": "Nova_08",
+    "contexto": "Equipo",
+    "texto": "¿Probamos el modo de parejas? Me dijeron que el mapa cambió.",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-11",
+    "dificultad": 2,
+    "categoria": "suplantacion",
+    "remitente": "Kiro_alt",
+    "contexto": "Privado",
+    "texto": "Soy Kiro, estoy usando otra cuenta. ¿Cuál es el correo de tu perfil? No logro encontrarte.",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-12",
+    "dificultad": 2,
+    "categoria": "intercambios_recompensas",
+    "remitente": "LunaPlay",
+    "contexto": "Privado",
+    "texto": "Me salió repetida esa skin. ¿Quieres comparar las nuestras en el mercado del juego?",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-13",
+    "dificultad": 2,
+    "categoria": "datos_personales",
+    "remitente": "EmiGamer",
+    "contexto": "Privado",
+    "texto": "Siempre jugamos a la misma hora, jaja. ¿En qué zona vives? Quizá somos vecinos.",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-14",
+    "dificultad": 2,
+    "categoria": "interacciones_seguras",
+    "remitente": "Max_09",
+    "contexto": "Equipo",
+    "texto": "Encontré una estrategia para el jefe final. Se las explico antes de empezar.",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-15",
+    "dificultad": 2,
+    "categoria": "intercambios_recompensas",
+    "remitente": "NicoPro",
+    "contexto": "Privado",
+    "texto": "Tu espada está genial. La mía no aparece para intercambiar, ¿me la prestas para probarla?",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-16",
+    "dificultad": 2,
+    "categoria": "intercambios_recompensas",
+    "remitente": "Kira_21",
+    "contexto": "Equipo",
+    "texto": "Me dieron fichas por terminar el desafío. ¿A ustedes también les apareció la recompensa?",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-17",
+    "dificultad": 3,
+    "categoria": "datos_personales",
+    "remitente": "Dani_22",
+    "contexto": "Privado",
+    "texto": "¿Recuerdas el mapa de ayer? Encontré una versión privada. El creador me pidió tu correo para agregarte.",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-18",
+    "dificultad": 3,
+    "categoria": "interacciones_seguras",
+    "remitente": "Pixel_14",
+    "contexto": "Privado",
+    "texto": "¿Te acuerdas del laberinto? Ya está disponible otra vez. Lo guardé en favoritos para jugar después.",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-19",
+    "dificultad": 3,
+    "categoria": "datos_personales",
+    "remitente": "Mati_07",
+    "contexto": "Privado",
+    "texto": "Ya estamos todos en el grupo del torneo. Solo falta tu foto para completar la lista de participantes.",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-20",
+    "dificultad": 3,
+    "categoria": "interacciones_seguras",
+    "remitente": "Nova_08",
+    "contexto": "Equipo",
+    "texto": "Ayer desbloqueé un personaje nuevo. Si quieren, lo pruebo en nuestra siguiente partida.",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-21",
+    "dificultad": 3,
+    "categoria": "suplantacion",
+    "remitente": "Kiro_21",
+    "contexto": "Privado",
+    "texto": "Soy el Kiro de ayer. Perdí mi cuenta principal. ¿Me mandas una captura de tu perfil para encontrarte?",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-22",
+    "dificultad": 3,
+    "categoria": "interacciones_seguras",
+    "remitente": "AlexGamer",
+    "contexto": "Equipo",
+    "texto": "Creo que encontré el camino corto. Síganme y vemos si funciona.",
+    "accionCorrecta": "recoger"
+  },
+  {
+    "id": "AT-23",
+    "dificultad": 3,
+    "categoria": "suplantacion",
+    "remitente": "Luna_alt",
+    "contexto": "Privado",
+    "texto": "Soy Luna, la de las partidas de ayer. Cambié de cuenta; dime tu nombre real para saber que eres tú.",
+    "accionCorrecta": "evitar"
+  },
+  {
+    "id": "AT-24",
+    "dificultad": 3,
+    "categoria": "interacciones_seguras",
+    "remitente": "MaxPlay",
+    "contexto": "Privado",
+    "texto": "Jajaja, al final sí pasamos el nivel. ¿Quieres que te agregue usando tu nombre de jugador?",
+    "accionCorrecta": "recoger"
+  }
+]

@@ -18,66 +18,74 @@ export interface NpcTraits {
   decisionDelay: number;
 }
 
+export type BodyColorId = "azul" | "rojo" | "verde" | "morado" | "rosa" | "amarillo" | "negro" | "blanco";
+export type HeadAccessoryId = "none" | "cap" | "glasses" | "headphones" | "hood" | "hat";
+export type ExtraAccessoryId = "none" | "scarf" | "cape" | "backpack";
+
+/** Apariencia elegible de un Guardián Digital (la misma estructura para humano y bots). */
+export interface Appearance {
+  color: BodyColorId;
+  head: HeadAccessoryId;
+  extra: ExtraAccessoryId;
+}
+
 export interface AvatarDef {
   id: ParticipantId;
   name: string;
-  /** color primario del "fieltro" del cuerpo */
+  appearance: Appearance;
+  /** color del casco/cuerpo (derivado de la apariencia; se usa también en HUD y podio) */
   primaryColor: number;
-  /** color secundario (acentos, remaches, costuras) */
+  /** color de acentos y brillo del visor */
   accentColor: number;
-  /** rasgo de silueta: forma del tocado/orejas para distinguir a distancia */
-  silhouette: "mohawk" | "ears" | "antenna" | "cap";
   tagline: string;
   traits: NpcTraits | null; // null para el humano (no aplica IA)
 }
 
-export type ScenarioKind = "legitima" | "ambigua" | "enganosa";
+export type CategoryId =
+  | "datos_personales"
+  | "interacciones_seguras"
+  | "suplantacion"
+  | "intercambios_recompensas"
+  | "anuncios_fuentes"
+  | "enlaces_externos"
+  | "presion_de_grupo"
+  | "contrasenas_acceso"
+  | "convivencia_digital";
 
-export interface RewardDef {
-  scenarioID: string;
-  tipo: ScenarioKind;
-  nombre: string;
-  texto: string;
-  contexto: string;
-  senales: string[];
-  /** acción objetivamente correcta, incluso para las ambiguas (siempre hay una señal suficiente) */
-  accionEsperada: "recoger" | "evitar";
-  explicacion: string;
-  dificultad: 1 | 2 | 3;
-  categoria: string;
-  puntosBase: number; // referencia; el valor real final viene de Config
-  rareza: "pequena" | "especial" | "rara";
-}
-
-export interface MessageDef {
-  scenarioID: string;
-  tipo: ScenarioKind;
-  autor: string;
-  texto: string;
-  contexto: string;
-  senales: string[];
-  accionEsperada: "destruir" | "ignorar";
-  explicacion: string;
-  dificultad: 1 | 2 | 3;
-  categoria: string;
-}
-
-export interface PressureOption {
+/** Campos comunes del banco educativo (72 situaciones, v2.1). Las categorías son internas: no se muestran antes de responder. */
+interface SituationBase {
+  /** ID estable (AT-01, CA-07, BP-12…). No reutilizar ni renumerar. */
   id: string;
-  texto: string;
-  calidad: "buena" | "mala" | "neutra";
+  /** 1 fácil, 2 intermedio, 3 difícil. No multiplica puntos. */
+  dificultad: 1 | 2 | 3;
+  categoria: CategoryId;
+  remitente: string;
 }
 
-export interface PressureSituationDef {
-  scenarioID: string;
-  tipo: ScenarioKind;
-  texto: string;
+/** Atrapa o evita: un mensaje flotante que se recoge (acción correcta "recoger") o se evita. */
+export interface AtrapaSituation extends SituationBase {
   contexto: string;
-  senales: string[];
-  opciones: PressureOption[];
-  explicacion: string;
-  dificultad: 1 | 2 | 3;
-  categoria: string;
+  texto: string;
+  accionCorrecta: "recoger" | "evitar";
+}
+
+/** Cazaengaños: una publicación-objetivo que se dispara o se deja pasar. */
+export interface CazaSituation extends SituationBase {
+  /** procedencia visible (p. ej. "Oficial verificado", "No verificado") */
+  contexto: string;
+  texto: string;
+  accionCorrecta: "disparar" | "no_disparar";
+  /** Requiere revisión editorial: se conserva en los datos pero NO entra al juego. */
+  pendienteRevision?: boolean;
+}
+
+export type OptionId = "A" | "B" | "C";
+
+/** Bajo Presión: pregunta con tres opciones y una sola correcta. */
+export interface BajoPresionSituation extends SituationBase {
+  pregunta: string;
+  opciones: { id: OptionId; texto: string }[];
+  correcta: OptionId;
 }
 
 export interface MinigameResultEntry {

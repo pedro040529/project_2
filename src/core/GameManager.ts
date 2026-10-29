@@ -15,7 +15,9 @@ import { InputManager } from "../world/InputManager";
 import { LabelRenderer } from "../world/LabelRenderer";
 import { MatchManager } from "./MatchManager";
 import { NexoraDebug } from "../utils/DebugHook";
-import { LobbyShowcase } from "../world/LobbyShowcase";
+import { CustomizeStage, LobbyStage, type Stage } from "../world/Stages";
+import { Settings } from "./Settings";
+import { loadProfile, saveProfile } from "./Profile";
 
 /**
  * Punto de entrada del runtime: crea renderer/escena/cámara UNA sola vez
@@ -49,7 +51,7 @@ export class GameManager {
   private audio = new AudioManager();
   private matchManager!: MatchManager;
   private timer = new THREE.Timer();
-  private lobbyShowcase: LobbyShowcase | null = null;
+  private stage: Stage | null = null;
   private composerHigh!: EffectComposer;
   private composerMedium!: EffectComposer;
   private sun!: THREE.DirectionalLight;
@@ -77,6 +79,8 @@ export class GameManager {
 
     this.setupLights();
     this.setupPostFX();
+    this.applySettings();
+    Settings.subscribe(() => this.applySettings());
 
     this.labelRenderer = new LabelRenderer(labelsContainer);
     this.input = new InputManager(canvas);
@@ -92,7 +96,7 @@ export class GameManager {
       input: this.input,
       ui: this.ui,
       audio: this.audio,
-      disposeLobbyShowcase: () => this.disposeLobbyShowcase()
+      setStage: (st) => this.setStage(st)
     });
 
     window.addEventListener("resize", this.handleResize);
@@ -136,6 +140,19 @@ export class GameManager {
     const name = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
     const weakGpu = /swiftshader|llvmpipe|software|intel\(r\) (uhd|hd)|mali|adreno|powervr/i.test(name);
     return weakGpu || (navigator.hardwareConcurrency ?? 8) <= 4;
+  }
+
+  /** Ajustes del jugador: volumen y calidad gráfica (la sensibilidad la lee la cámara directamente). */
+  private applySettings(): void {
+    const st = Settings.get();
+    this.audio.setVolume(st.volume);
+    if (readQualityOverride(window.location.search) !== null) return; // la URL manda
+    if (st.quality === "auto") {
+      this.quality.setAdaptive(true);
+    } else {
+      this.quality.setAdaptive(false);
+      if (this.tier !== st.quality) this.quality.set(st.quality);
+    }
   }
 
   private applyQuality(tier: QualityTier): void {
@@ -232,7 +249,7 @@ export class GameManager {
       this.quality.sample(rawDt);
       // Tope de 0.1 s: con FPS bajos el juego avanza a velocidad real (antes se veía en cámara lenta).
       const dt = Math.min(0.1, rawDt);
-      if (this.lobbyShowcase) this.lobbyShowcase.update(dt);
+      if (this.stage) this.stage.update(dt);
       else this.matchManager.frame(dt);
       if (this.tier === "high") this.composerHigh.render(dt);
       else if (this.tier === "medium") this.composerMedium.render(dt);
@@ -242,20 +259,38 @@ export class GameManager {
     tick();
   }
 
-  private disposeLobbyShowcase(): void {
-    this.lobbyShowcase?.dispose();
-    this.lobbyShowcase = null;
+  private setStage(next: Stage | null): void {
+    this.stage?.dispose();
+    this.stage = next;
   }
 
+  /** Menú → personalización → competencia; al terminar vuelve al menú. */
   private async runFlow(): Promise<void> {
-    this.lobbyShowcase = new LobbyShowcase(this.scene, this.camera);
-    const lobby = await this.ui.showLobby();
-    this.audio.unlock();
-    this.audio.playLobbyMusic();
-    const avatarOption = await this.ui.showCharacterSelect();
-    this.audio.uiClick();
-    this.audio.stopMusic();
-    await this.matchManager.runMatch(lobby.nickname, avatarOption);
+    const profile = loadProfile();
+    for (;;) {
+      this.setStage(new LobbyStage(this.scene, this.camera, profile.appearance, profile.nickname || "Tú"));
+      const lobby = await this.ui.showLobby(profile);
+      this.audio.unlock();
+      this.audio.playLobbyMusic();
+      profile.nickname = lobby.nickname;
+
+      const customize = new CustomizeStage(this.scene, this.camera, profile.appearance, profile.nickname);
+      this.setStage(customize);
+      const choice = await this.ui.showCharacterSelect({
+        initial: profile.appearance,
+        onChange: (a) => customize.setAppearance(a),
+        onRotate: (d) => customize.rotate(d)
+      });
+      if (choice.action === "back") continue;
+
+      profile.appearance = choice.appearance;
+      saveProfile(profile);
+      this.audio.uiClick();
+      this.audio.stopMusic();
+      this.setStage(null);
+      await this.matchManager.runMatch(profile);
+      this.audio.stopMusic();
+    }
   }
 }
 

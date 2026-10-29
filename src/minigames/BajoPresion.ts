@@ -1,34 +1,39 @@
 import * as THREE from "three";
 import { gsap } from "gsap";
 import { Config } from "../core/Config";
-import type { PressureOption, PressureSituationDef } from "../core/types";
+import type { BajoPresionSituation } from "../core/types";
 import type { InstructionsSpec, HudHandle, DecisionHandle } from "../core/UIManager";
 import type { IMinigame, MinigameContext } from "./IMinigame";
+import type { Deck } from "../core/ScenarioManager";
 import type { Participant } from "../entities/Participant";
 import { ArenaRuntime } from "./common/ArenaRuntime";
 import { buildOrbChamber, ORB_SEAT_COLORS } from "../world/ThemedArenas";
 import { BurstSystem } from "../world/Burst";
-import { OrbCharge, OrbCircuit } from "../core/OrbCircuit";
+import { OrbCircuit, OrbEnergy } from "../core/OrbCircuit";
+import { feedbackFor } from "../data/feedback";
 import { mulberry32 } from "../utils/rng";
+import { testTimeScale } from "../utils/testHooks";
 
 /**
- * Estados claros del orbe (nunca queda sin dueño ni bloqueado: cada estado
- * tiene una salida por tiempo y un watchdog general lo fuerza si algo falla).
- *  holding   — alguien tiene el orbe (NPC simula decisión, humano responde)
- *  feedback  — el humano ya respondió; se muestra el resultado un instante
- *  flight    — el orbe viaja al siguiente participante
- *  exploding — el orbe explotó en manos del holder; pausa y reaparece
+ * Orbe Inestable. Estados (cada uno tiene salida por tiempo + watchdog: el orbe jamás
+ * queda sin dueño ni bloqueado):
+ *  holding    — alguien tiene el orbe: el humano responde (15 s) / el bot "piensa"
+ *  feedback   — se mostró el resultado de la respuesta; pausa breve de lectura
+ *  flight     — el orbe viaja al siguiente participante
+ *  roundBreak — el orbe explotó (100 %) o se estabilizó (0 %); pausa y reaparece uno nuevo
+ *
+ * La energía solo cambia con las decisiones (no hay cronómetro del orbe).
  */
-type Phase = "holding" | "feedback" | "flight" | "exploding";
+type Phase = "holding" | "feedback" | "flight" | "roundBreak";
 
 const flightEase = gsap.parseEase("power2.inOut");
-const WATCHDOG_SECONDS = 14;
 const COLOR_LOW = new THREE.Color(0x39e1ff);
 const COLOR_MID = new THREE.Color(0xffc83d);
 const COLOR_HIGH = new THREE.Color(0xff3b3b);
+const COLOR_CALM = new THREE.Color(0xbff6ff);
 
-function chargeColor(c: number, out: THREE.Color): THREE.Color {
-  return c < 0.6 ? out.copy(COLOR_LOW).lerp(COLOR_MID, c / 0.6) : out.copy(COLOR_MID).lerp(COLOR_HIGH, (c - 0.6) / 0.4);
+function energyColor(r: number, out: THREE.Color): THREE.Color {
+  return r < 0.6 ? out.copy(COLOR_LOW).lerp(COLOR_MID, r / 0.6) : out.copy(COLOR_MID).lerp(COLOR_HIGH, (r - 0.6) / 0.4);
 }
 
 export class BajoPresion implements IMinigame {
@@ -38,7 +43,7 @@ export class BajoPresion implements IMinigame {
   private ctx!: MinigameContext;
   private arenaRuntime!: ArenaRuntime;
   private hud!: HudHandle;
-  private decisionPanel!: DecisionHandle;
+  private panel!: DecisionHandle;
 
   private orb!: THREE.Group;
   private orbCore!: THREE.Mesh;
@@ -47,36 +52,46 @@ export class BajoPresion implements IMinigame {
   private orbLabelText!: HTMLElement;
   private holderRing!: THREE.Mesh;
   private bursts!: BurstSystem;
+  private tmpColor = new THREE.Color();
 
-  private humanSituations: PressureSituationDef[] = [];
-  private humanCursor = 0;
-  private timeRemaining = Config.bajoPresion.durationSeconds;
+  private deck!: Deck<BajoPresionSituation>;
+  private readonly duration = Config.bajoPresion.durationSeconds * testTimeScale();
+  private timeRemaining = this.duration;
   private finished = false;
   private started = false;
   private rand = mulberry32((Date.now() + 999) & 0xffffffff);
   private clock = 0;
-  private tmpColor = new THREE.Color();
 
   private circuit!: OrbCircuit;
-  private charge!: OrbCharge;
+  private energy!: OrbEnergy;
   private phase: Phase = "holding";
   private phaseT = 0;
   private holdLimit = 0;
-  private situation: PressureSituationDef | null = null;
+  private situation: BajoPresionSituation | null = null;
   private answered = false;
+  private calmUntil = 0; // brillo tranquilo tras estabilizarse
   private tickTimer = 0;
   private flight = { from: new THREE.Vector3(), to: new THREE.Vector3(), target: "" };
+  private pendingBreak: "exploded" | "stabilized" | null = null;
+  private lastAnswerer = "";
 
   async load(ctx: MinigameContext): Promise<void> {
     this.ctx = ctx;
     this.arenaRuntime = new ArenaRuntime(ctx, Config.arena.hotPotatoRadius, buildOrbChamber, 0.68);
     this.hud = ctx.ui.mountHUD();
     this.hud.showPointerHint(null);
-    this.hud.setObjective("El orbe pasa de jugador en jugador. Cuando lo recibes, elige bien antes de que se agote el tiempo: puede explotar en cualquier mano.");
-    this.decisionPanel = ctx.ui.mountDecisionPanel();
+    this.hud.setObjective("Responde bien para enfriar el orbe: al 100 % explota, al 0 % se estabiliza.");
+    this.panel = ctx.ui.mountDecisionPanel();
     this.bursts = new BurstSystem(this.arenaRuntime.group);
+    this.deck = ctx.scenarios.bajoPresionDeck();
 
-    this.humanSituations = ctx.scenarios.drawPressureSequence(Config.bajoPresion.situationsPerMatch);
+    // Vista de escenario: desde atrás y arriba del jugador se ven los 4 puestos y el orbe. En pantallas
+    // anchas el panel de preguntas va a la derecha, así que el escenario se corre un poco a la izquierda.
+    this.arenaRuntime.stageCamera = (cam) => {
+      const sideShift = window.innerWidth >= 1000 ? -3.6 : 0;
+      cam.position.set(14, 8.6, sideShift);
+      cam.lookAt(4.5, 0.4, sideShift);
+    };
 
     // Cada quien se queda en su puesto mirando al centro: el orbe viaja, los jugadores no.
     const center = new THREE.Vector3(0, 0, 0);
@@ -101,11 +116,7 @@ export class BajoPresion implements IMinigame {
       rand: this.rand
     });
     this.circuit.holderId = ctx.participants[Math.floor(this.rand() * ctx.participants.length)].id;
-    this.charge = new OrbCharge({
-      minFuseSeconds: Config.bajoPresion.minFuseSeconds,
-      maxFuseSeconds: Config.bajoPresion.maxFuseSeconds,
-      rand: this.rand
-    });
+    this.energy = new OrbEnergy({ initial: Config.bajoPresion.initialEnergy });
     this.snapOrbToHolder();
   }
 
@@ -130,10 +141,17 @@ export class BajoPresion implements IMinigame {
 
   getInstructions(): InstructionsSpec {
     return {
+      id: this.id,
+      step: 3,
       title: "Bajo Presión",
-      goal: "Todos quedan en su puesto y el orbe viaja solo de mano en mano. Cuando te toque, elige la mejor de 3 acciones: acertar suma puntos y calma el orbe. Puede explotar en cualquier mano, ¡no te lo quedes!",
+      goal: "Todos quedan en su puesto y el Orbe Inestable viaja solo de mano en mano. Cuando te toque, tienes 15 segundos para elegir una de 3 respuestas. Si la energía llega al 100 % explota; si llega a 0 % se estabiliza.",
+      rules: [
+        { points: "+100", text: "Respuesta correcta · el orbe se enfría 10 %", tone: "good" },
+        { points: "−50", text: "Respuesta incorrecta o sin responder · el orbe se calienta 25 %", tone: "bad" },
+        { points: "💥", text: "Si explota, quien lo desencadenó pierde puntos extra", tone: "neutral" }
+      ],
       controls: [
-        { key: "1-3", label: "Elegir la acción (o clic en el botón con Esc)" },
+        { key: "1-3", label: "Elegir la respuesta (o clic en ella tras pulsar Esc)" },
         { key: "Mouse", label: "Mover para mirar alrededor" }
       ]
     };
@@ -146,8 +164,7 @@ export class BajoPresion implements IMinigame {
   }
 
   private musicIntensity(): number {
-    const ratio = 1 - this.timeRemaining / Config.bajoPresion.durationSeconds;
-    return Math.min(1, Math.max(0, (ratio - 0.65) / 0.35));
+    return Math.min(1, Math.max(0, this.energy.ratio));
   }
 
   private participant(id: string): Participant {
@@ -164,23 +181,12 @@ export class BajoPresion implements IMinigame {
     return new THREE.Vector3(p[0], 2.0, p[2]);
   }
 
-  private snapOrbToHolder(): void {
-    this.orb.position.copy(this.holderAnchor(this.circuit.holderId));
-    this.orbLabelText.textContent = this.holderLabel(this.circuit.holderId);
-  }
-
   private holderLabel(id: string): string {
     return id === "human" ? "Tú" : this.participant(id).name;
   }
 
-  private nextHumanSituation(): PressureSituationDef {
-    if (this.humanCursor >= this.humanSituations.length) this.humanCursor = 0;
-    return this.humanSituations[this.humanCursor++];
-  }
-
-  private randomSituation(): PressureSituationDef {
-    const all = this.ctx.scenarios.getAllPressureSituations();
-    return all[Math.floor(this.rand() * all.length)];
+  private snapOrbToHolder(): void {
+    this.orb.position.copy(this.holderAnchor(this.circuit.holderId));
   }
 
   private setPhase(phase: Phase): void {
@@ -198,139 +204,162 @@ export class BajoPresion implements IMinigame {
     this.snapOrbToHolder();
     this.ctx.audio.orbCatch();
     holder.state = "deciding";
+    this.arenaRuntime.rigs.get(id)?.character.setHoldingOrb(true);
     gsap.fromTo(this.orb.scale, { x: 1.5, y: 0.7, z: 1.5 }, { x: 1, y: 1, z: 1, duration: 0.45, ease: "elastic.out(1, 0.5)" });
 
+    this.situation = this.deck.draw();
     if (id === "human") {
-      this.situation = this.nextHumanSituation();
-      this.holdLimit = Config.bajoPresion.decisionWindowSeconds;
-      this.decisionPanel.update(this.situation.texto, this.situation.opciones, (opt) => this.resolveHuman(opt));
-      this.decisionPanel.setTimeLeft(1);
+      this.holdLimit = Config.bajoPresion.decisionSeconds;
+      const sit = this.situation;
+      this.panel.show(`${sit.remitente} te escribe`, sit.pregunta, sit.opciones.map((o) => o.texto), (i) => this.resolve(i));
+      this.panel.setTimeLeft(1, this.holdLimit);
     } else {
-      this.situation = this.randomSituation();
-      const cfg = Config.bajoPresion.npcHoldSeconds;
+      // los bots tardan según su personalidad (Pixel analiza más; Nova se precipita)
+      const cfg = Config.bajoPresion.npcThinkSeconds;
       const traits = holder.avatar.traits!;
-      this.holdLimit = cfg.min + (cfg.max - cfg.min) * Math.min(1, traits.decisionDelay / 3.2) * 0.7 + this.rand() * 0.35;
-      this.decisionPanel.update(`${holder.name} tiene el orbe…`, [], () => {});
-      this.decisionPanel.setTimeLeft(null);
+      const k = Math.min(1, traits.decisionDelay / 3.2);
+      this.holdLimit = cfg.min + (cfg.max - cfg.min) * k * 0.8 + this.rand() * 0.8;
+      this.panel.showStatus(`${holder.name} tiene el orbe y está decidiendo…`);
+      this.panel.setTimeLeft(null);
     }
+    this.panel.setEnergy(this.energy.value);
   }
 
-  private pointsFor(opt: PressureOption): number {
-    const pts = Config.bajoPresion.points;
-    return opt.calidad === "buena" ? pts.buenaDecision : opt.calidad === "mala" ? pts.malaDecision : pts.neutra;
-  }
-
-  private resolveHuman(opt: PressureOption | null): void {
+  /** Respuesta del jugador en turno (índice 0..2) o `null` si se acabó el tiempo. */
+  private resolve(index: number | null): void {
     if (this.phase !== "holding" || this.answered || !this.situation) return;
     this.answered = true;
-    const human = this.participant("human");
-    const timedOut = opt === null;
-    const points = timedOut ? Config.bajoPresion.points.tiempoAgotado : this.pointsFor(opt);
-    this.ctx.scoreManager.award(human, points, `${this.situation.scenarioID}:${opt?.id ?? "timeout"}`, "bajo_presion");
-    this.ctx.summary.recordPressureDecision(timedOut ? "mala" : opt.calidad);
+    const sit = this.situation;
+    const holderId = this.circuit.holderId;
+    const holder = this.participant(holderId);
+    const isHuman = holderId === "human";
+    const correctIndex = sit.opciones.findIndex((o) => o.id === sit.correcta);
+    const correct = index !== null && index === correctIndex;
+    const cfg = Config.bajoPresion;
+    const points = correct ? cfg.points.correcta : index === null ? cfg.points.sinRespuesta : cfg.points.incorrecta;
+    const delta = correct ? cfg.energyOnCorrect : index === null ? cfg.energyOnTimeout : cfg.energyOnWrong;
+    this.lastAnswerer = holderId;
 
-    const good = !timedOut && opt.calidad === "buena";
-    const rig = this.arenaRuntime.rigs.get("human");
-    if (good) {
+    this.ctx.scoreManager.award(holder, points, `${sit.id}:${index === null ? "timeout" : sit.opciones[index].id}`, "bajo_presion");
+    if (isHuman) this.ctx.summary.recordPressureDecision(correct ? "buena" : "mala");
+    const status = this.energy.apply(delta);
+    this.panel.setEnergy(this.energy.value);
+
+    const rig = this.arenaRuntime.rigs.get(holderId);
+    if (correct) {
       rig?.character.triggerReaction("celebrate", 0.9);
-      this.charge.stabilize(Config.bajoPresion.stabilizeOnGood);
       this.ctx.audio.feedbackGood();
       this.bursts.emit(this.orb.position.clone(), 0x8dff6a, 22, 3.5);
     } else {
       rig?.character.triggerReaction("lose", 0.9);
       this.ctx.audio.feedbackBad();
     }
-    const head = timedOut ? "⏱ Se acabó el tiempo" : good ? "✔ Buena decisión" : opt.calidad === "neutra" ? "• Decisión segura, pero había una mejor" : "✖ Cuidado";
-    this.hud.showEventBanner(`${head} (${points > 0 ? "+" : ""}${points}): ${this.situation.explicacion}`, 4200);
-    this.hud.showRivalPing("Tú", `${points > 0 ? "+" : ""}${points}`);
+    const fmt = (n: number) => `${n > 0 ? "+" : ""}${n}`;
+    this.hud.showRivalPing(this.holderLabel(holderId), fmt(points));
 
-    this.decisionPanel.update(`${head}. El orbe sigue su camino…`, [], () => {});
-    this.decisionPanel.setTimeLeft(null);
-    this.setPhase("feedback");
+    if (isHuman) {
+      const head = index === null ? "⏱ Se acabó el tiempo" : correct ? "✔ Correcto" : "✖ Incorrecto";
+      this.panel.reveal(correctIndex, index, `${head} (${fmt(points)}) · ${feedbackFor(sit.categoria, correct)}`);
+      this.panel.setTimeLeft(null);
+    } else {
+      this.panel.showStatus(`${holder.name} ${correct ? "acertó" : "falló"} (${fmt(points)})`);
+    }
+
+    if (status === "exploded" || status === "stabilized") {
+      this.pendingBreak = status;
+      this.setPhase("feedback"); // se lee el resultado y luego entra la pausa de ronda
+    } else {
+      this.pendingBreak = null;
+      this.setPhase("feedback");
+    }
   }
 
   private resolveNpc(): void {
-    const holder = this.participant(this.circuit.holderId);
     const sit = this.situation;
     if (!sit) return;
-    const traits = holder.avatar.traits!;
-    // precisión baja un poco con la dificultad; los NPC no "saben" la respuesta de antemano
-    const acc = Math.max(0.15, traits.accuracy - 0.1 * (sit.dificultad - 1));
-    let pool: PressureOption[];
-    if (this.rand() < acc) {
-      pool = sit.opciones.filter((o) => o.calidad === "buena");
-    } else {
-      const malas = sit.opciones.filter((o) => o.calidad === "mala");
-      const neutras = sit.opciones.filter((o) => o.calidad === "neutra");
-      pool = this.rand() < traits.riskTolerance && malas.length ? malas : neutras.length ? neutras : sit.opciones;
+    const traits = this.participant(this.circuit.holderId).avatar.traits!;
+    // la precisión baja un poco con la dificultad; los bots no "saben" la respuesta de antemano
+    const acc = Math.max(0.2, traits.accuracy - 0.1 * (sit.dificultad - 1));
+    const correctIndex = sit.opciones.findIndex((o) => o.id === sit.correcta);
+    let pick = correctIndex;
+    if (this.rand() >= acc) {
+      const wrong = [0, 1, 2].filter((i) => i !== correctIndex);
+      pick = wrong[Math.floor(this.rand() * wrong.length)];
     }
-    if (pool.length === 0) pool = sit.opciones;
-    const opt = pool[Math.floor(this.rand() * pool.length)];
-    const points = this.pointsFor(opt);
-    this.ctx.scoreManager.award(holder, points, `${sit.scenarioID}:${opt.id}`, "bajo_presion");
-    const rig = this.arenaRuntime.rigs.get(holder.id);
-    if (opt.calidad === "buena") {
-      rig?.character.triggerReaction("celebrate", 0.7);
-      this.charge.stabilize(Config.bajoPresion.stabilizeOnGood * 0.5);
-    } else if (opt.calidad === "mala") {
-      rig?.character.triggerReaction("lose", 0.7);
-    }
-    if (points !== 0) this.hud.showRivalPing(holder.name, `${points > 0 ? "+" : ""}${points}`);
-    this.startFlight();
+    this.resolve(pick);
   }
 
-  // ---------------- flight / explosion ----------------
+  // ---------------- feedback → flight / round break ----------------
+
+  private feedbackDone(): void {
+    if (this.pendingBreak) this.beginRoundBreak(this.pendingBreak);
+    else this.startFlight();
+  }
+
+  private beginRoundBreak(kind: "exploded" | "stabilized"): void {
+    const cfg = Config.bajoPresion.points;
+    const responsibleId = this.lastAnswerer || this.circuit.holderId;
+    const responsible = this.participant(responsibleId);
+    this.pendingBreak = null;
+    this.panel.setTimeLeft(null);
+    this.arenaRuntime.rigs.get(this.circuit.holderId)?.character.setHoldingOrb(false);
+    if (kind === "exploded") {
+      this.ctx.scoreManager.award(responsible, cfg.explosionExtra, "explosion", "bajo_presion");
+      this.ctx.audio.explosion();
+      this.bursts.emit(this.orb.position.clone(), 0xff5a3b, 60, 8, 1.6);
+      this.bursts.emit(this.orb.position.clone(), 0xffc83d, 40, 5, 1.2);
+      this.arenaRuntime.rigs.get(responsibleId)?.character.triggerReaction("lose", 1.4);
+      responsible.state = "losing";
+      this.panel.showStatus(`💥 ¡El orbe explotó en manos de ${this.holderLabel(responsibleId)}! (${cfg.explosionExtra} extra)`);
+      this.hud.showRivalPing(this.holderLabel(responsibleId), `${cfg.explosionExtra}`);
+      this.orb.visible = false;
+    } else {
+      this.ctx.scoreManager.award(responsible, cfg.estabilizacionBono, "estabilizacion", "bajo_presion");
+      this.ctx.audio.victory();
+      this.bursts.emit(this.orb.position.clone(), 0xbff6ff, 50, 4, 1.2);
+      this.arenaRuntime.rigs.get(responsibleId)?.character.triggerReaction("celebrate", 1.6);
+      this.panel.showStatus(`✨ ¡El orbe se estabilizó! ${this.holderLabel(responsibleId)} lo enfrió (+${cfg.estabilizacionBono})`);
+      this.hud.showRivalPing(this.holderLabel(responsibleId), `+${cfg.estabilizacionBono}`);
+      this.calmUntil = this.clock + Config.bajoPresion.roundBreakSeconds;
+    }
+    this.panel.setEnergy(this.energy.value);
+    this.holderRing.visible = false;
+    this.setPhase("roundBreak");
+  }
+
+  private endRoundBreak(): void {
+    this.arenaRuntime.rigs.get(this.circuit.holderId)?.character.setHoldingOrb(false);
+    this.participant(this.circuit.holderId).state = "idle";
+    this.energy.reset();
+    this.circuit.respawn();
+    this.orb.visible = true;
+    this.beginHolding();
+  }
 
   private startFlight(): void {
     const fromId = this.circuit.holderId;
     const targetId = this.circuit.chooseNext();
     this.participant(fromId).state = "idle";
+    this.arenaRuntime.rigs.get(fromId)?.character.triggerThrow();
     this.flight.from.copy(this.orb.position);
     this.flight.to.copy(this.holderAnchor(targetId));
     this.flight.target = targetId;
     this.arenaRuntime.rigs.get(fromId)?.lookAt(this.flight.to);
-    this.decisionPanel.hide();
+    this.panel.showStatus(`El orbe viaja hacia ${this.holderLabel(targetId)}…`);
     this.ctx.audio.balloonPass();
     this.setPhase("flight");
   }
 
   private updateFlight(): void {
-    const dur = Config.bajoPresion.flightSeconds;
-    const t = Math.min(1, this.phaseT / dur);
+    const t = Math.min(1, this.phaseT / Config.bajoPresion.flightSeconds);
     const e = flightEase(t);
     this.orb.position.copy(this.flight.from).lerp(this.flight.to, e);
     this.orb.position.y += Math.sin(e * Math.PI) * 1.4;
     if (t >= 1) {
-      const prevId = this.circuit.holderId;
-      this.arenaRuntime.rigs.get(prevId)?.lookAt(new THREE.Vector3(0, 0, 0));
+      this.arenaRuntime.rigs.get(this.circuit.holderId)?.lookAt(new THREE.Vector3(0, 0, 0));
       this.circuit.arrive(this.flight.target);
       this.beginHolding();
     }
-  }
-
-  private explode(): void {
-    const id = this.circuit.holderId;
-    const holder = this.participant(id);
-    this.ctx.scoreManager.award(holder, Config.bajoPresion.points.explosionPenalty, "explosion", "bajo_presion");
-    this.ctx.audio.explosion();
-    this.bursts.emit(this.orb.position.clone(), 0xff5a3b, 60, 8, 1.6);
-    this.bursts.emit(this.orb.position.clone(), 0xffc83d, 40, 5, 1.2);
-    this.arenaRuntime.rigs.get(id)?.character.triggerReaction("lose", 1.2);
-    holder.state = "losing";
-    this.decisionPanel.update(`💥 ¡El orbe explotó en manos de ${this.holderLabel(id)}! (${Config.bajoPresion.points.explosionPenalty})`, [], () => {});
-    this.decisionPanel.setTimeLeft(null);
-    this.hud.showRivalPing(holder.name, `${Config.bajoPresion.points.explosionPenalty}`);
-    this.orb.visible = false;
-    this.holderRing.visible = false;
-    this.setPhase("exploding");
-  }
-
-  private finishExplosion(): void {
-    this.participant(this.circuit.holderId).state = "idle";
-    this.charge.reset();
-    this.circuit.respawn();
-    this.orb.visible = true;
-    this.beginHolding();
   }
 
   // ---------------- frame ----------------
@@ -341,48 +370,43 @@ export class BajoPresion implements IMinigame {
     this.timeRemaining -= dt;
     this.hud.setTimer(this.timeRemaining);
     this.phaseT += dt;
-
-    // La carga solo avanza mientras el orbe no esté explotando.
-    if (this.phase !== "exploding") this.charge.tick(dt);
-    const c = this.charge.value;
+    const isHumanTurn = this.circuit.holderId === "human";
 
     switch (this.phase) {
-      case "holding": {
-        this.decisionPanel.setCharge(c);
-        if (this.circuit.holderId === "human") {
-          this.decisionPanel.setTimeLeft(1 - this.phaseT / this.holdLimit);
+      case "holding":
+        if (isHumanTurn) {
+          const left = Math.max(0, this.holdLimit - this.phaseT);
+          this.panel.setTimeLeft(left / this.holdLimit, left);
           this.handleHumanInput();
-          if (this.phaseT >= this.holdLimit) this.resolveHuman(null);
+          if (this.phaseT >= this.holdLimit) this.resolve(null);
         } else if (this.phaseT >= this.holdLimit) {
           this.resolveNpc();
         }
-        // explota en cualquier mano, sin importar si las respuestas fueron buenas o malas
-        if (this.phase === "holding" && this.charge.exploded && this.phaseT > 0.35) this.explode();
+        break;
+      case "feedback": {
+        const wait = isHumanTurn ? Config.bajoPresion.feedbackSeconds : Config.bajoPresion.npcFeedbackSeconds;
+        if (this.phaseT >= wait) this.feedbackDone();
         break;
       }
-      case "feedback":
-        this.decisionPanel.setCharge(c);
-        if (this.charge.exploded) this.explode();
-        else if (this.phaseT >= Config.bajoPresion.feedbackSeconds) this.startFlight();
-        break;
       case "flight":
         this.updateFlight();
         break;
-      case "exploding":
-        if (this.phaseT >= Config.bajoPresion.explosionPauseSeconds) this.finishExplosion();
+      case "roundBreak":
+        if (this.phaseT >= Config.bajoPresion.roundBreakSeconds) this.endRoundBreak();
         break;
     }
 
     // Watchdog: ningún estado puede durar más de lo razonable (el orbe jamás se bloquea).
-    if (this.phaseT > WATCHDOG_SECONDS) {
-      if (this.phase === "exploding") this.finishExplosion();
+    if (this.phaseT > Config.bajoPresion.decisionSeconds + 12) {
+      if (this.phase === "roundBreak") this.endRoundBreak();
       else if (this.phase === "flight") {
         this.circuit.arrive(this.flight.target);
         this.beginHolding();
-      } else this.startFlight();
+      } else if (this.phase === "holding") this.answered ? this.feedbackDone() : this.resolve(null);
+      else this.feedbackDone();
     }
 
-    this.updateOrbVisuals(dt, c);
+    this.updateOrbVisuals(dt);
     this.bursts.update(dt);
     this.arenaRuntime.update(dt);
 
@@ -393,42 +417,47 @@ export class BajoPresion implements IMinigame {
       (id) => this.ctx.participants.find((p) => p.id === id)!.avatar.primaryColor
     );
 
-    if (this.timeRemaining <= 0) this.finished = true;
+    // El tiempo agotado cierra la partida en un corte limpio (nunca a mitad de la decisión del humano).
+    if (this.timeRemaining <= 0) {
+      const humanBusy = isHumanTurn && (this.phase === "holding" || this.phase === "feedback");
+      if (!humanBusy || this.timeRemaining < -(Config.bajoPresion.decisionSeconds + 4)) this.finished = true;
+    }
   }
 
   private handleHumanInput(): void {
     const human = this.arenaRuntime.getHumanController();
     if (!human || !this.situation || this.answered) return;
     const key = human.consumeNumberKey();
-    if (key) {
-      const opt = this.situation.opciones[key - 1];
-      if (opt) this.resolveHuman(opt);
-    }
+    if (key && this.situation.opciones[key - 1]) this.resolve(key - 1);
     human.consumeClick();
   }
 
-  private updateOrbVisuals(dt: number, c: number): void {
-    if (this.phase !== "flight" && this.phase !== "exploding") {
+  private updateOrbVisuals(dt: number): void {
+    const r = this.energy.ratio;
+    if (this.phase !== "flight") {
       const base = this.holderAnchor(this.circuit.holderId);
       base.y += Math.sin(this.clock * 3) * 0.08;
-      if (c > 0.7) {
-        const shake = (c - 0.7) * 0.25;
+      if (r > 0.75) {
+        const shake = (r - 0.75) * 0.5;
         base.x += (this.rand() - 0.5) * shake;
         base.z += (this.rand() - 0.5) * shake;
       }
-      this.orb.position.copy(base);
+      if (this.phase !== "roundBreak") this.orb.position.copy(base);
     }
-    const col = chargeColor(c, this.tmpColor);
-    (this.orbCore.material as THREE.MeshStandardMaterial).color.copy(col);
-    (this.orbCore.material as THREE.MeshStandardMaterial).emissive.copy(col);
-    (this.orbCore.material as THREE.MeshStandardMaterial).emissiveIntensity = 1.6 + c * 3.4;
+    const calm = this.clock < this.calmUntil;
+    const col = calm ? this.tmpColor.copy(COLOR_CALM) : energyColor(r, this.tmpColor);
+    const mat = this.orbCore.material as THREE.MeshStandardMaterial;
+    mat.color.copy(col);
+    mat.emissive.copy(col);
+    mat.emissiveIntensity = calm ? 0.9 : 0.7 + r * 1.5;
     (this.orbShell.material as THREE.MeshBasicMaterial).color.copy(col);
     this.orbLight.color.copy(col);
-    this.orbLight.intensity = 4 + c * 14;
-    const pulse = 1 + c * 0.35 + Math.sin(this.clock * (4 + c * 16)) * (0.04 + c * 0.1);
-    this.orbCore.scale.setScalar(pulse);
-    this.orbShell.rotation.y += dt * (1 + c * 6);
-    this.orbShell.rotation.x += dt * (0.6 + c * 4);
+    this.orbLight.intensity = calm ? 4 : 3 + r * 15;
+    const pulse = 1 + r * 0.4 + Math.sin(this.clock * (3 + r * 15)) * (0.03 + r * 0.1);
+    this.orbCore.scale.setScalar(calm ? 0.9 : pulse);
+    this.orbShell.rotation.y += dt * (0.8 + r * 6);
+    this.orbShell.rotation.x += dt * (0.5 + r * 4);
+    this.orbLabelText.textContent = `${this.holderLabel(this.circuit.holderId)} · ${Math.round(this.energy.value)} %`;
 
     const hp = this.participant(this.circuit.holderId).position;
     this.holderRing.position.set(hp[0], 0.16, hp[2]);
@@ -436,12 +465,12 @@ export class BajoPresion implements IMinigame {
     this.holderRing.scale.setScalar(1 + Math.sin(this.clock * 6) * 0.06);
     this.holderRing.visible = this.phase === "holding" || this.phase === "feedback";
 
-    // pulso de tensión: más rápido y agudo con la carga
-    if (this.phase === "holding" || this.phase === "feedback" || this.phase === "flight") {
+    // pulso de tensión: más rápido y agudo cuanta más energía tiene el orbe
+    if (this.phase !== "roundBreak") {
       this.tickTimer -= dt;
       if (this.tickTimer <= 0) {
-        this.ctx.audio.tensionTick(c);
-        this.tickTimer = 0.95 - 0.8 * c;
+        this.ctx.audio.tensionTick(r);
+        this.tickTimer = 1.1 - 0.9 * r;
       }
     }
   }
@@ -451,7 +480,7 @@ export class BajoPresion implements IMinigame {
   }
 
   dispose(): void {
-    this.decisionPanel.hide();
+    this.panel.hide();
     this.hud.unmount();
     this.bursts.dispose();
     this.orb.removeFromParent();

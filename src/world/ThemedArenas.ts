@@ -74,7 +74,7 @@ function screenTexture(title: string, accent: string): THREE.CanvasTexture {
 const glowCache = new Map<string, THREE.MeshStandardMaterial>();
 
 /** Materiales de neón compartidos por color/intensidad: menos objetos y menos cambios de estado en la GPU. */
-function glow(color: number, intensity = 1.6): THREE.MeshStandardMaterial {
+export function glow(color: number, intensity = 1.6): THREE.MeshStandardMaterial {
   const key = `${color}:${intensity}`;
   let m = glowCache.get(key);
   if (!m) {
@@ -84,7 +84,7 @@ function glow(color: number, intensity = 1.6): THREE.MeshStandardMaterial {
   return m;
 }
 
-function floorDisc(radius: number, baseCss: string, lineCss: string, cells: number, repeat: number): THREE.Mesh {
+export function floorDisc(radius: number, baseCss: string, lineCss: string, cells: number, repeat: number): THREE.Mesh {
   const tex = gridTexture(baseCss, lineCss, cells);
   tex.repeat.set(repeat, repeat);
   const m = new THREE.Mesh(
@@ -96,14 +96,14 @@ function floorDisc(radius: number, baseCss: string, lineCss: string, cells: numb
   return m;
 }
 
-function neonRing(radius: number, color: number, y = 0.03, thickness = 0.08): THREE.Mesh {
+export function neonRing(radius: number, color: number, y = 0.03, thickness = 0.08): THREE.Mesh {
   const r = new THREE.Mesh(new THREE.TorusGeometry(radius, thickness, 8, 96), glow(color, 1.8));
   r.rotation.x = Math.PI / 2;
   r.position.y = y;
   return r;
 }
 
-function pad(x: number, z: number, color: number, r = 1.0): THREE.Group {
+export function pad(x: number, z: number, color: number, r = 1.0): THREE.Group {
   const g = new THREE.Group();
   const base = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.05, 0.12, 32), new THREE.MeshStandardMaterial({ color: NeonPalette.nightLight, roughness: 0.5 }));
   base.position.y = 0.06;
@@ -117,7 +117,7 @@ function pad(x: number, z: number, color: number, r = 1.0): THREE.Group {
   return g;
 }
 
-function pillar(x: number, z: number, color: number, height = 3.2): THREE.Group {
+export function pillar(x: number, z: number, color: number, height = 3.2): THREE.Group {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.4, height, 10), new THREE.MeshStandardMaterial({ color: NeonPalette.night, roughness: 0.4, metalness: 0.4 }));
   body.position.y = height / 2;
@@ -145,7 +145,7 @@ function screenPanel(radius: number, angle: number, title: string, accent: numbe
   return m;
 }
 
-function floatingCubes(group: THREE.Group, radius: number, count: number, colors: number[]): void {
+export function floatingCubes(group: THREE.Group, radius: number, count: number, colors: number[]): void {
   for (let i = 0; i < count; i++) {
     const a = (i / count) * Math.PI * 2 + Math.random() * 0.3;
     const r = radius + 1.5 + Math.random() * 4;
@@ -160,7 +160,7 @@ function floatingCubes(group: THREE.Group, radius: number, count: number, colors
 }
 
 /** Aplica rotación/oscilación a los hijos que lo piden; devuelve el updater de la arena. */
-function makeAnimator(group: THREE.Group): (t: number) => void {
+export function makeAnimator(group: THREE.Group): (t: number) => void {
   const animated: THREE.Object3D[] = [];
   group.traverse((o) => {
     if (o.userData.spin !== undefined) animated.push(o);
@@ -173,7 +173,7 @@ function makeAnimator(group: THREE.Group): (t: number) => void {
   };
 }
 
-function outerVoid(radius: number, group: THREE.Group): void {
+export function outerVoid(radius: number, group: THREE.Group): void {
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(radius, radius + 40, 64),
     new THREE.MeshStandardMaterial({ color: 0x0b0f29, roughness: 1 })

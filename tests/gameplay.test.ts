@@ -30,7 +30,7 @@ describe('Controles y lectura de rivales', () => {
   it('ningún disparo de NPC resuelve un mensaje antes de siete segundos', () => {
     const game = new Cazaenganos() as any;
     const participant = {id:'nova', position:[0,0,0], state:'idle', avatar:NPC_AVATARS.nova};
-    const slot = {filled:true, claimed:false, age:0, instanceId:1, position:new THREE.Vector3(1,0,0), current:{texto:'Revisa el mensaje antes de disparar.', accionEsperada:'destruir'}};
+    const slot = {filled:true, claimed:false, age:0, instanceId:1, position:new THREE.Vector3(1,0,0), current:{texto:'Revisa el mensaje antes de disparar.', accionCorrecta:"disparar"}};
     game.slots=[slot]; game.rand=()=>0;
     game.arenaRuntime={getAIControllers:()=>[{participant,controller:{setTarget:vi.fn()},rig:{faceTarget:vi.fn()}}]};
     game.fire=vi.fn();

@@ -14,12 +14,13 @@ export class AudioManager {
   private sfxGain: GainNode | null = null;
   private musicNodes: { stop: () => void } | null = null;
   private _muted = false;
+  private volume = 1;
 
   private ensureCtx(): AudioContext {
     if (!this.ctx) {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.master = this.ctx.createGain();
-      this.master.gain.value = this._muted ? 0 : 0.7;
+      this.master.gain.value = this.masterValue();
       this.master.connect(this.ctx.destination);
       this.musicGain = this.ctx.createGain();
       this.musicGain.gain.value = 0.35;
@@ -37,13 +38,23 @@ export class AudioManager {
     this.ensureCtx();
   }
 
+  private masterValue(): number {
+    return this._muted ? 0 : 0.7 * this.volume;
+  }
+
+  /** Volumen general 0..1 (ajuste del jugador). */
+  setVolume(v: number): void {
+    this.volume = Math.min(1, Math.max(0, v));
+    if (this.master) this.master.gain.value = this.masterValue();
+  }
+
   get muted(): boolean {
     return this._muted;
   }
 
   toggleMute(): boolean {
     this._muted = !this._muted;
-    if (this.master) this.master.gain.value = this._muted ? 0 : 0.7;
+    if (this.master) this.master.gain.value = this.masterValue();
     return this._muted;
   }
 

@@ -1,0 +1,530 @@
+[
+  {
+    "id": "BP-01",
+    "dificultad": 1,
+    "categoria": "intercambios_recompensas",
+    "remitente": "Kiro_21",
+    "pregunta": "¿Me prestas tu espada para esta misión? El juego tiene una opción para devolverla automáticamente.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Regalársela y pedir que la devuelva después."
+      },
+      {
+        "id": "B",
+        "texto": "Usar el préstamo temporal del juego."
+      },
+      {
+        "id": "C",
+        "texto": "Rechazarlo aunque exista el préstamo temporal."
+      }
+    ],
+    "correcta": "B"
+  },
+  {
+    "id": "BP-02",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "LunaPlay",
+    "pregunta": "Nos falta uno para el torneo. Puedes inscribirte desde el menú del juego. ¿Te unes?",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Revisar la inscripción en el menú del juego."
+      },
+      {
+        "id": "B",
+        "texto": "Darle mi cuenta para que me inscriba."
+      },
+      {
+        "id": "C",
+        "texto": "Rechazar porque no conozco a todo el equipo."
+      }
+    ],
+    "correcta": "A"
+  },
+  {
+    "id": "BP-03",
+    "dificultad": 1,
+    "categoria": "presion_de_grupo",
+    "remitente": "Max_09",
+    "pregunta": "Si no entras a nuestro grupo de voz, vamos a buscar a otro jugador.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Dar mi número para que me agreguen."
+      },
+      {
+        "id": "B",
+        "texto": "Entrar aunque no quiera perder mi lugar."
+      },
+      {
+        "id": "C",
+        "texto": "Decir que prefiero usar el chat del juego."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-04",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "Nova_08",
+    "pregunta": "¿Me ayudas con el jefe final? Podemos formar equipo desde la sala del juego.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Pedirle primero sus datos personales."
+      },
+      {
+        "id": "B",
+        "texto": "Unirme mediante la sala del juego."
+      },
+      {
+        "id": "C",
+        "texto": "Darle acceso a mi cuenta para que prepare el equipo."
+      }
+    ],
+    "correcta": "B"
+  },
+  {
+    "id": "BP-05",
+    "dificultad": 1,
+    "categoria": "datos_personales",
+    "remitente": "NicoPro",
+    "pregunta": "Llevamos ganando toda la tarde. ¿En qué colegio estudias? Tal vez estamos cerca.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Decirle el colegio porque ya jugamos juntos."
+      },
+      {
+        "id": "B",
+        "texto": "Compartir solo el turno en que estudio."
+      },
+      {
+        "id": "C",
+        "texto": "Decir que prefiero no compartir ese dato."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-06",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "Pixel_14",
+    "pregunta": "¡Buen trabajo! Voy a abrir otra partida. Te mando la invitación dentro del juego.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Aceptar la invitación si quiero seguir jugando."
+      },
+      {
+        "id": "B",
+        "texto": "Pedirle su contraseña para comprobar que es él."
+      },
+      {
+        "id": "C",
+        "texto": "Darle mi correo para que me invite por fuera."
+      }
+    ],
+    "correcta": "A"
+  },
+  {
+    "id": "BP-07",
+    "dificultad": 1,
+    "categoria": "presion_de_grupo",
+    "remitente": "AlexGamer",
+    "pregunta": "Todos vamos a poner nuestra foto real en el grupo del equipo. Falta la tuya.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Mandarla porque todos ya lo hicieron."
+      },
+      {
+        "id": "B",
+        "texto": "Decir que prefiero mantener mi avatar."
+      },
+      {
+        "id": "C",
+        "texto": "Enviar una foto de mi uniforme escolar."
+      }
+    ],
+    "correcta": "B"
+  },
+  {
+    "id": "BP-08",
+    "dificultad": 1,
+    "categoria": "intercambios_recompensas",
+    "remitente": "Kira_21",
+    "pregunta": "El evento termina hoy. Si hacemos una partida más, alcanzamos la recompensa del juego.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Compartir mi cuenta para terminar más rápido."
+      },
+      {
+        "id": "B",
+        "texto": "Comprar una recompensa fuera del juego."
+      },
+      {
+        "id": "C",
+        "texto": "Revisar el evento y jugar si todavía quiero."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-09",
+    "dificultad": 2,
+    "categoria": "datos_personales",
+    "remitente": "Mati_07",
+    "pregunta": "El capitán dice que todos deben mandar su nombre completo para entrar al torneo de nuestra sala.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Preguntar por qué lo necesitan y revisar las reglas del torneo."
+      },
+      {
+        "id": "B",
+        "texto": "Mandarlo porque el capitán conoce al equipo."
+      },
+      {
+        "id": "C",
+        "texto": "Enviar también mi colegio para evitar confusiones."
+      }
+    ],
+    "correcta": "A"
+  },
+  {
+    "id": "BP-10",
+    "dificultad": 2,
+    "categoria": "suplantacion",
+    "remitente": "Luna_alt",
+    "pregunta": "Soy Luna, cambié de cuenta. Dime tu nombre real para comprobar que eres tú.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Dárselo porque conoce mi nombre de jugador."
+      },
+      {
+        "id": "B",
+        "texto": "Pedirle que demuestre quién es enviando sus datos."
+      },
+      {
+        "id": "C",
+        "texto": "Comprobarlo por medios del juego sin dar información personal."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-11",
+    "dificultad": 2,
+    "categoria": "presion_de_grupo",
+    "remitente": "Kiro_21",
+    "pregunta": "Si quieres seguir en el equipo, tenemos que hablar por otra aplicación. Aquí ya no organizamos nada.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Aceptar y compartir mi teléfono para conservar el puesto."
+      },
+      {
+        "id": "B",
+        "texto": "Preguntar si podemos coordinarnos dentro del juego."
+      },
+      {
+        "id": "C",
+        "texto": "Salir de todas las partidas sin responder."
+      }
+    ],
+    "correcta": "B"
+  },
+  {
+    "id": "BP-12",
+    "dificultad": 2,
+    "categoria": "datos_personales",
+    "remitente": "EmiGamer",
+    "pregunta": "Ya llevamos semanas jugando. ¿En qué zona de la ciudad vives? Quizá estamos cerca.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Responder solo con mi dirección aproximada."
+      },
+      {
+        "id": "B",
+        "texto": "Compartir mi distrito porque no es mi dirección."
+      },
+      {
+        "id": "C",
+        "texto": "Decir que prefiero hablar de la partida."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-13",
+    "dificultad": 2,
+    "categoria": "datos_personales",
+    "remitente": "Nova_08",
+    "pregunta": "El líder quiere una captura de nuestros perfiles para organizar los equipos. ¿Puedes enviarla?",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Revisar qué datos muestra y si basta con el nombre de jugador."
+      },
+      {
+        "id": "B",
+        "texto": "Enviar la pantalla completa para que no falte información."
+      },
+      {
+        "id": "C",
+        "texto": "Compartir también mi correo para facilitar el registro."
+      }
+    ],
+    "correcta": "A"
+  },
+  {
+    "id": "BP-14",
+    "dificultad": 2,
+    "categoria": "intercambios_recompensas",
+    "remitente": "MaxPlay",
+    "pregunta": "Te ayudo a completar la misión si después me regalas la skin que acabas de conseguir.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Aceptar para no perder su ayuda."
+      },
+      {
+        "id": "B",
+        "texto": "Proponer jugar sin prometer regalar mi skin."
+      },
+      {
+        "id": "C",
+        "texto": "Entregarla antes para demostrar confianza."
+      }
+    ],
+    "correcta": "B"
+  },
+  {
+    "id": "BP-15",
+    "dificultad": 2,
+    "categoria": "interacciones_seguras",
+    "remitente": "Dani_22",
+    "pregunta": "Mi amigo creó una sala privada para practicar. Te enviará el código dentro del juego.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Compartir mi contraseña para que me agregue."
+      },
+      {
+        "id": "B",
+        "texto": "Negarme porque ninguna sala privada es segura."
+      },
+      {
+        "id": "C",
+        "texto": "Usar el código dentro del juego si quiero participar."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-16",
+    "dificultad": 2,
+    "categoria": "presion_de_grupo",
+    "remitente": "Pixel_14",
+    "pregunta": "Dicen que el líder se molestará si no votas por su mapa. Todos estamos votando por él.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Elegir el mapa que realmente prefiera."
+      },
+      {
+        "id": "B",
+        "texto": "Votar por el líder para evitar problemas."
+      },
+      {
+        "id": "C",
+        "texto": "Pedir que me digan por quién votar."
+      }
+    ],
+    "correcta": "A"
+  },
+  {
+    "id": "BP-17",
+    "dificultad": 3,
+    "categoria": "suplantacion",
+    "remitente": "Kiro_alt",
+    "pregunta": "Soy Kiro. Perdí mi cuenta, pero recuerdo nuestra partida de ayer. Pásame una captura de tu perfil para encontrarte.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Enviarla porque recuerda lo que jugamos."
+      },
+      {
+        "id": "B",
+        "texto": "Buscarlo por su nombre de jugador sin compartir capturas."
+      },
+      {
+        "id": "C",
+        "texto": "Mandar una captura completa para que no se confunda."
+      }
+    ],
+    "correcta": "B"
+  },
+  {
+    "id": "BP-18",
+    "dificultad": 3,
+    "categoria": "datos_personales",
+    "remitente": "TorneoNX",
+    "pregunta": "El equipo clasificó. El organizador dice que necesita una foto de cada jugador para publicar la lista de finalistas.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Enviarla porque es un logro importante."
+      },
+      {
+        "id": "B",
+        "texto": "Pedir a otro compañero que mande mi foto."
+      },
+      {
+        "id": "C",
+        "texto": "Consultar si pueden usar nuestros avatares o nombres de jugador."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-19",
+    "dificultad": 3,
+    "categoria": "enlaces_externos",
+    "remitente": "Nova_08",
+    "pregunta": "Un compañero perdió objetos tras una actualización. Quiere que todos entremos con nuestra cuenta en una página que encontró.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Usar los canales de soporte del juego y no iniciar sesión allí."
+      },
+      {
+        "id": "B",
+        "texto": "Entrar si varios compañeros confirman que funciona."
+      },
+      {
+        "id": "C",
+        "texto": "Pedirle que pruebe primero con su cuenta."
+      }
+    ],
+    "correcta": "A"
+  },
+  {
+    "id": "BP-20",
+    "dificultad": 3,
+    "categoria": "intercambios_recompensas",
+    "remitente": "LunaPlay",
+    "pregunta": "Me regalaron dos pases del evento. El juego permite enviarte uno desde el inventario. ¿Lo quieres?",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Rechazarlo porque cualquier regalo es sospechoso."
+      },
+      {
+        "id": "B",
+        "texto": "Pedirle que me lo mande por una página externa."
+      },
+      {
+        "id": "C",
+        "texto": "Revisar el pase y aceptarlo mediante el juego si quiero."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-21",
+    "dificultad": 3,
+    "categoria": "contrasenas_acceso",
+    "remitente": "Mati_07",
+    "pregunta": "El capitán dice que, si confiamos en él, deberíamos prestarle nuestras cuentas para subir de rango.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Prestársela porque todos queremos mejorar."
+      },
+      {
+        "id": "B",
+        "texto": "Ofrecer jugar juntos sin compartir el acceso."
+      },
+      {
+        "id": "C",
+        "texto": "Darle acceso solo durante una partida."
+      }
+    ],
+    "correcta": "B"
+  },
+  {
+    "id": "BP-22",
+    "dificultad": 3,
+    "categoria": "convivencia_digital",
+    "remitente": "AlexGamer",
+    "pregunta": "Un jugador está molestando a alguien del equipo. Los demás quieren responderle con insultos para defenderlo.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Apoyar al compañero, reportar y evitar los insultos."
+      },
+      {
+        "id": "B",
+        "texto": "Insultar al jugador para que deje de molestar."
+      },
+      {
+        "id": "C",
+        "texto": "Compartir su perfil fuera del juego para que otros lo ataquen."
+      }
+    ],
+    "correcta": "A"
+  },
+  {
+    "id": "BP-23",
+    "dificultad": 3,
+    "categoria": "presion_de_grupo",
+    "remitente": "Max_09",
+    "pregunta": "El líder quiere expulsar a Nova porque perdió la última partida. Dice que, si no votas con él, tú también sales.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Votar por expulsar a Nova para conservar mi puesto."
+      },
+      {
+        "id": "B",
+        "texto": "Abandonar el equipo sin decir nada."
+      },
+      {
+        "id": "C",
+        "texto": "Decir que no es justo culparla por una partida y decidir por mi cuenta."
+      }
+    ],
+    "correcta": "C"
+  },
+  {
+    "id": "BP-24",
+    "dificultad": 3,
+    "categoria": "contrasenas_acceso",
+    "remitente": "EmiGamer",
+    "pregunta": "Un amigo del equipo dice que perdió su acceso. Me pide un código de recuperación que llegó a mi correo para comprobar si seguimos vinculados.",
+    "opciones": [
+      {
+        "id": "A",
+        "texto": "Enviárselo porque jugamos juntos desde hace tiempo."
+      },
+      {
+        "id": "B",
+        "texto": "No compartir el código y revisar mi cuenta desde el juego."
+      },
+      {
+        "id": "C",
+        "texto": "Mandarle solo una parte del código para ayudarlo."
+      }
+    ],
+    "correcta": "B"
+  }
+]

@@ -1,18 +1,18 @@
 import * as THREE from "three";
 import { Participant } from "../entities/Participant";
 import type { IController } from "../entities/controllers/IController";
-import { CraftCharacter, createCraftCharacter } from "./CharacterFactory";
+import { GuardianCharacter, createGuardian } from "./CharacterFactory";
 import type { PhysicsWorld } from "./PhysicsWorld";
 import { Config } from "../core/Config";
 
 /**
  * Une Participant (datos) + IController (decisión de movimiento) +
- * CraftCharacter (mesh + animación) + PhysicsWorld (integración). Es lo que
+ * GuardianCharacter (mesh + animación) + PhysicsWorld (integración). Es lo que
  * permite que un mismo Participant se comporte igual sin importar el
  * minijuego que lo esté usando.
  */
 export class CharacterRig {
-  readonly character: CraftCharacter;
+  readonly character: GuardianCharacter;
   private currentHeading = 0;
   private lastSpeed01 = 0;
   private aimTime = 0;
@@ -32,7 +32,7 @@ export class CharacterRig {
     private physics: PhysicsWorld,
     private maxSpeed: number
   ) {
-    this.character = createCraftCharacter(participant.avatar);
+    this.character = createGuardian(participant.avatar);
     physics.addCharacterBody(participant.id);
   }
 

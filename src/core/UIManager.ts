@@ -1,8 +1,13 @@
 import { gsap } from "gsap";
 import type { Participant } from "../entities/Participant";
 import type { RankingEntry } from "./ScoreManager";
-import type { MatchSummaryStats, PressureOption } from "./types";
-import { PLAYER_AVATAR_OPTIONS, type PlayerAvatarOption } from "../data/characters";
+import type { MatchSummaryStats } from "./types";
+import { CATEGORY_LABEL } from "../data/feedback";
+import type { CategoryId } from "./types";
+import { BODY_COLORS, EXTRA_ACCESSORIES, HEAD_ACCESSORIES, colorDef } from "../data/characters";
+import { Settings, type QualitySetting } from "./Settings";
+import type { PlayerProfile } from "./Profile";
+import type { Appearance, MinigameId } from "./types";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
@@ -43,8 +48,13 @@ function keyVisual(key: string): HTMLElement {
 }
 
 export interface InstructionsSpec {
+  id: MinigameId;
+  /** 1..3 */
+  step: number;
   title: string;
   goal: string;
+  /** cómo se obtienen y se pierden puntos, en chips de un vistazo */
+  rules: { points: string; text: string; tone: "good" | "bad" | "neutral" }[];
   controls: { key: string; label: string }[];
 }
 
@@ -52,6 +62,8 @@ export interface HudHandle {
   setTimer(seconds: number): void;
   setRanking(entries: RankingEntry[], colorOf: (id: string) => number): void;
   showEventBanner(text: string, durationMs?: number): void;
+  /** Retroalimentación breve DESPUÉS de una acción; no bloquea los controles. */
+  showFeedback(text: string, good: boolean, durationMs?: number): void;
   setObjective(text: string): void;
   showScorePopup(clientX: number, clientY: number, text: string, positive: boolean): void;
   showRivalPing(name: string, text: string): void;
@@ -63,10 +75,16 @@ export interface HudHandle {
 }
 
 export interface DecisionHandle {
-  update(situationText: string, options: PressureOption[], onPick: (opt: PressureOption) => void): void;
-  setCharge(progress01: number): void;
-  /** Tiempo restante para decidir (1 = todo el tiempo, 0 = agotado); null oculta la barra. */
-  setTimeLeft(progress01: number | null): void;
+  /** Muestra una situación con sus opciones; `onPick` recibe el índice elegido (0..2). */
+  show(sender: string, question: string, options: string[], onPick: (index: number) => void): void;
+  /** Panel sin opciones (turno de un bot, pausas): solo texto y las barras. */
+  showStatus(text: string): void;
+  /** Energía del orbe en porcentaje (0..100). */
+  setEnergy(percent: number): void;
+  /** Tiempo para decidir: 1 = todo, 0 = agotado; null oculta la barra. */
+  setTimeLeft(progress01: number | null, seconds?: number): void;
+  /** Marca la opción correcta (verde) y la elegida si fue errónea (roja), con el feedback. */
+  reveal(correctIndex: number, pickedIndex: number | null, feedback: string): void;
   hide(): void;
 }
 
@@ -105,59 +123,41 @@ export class UIManager {
     if (lbl) lbl.textContent = label;
   }
 
-  // ---------------- Lobby ----------------
+  // ---------------- Menú principal ----------------
 
-  showLobby(): Promise<{ nickname: string }> {
+  showLobby(profile: PlayerProfile): Promise<{ nickname: string }> {
     this.clear();
     return new Promise((resolve) => {
       const screen = el("div", "screen lobby-screen");
-
-      const badges = el("div", "lobby-badges");
-      badges.appendChild(el("span", "lobby-badge", "🎮 Tú + 3 rivales"));
-      badges.appendChild(el("span", "lobby-badge", "⚡ 3 minijuegos"));
-      badges.appendChild(el("span", "lobby-badge", "🧠 Piensa rápido"));
-
       const card = el("div", "panel lobby-card");
-      const logoWrap = el("div", "lobby-logo-wrap");
-      const title = el("div", "lobby-title", "NEXORA");
-      logoWrap.appendChild(title);
-      logoWrap.appendChild(el("div", "lobby-title-shine"));
-      card.appendChild(el("div", "lobby-eyebrow", "LA ARENA DE LAS GRANDES DECISIONES"));
-      card.appendChild(logoWrap);
-      card.appendChild(badges);
+      card.appendChild(el("div", "lobby-eyebrow", "GUARDIANES DIGITALES"));
+      card.appendChild(el("div", "lobby-title", "NEXORA"));
       card.appendChild(
-        el(
-          "div",
-          "lobby-sub",
-          "Corre, decide rápido y aprende a leer las señales antes que los demás. ¿Listo para competir?"
-        )
+        el("div", "lobby-sub", "Aprende a tomar mejores decisiones en el mundo digital. Compite contra 3 rivales y descubre qué hacer cuando algo no cuadra.")
       );
+
+      const route = el("div", "lobby-route");
+      [["1", "Atrapa o evita"], ["2", "Cazaengaños"], ["3", "Bajo Presión"]].forEach(([n, name], i) => {
+        if (i > 0) route.appendChild(el("span", "route-arrow", "›"));
+        const step = el("div", "route-step");
+        step.append(el("span", "route-num", n), el("span", "route-name", name));
+        route.appendChild(step);
+      });
+      card.appendChild(route);
 
       const input = el("input", "nickname-input") as HTMLInputElement;
       input.maxLength = 14;
       input.placeholder = "Tu nombre de jugador";
       input.setAttribute("aria-label", "Tu nombre de jugador");
-      input.value = localStorage.getItem("nexora_nickname") ?? "";
-      const rounds = el("div", "lobby-rounds");
-      for (const [icon, title, subtitle] of [["✦", "Atrapa o evita", "Corre por las recompensas"], ["◎", "Cazaengaños", "Apunta. Lee. Decide."], ["⚡", "Bajo presión", "Piensa antes de pasar"]]) {
-        const round = el("div", "lobby-round");
-        round.append(el("span", "round-icon", icon), el("strong", undefined, title), el("small", undefined, subtitle));
-        rounds.appendChild(round);
-      }
-      card.appendChild(rounds);
+      input.value = profile.nickname;
       card.appendChild(input);
 
-      const startBtn = el("button", "btn lobby-play-btn", "▶ Jugar") as HTMLButtonElement;
-      const go = () => {
-        const nickname = input.value.trim().slice(0, 14) || "Jugador";
-        localStorage.setItem("nexora_nickname", nickname);
-        resolve({ nickname });
-      };
-      startBtn.onclick = go;
+      const go = () => resolve({ nickname: input.value.trim().slice(0, 14) || "Jugador" });
+      card.appendChild(button("▶ Jugar", "primary lobby-play-btn", go));
+      card.appendChild(button("⚙ Configuración", "ghost", () => void this.showSettings()));
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") go();
       });
-      card.appendChild(startBtn);
 
       screen.appendChild(card);
       this.root.appendChild(screen);
@@ -165,95 +165,171 @@ export class UIManager {
     });
   }
 
-  // ---------------- Character select ----------------
+  /** Ajustes reales: volumen, sensibilidad del mouse y calidad gráfica. */
+  showSettings(): Promise<void> {
+    return new Promise((resolve) => {
+      const overlay = el("div", "modal-overlay");
+      const card = el("div", "panel settings-card");
+      card.appendChild(el("div", "select-title", "Configuración"));
+      const cur = Settings.get();
 
-  showCharacterSelect(): Promise<PlayerAvatarOption> {
+      const row = (label: string, control: HTMLElement, value: HTMLElement): HTMLElement => {
+        const r = el("label", "settings-row");
+        r.append(el("span", "settings-label", label), control, value);
+        return r;
+      };
+      const slider = (min: number, max: number, step: number, v: number): HTMLInputElement => {
+        const i = el("input", "settings-range") as HTMLInputElement;
+        i.type = "range";
+        i.min = String(min);
+        i.max = String(max);
+        i.step = String(step);
+        i.value = String(v);
+        return i;
+      };
+
+      const vol = slider(0, 1, 0.05, cur.volume);
+      const volVal = el("span", "settings-value", `${Math.round(cur.volume * 100)} %`);
+      vol.oninput = () => {
+        Settings.update({ volume: Number(vol.value) });
+        volVal.textContent = `${Math.round(Number(vol.value) * 100)} %`;
+      };
+      card.appendChild(row("Volumen", vol, volVal));
+
+      const sens = slider(0.4, 2, 0.1, cur.mouseSensitivity);
+      const sensVal = el("span", "settings-value", `${cur.mouseSensitivity.toFixed(1)}×`);
+      sens.oninput = () => {
+        Settings.update({ mouseSensitivity: Number(sens.value) });
+        sensVal.textContent = `${Number(sens.value).toFixed(1)}×`;
+      };
+      card.appendChild(row("Sensibilidad del mouse", sens, sensVal));
+
+      const quality = el("select", "settings-select") as HTMLSelectElement;
+      for (const [v, label] of [["auto", "Automática (recomendada)"], ["high", "Alta"], ["medium", "Media"], ["low", "Baja (más fluida)"]]) {
+        const o = el("option", undefined, label) as HTMLOptionElement;
+        o.value = v;
+        quality.appendChild(o);
+      }
+      quality.value = cur.quality;
+      quality.onchange = () => Settings.update({ quality: quality.value as QualitySetting });
+      card.appendChild(row("Calidad gráfica", quality, el("span", "settings-value", "")));
+
+      card.appendChild(
+        button("Listo", "primary", () => {
+          overlay.remove();
+          resolve();
+        })
+      );
+      overlay.appendChild(card);
+      this.root.appendChild(overlay);
+    });
+  }
+
+  // ---------------- Personalización ----------------
+
+  showCharacterSelect(opts: {
+    initial: Appearance;
+    onChange: (a: Appearance) => void;
+    onRotate: (dir: -1 | 1) => void;
+  }): Promise<{ action: "confirm"; appearance: Appearance } | { action: "back" }> {
     this.clear();
     return new Promise((resolve) => {
-      const screen = el("div", "screen");
-      const card = el("div", "panel select-card");
-      card.appendChild(el("div", "select-title", "Elige tu personaje"));
+      const screen = el("div", "screen customize-screen");
+      const card = el("div", "panel customize-card");
+      card.appendChild(el("div", "select-title", "Personaliza a tu Guardián"));
+      const current: Appearance = { ...opts.initial };
+      const apply = () => opts.onChange({ ...current });
 
-      const grid = el("div", "avatar-grid");
-      let selected: PlayerAvatarOption = PLAYER_AVATAR_OPTIONS[0];
-      const cards: HTMLDivElement[] = [];
+      const group = <T extends string>(
+        title: string,
+        items: { id: T; name: string }[],
+        get: () => T,
+        set: (id: T) => void,
+        swatch?: (id: T) => string
+      ): HTMLElement => {
+        const wrap = el("div", "custom-group");
+        wrap.appendChild(el("div", "custom-title", title));
+        const list = el("div", swatch ? "custom-swatches" : "custom-chips");
+        const btns: HTMLButtonElement[] = [];
+        for (const it of items) {
+          const b = el("button", swatch ? "swatch-btn" : "chip-btn") as HTMLButtonElement;
+          b.type = "button";
+          b.title = it.name;
+          b.setAttribute("aria-label", it.name);
+          if (swatch) b.style.background = swatch(it.id);
+          else b.textContent = it.name;
+          b.setAttribute("aria-pressed", it.id === get() ? "true" : "false");
+          b.onclick = () => {
+            set(it.id);
+            btns.forEach((x, i) => x.setAttribute("aria-pressed", items[i].id === get() ? "true" : "false"));
+            apply();
+          };
+          btns.push(b);
+          list.appendChild(b);
+        }
+        wrap.appendChild(list);
+        return wrap;
+      };
 
-      PLAYER_AVATAR_OPTIONS.forEach((opt, i) => {
-        const c = el("div", "avatar-card") as HTMLDivElement;
-        c.setAttribute("aria-pressed", i === 0 ? "true" : "false");
-        c.tabIndex = 0;
-        const swatch = el("div", "avatar-swatch");
-        swatch.style.background = `radial-gradient(circle at 35% 30%, ${colorHex(opt.accentColor)}, ${colorHex(opt.primaryColor)})`;
-        c.appendChild(swatch);
-        c.appendChild(el("div", "avatar-name", opt.name));
-        c.appendChild(el("div", "avatar-desc", opt.tagline));
-        c.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); c.click(); } };
-        c.onclick = () => {
-          selected = opt;
-          cards.forEach((cc) => cc.setAttribute("aria-pressed", "false"));
-          c.setAttribute("aria-pressed", "true");
-        };
-        cards.push(c);
-        grid.appendChild(c);
-      });
+      card.appendChild(
+        group("Color del cuerpo", BODY_COLORS, () => current.color, (id) => (current.color = id), (id) => {
+          const c = colorDef(id);
+          return `radial-gradient(circle at 35% 30%, ${colorHex(c.shell)} 45%, ${colorHex(c.trim)} 100%)`;
+        })
+      );
+      card.appendChild(group("Accesorio de cabeza", HEAD_ACCESSORIES, () => current.head, (id) => (current.head = id)));
+      card.appendChild(group("Accesorio adicional", EXTRA_ACCESSORIES, () => current.extra, (id) => (current.extra = id)));
 
-      card.appendChild(grid);
-      const confirmBtn = el("button", "btn", "Confirmar") as HTMLButtonElement;
-      confirmBtn.onclick = () => resolve(selected);
-      card.appendChild(confirmBtn);
+      const rot = el("div", "custom-rotate");
+      rot.append(button("◀", "ghost small", () => opts.onRotate(-1)), el("span", undefined, "Girar"), button("▶", "ghost small", () => opts.onRotate(1)));
+      card.appendChild(rot);
 
+      const actions = el("div", "custom-actions");
+      actions.append(
+        button("← Volver", "ghost", () => resolve({ action: "back" })),
+        button("Confirmar", "primary", () => resolve({ action: "confirm", appearance: { ...current } }))
+      );
+      card.appendChild(actions);
       screen.appendChild(card);
       this.root.appendChild(screen);
     });
   }
 
-  // ---------------- Roster intro ----------------
+  // ---------------- Presentación de participantes ----------------
 
-  showRosterIntro(participants: Participant[]): Promise<void> {
+  showRosterIntro(): Promise<void> {
     this.clear();
     return new Promise((resolve) => {
-      const screen = el("div", "screen");
-      const wrap = el("div", "panel", undefined) as HTMLDivElement;
-      wrap.style.padding = "28px 30px";
-      wrap.style.display = "flex";
-      wrap.style.flexDirection = "column";
-      wrap.style.alignItems = "center";
-      wrap.style.gap = "18px";
-      wrap.appendChild(el("div", "select-title", "Los 4 participantes"));
-
-      const grid = el("div", "roster-grid");
-      participants.forEach((p, i) => {
-        const c = el("div", "roster-card") as HTMLDivElement;
-        c.style.animationDelay = `${i * 0.12}s`;
-        const swatch = el("div", "avatar-swatch");
-        swatch.style.width = "64px";
-        swatch.style.height = "64px";
-        swatch.style.background = `radial-gradient(circle at 35% 30%, ${colorHex(p.avatar.accentColor)}, ${colorHex(p.avatar.primaryColor)})`;
-        c.appendChild(swatch);
-        c.appendChild(el("div", "avatar-name", p.name));
-        c.appendChild(el("div", "avatar-desc", p.controllerKind === "human" ? "Tú" : p.avatar.tagline));
-        grid.appendChild(c);
-      });
-      wrap.appendChild(grid);
-
-      const btn = el("button", "btn", "Empezar la partida") as HTMLButtonElement;
-      btn.onclick = () => resolve();
-      wrap.appendChild(btn);
-
-      screen.appendChild(wrap);
+      const screen = el("div", "screen roster-screen");
+      const top = el("div", "roster-top panel");
+      top.appendChild(el("div", "select-title", "Los participantes"));
+      top.appendChild(el("div", "roster-sub", "Tres desafíos seguidos: Atrapa o evita → Cazaengaños → Bajo Presión. Gana quien sume más puntos."));
+      const bottom = el("div", "roster-bottom");
+      bottom.appendChild(button("Comenzar competencia", "primary big", () => resolve()));
+      screen.append(top, bottom);
       this.root.appendChild(screen);
     });
   }
 
-  // ---------------- Instructions + countdown ----------------
+
+  // ---------------- Instrucciones + cuenta atrás ----------------
 
   async showInstructions(spec: InstructionsSpec): Promise<void> {
     this.clear();
     await new Promise<void>((resolve) => {
-      const screen = el("div", "screen");
+      const screen = el("div", `screen instructions-screen theme-${spec.id}`);
       const card = el("div", "panel instructions-card");
+      card.appendChild(el("div", "instructions-step", `DESAFÍO ${spec.step} DE 3`));
       card.appendChild(el("div", "instructions-title", spec.title));
       card.appendChild(el("div", "instructions-goal", spec.goal));
+
+      const rules = el("div", "instructions-rules");
+      for (const r of spec.rules) {
+        const chip = el("div", `rule-chip ${r.tone}`);
+        chip.append(el("span", "rule-points", r.points), el("span", "rule-text", r.text));
+        rules.appendChild(chip);
+      }
+      card.appendChild(rules);
 
       const controls = el("div", "instructions-controls");
       for (const c of spec.controls) {
@@ -263,16 +339,13 @@ export class UIManager {
         controls.appendChild(chip);
       }
       card.appendChild(controls);
-
-      const btn = el("button", "btn", "Listo") as HTMLButtonElement;
-      btn.onclick = () => resolve();
-      card.appendChild(btn);
-
+      card.appendChild(button("Listo", "primary big", () => resolve()));
       screen.appendChild(card);
       this.root.appendChild(screen);
     });
     await this.showCountdown();
   }
+
 
   showCountdown(): Promise<void> {
     this.clear();
@@ -315,6 +388,9 @@ export class UIManager {
     const ranking = el("div", "hud-ranking");
     hud.appendChild(ranking);
 
+    const feedbackEl = el("div", "hud-feedback");
+    hud.appendChild(feedbackEl);
+    let feedbackTimeout = 0;
     let lastTimerSecond = -1;
     let lastRankingKey = "";
     const crosshair = el("div", "hud-crosshair");
@@ -356,6 +432,12 @@ export class UIManager {
           row.appendChild(el("span", undefined, String(entry.score)));
           ranking.appendChild(row);
         }
+      },
+      showFeedback: (text: string, good: boolean, durationMs = 3600) => {
+        feedbackEl.textContent = text;
+        feedbackEl.className = `hud-feedback show ${good ? "good" : "bad"}`;
+        if (feedbackTimeout) window.clearTimeout(feedbackTimeout);
+        feedbackTimeout = window.setTimeout(() => feedbackEl.classList.remove("show"), durationMs);
       },
       showEventBanner: (text: string, durationMs = 4200) => {
         const existing = hud.querySelector(".hud-event-banner");
@@ -405,49 +487,72 @@ export class UIManager {
   mountDecisionPanel(): DecisionHandle {
     const panel = el("div", "decision-panel");
     panel.style.display = "none";
+    const sender = el("div", "decision-sender", "");
     const situation = el("div", "decision-situation", "");
-    panel.appendChild(situation);
     const optionsWrap = el("div", "decision-options");
-    panel.appendChild(optionsWrap);
-    const chargeTrack = el("div", "charge-meter-track");
-    const chargeFill = el("div", "charge-meter-fill");
-    chargeTrack.appendChild(chargeFill);
-    const chargeCaption = el("div", "charge-caption", "CARGA DEL ORBE");
-    panel.appendChild(chargeCaption);
-    panel.appendChild(chargeTrack);
+    const feedback = el("div", "decision-feedback", "");
+    feedback.style.display = "none";
+
+    const energyCaption = el("div", "charge-caption", "ENERGÍA DEL ORBE");
+    const energyTrack = el("div", "charge-meter-track energy");
+    const energyFill = el("div", "charge-meter-fill");
+    energyTrack.appendChild(energyFill);
     const timeCaption = el("div", "charge-caption", "TIEMPO PARA DECIDIR");
     const timeTrack = el("div", "charge-meter-track time");
     const timeFill = el("div", "charge-meter-fill time");
     timeTrack.appendChild(timeFill);
     timeCaption.style.display = timeTrack.style.display = "none";
-    panel.appendChild(timeCaption);
-    panel.appendChild(timeTrack);
+
+    panel.append(sender, situation, optionsWrap, feedback, energyCaption, energyTrack, timeCaption, timeTrack);
     this.root.appendChild(panel);
+    let buttons: HTMLButtonElement[] = [];
 
     return {
-      update: (situationText, options, onPick) => {
+      show: (senderText, question, options, onPick) => {
         panel.style.display = "flex";
-        situation.textContent = situationText;
+        sender.textContent = senderText;
+        sender.style.display = senderText ? "block" : "none";
+        situation.textContent = question;
+        feedback.style.display = "none";
         optionsWrap.innerHTML = "";
-        options.forEach((opt, i) => {
+        buttons = options.map((text, i) => {
           const btn = el("button", "decision-btn") as HTMLButtonElement;
-          const keyBadge = el("span", "key-badge", String(i + 1));
-          keyBadge.style.width = "22px";
-          keyBadge.style.height = "22px";
-          keyBadge.style.fontSize = "12px";
-          btn.appendChild(keyBadge);
-          btn.appendChild(el("span", undefined, opt.texto));
-          btn.onclick = () => onPick(opt);
+          const keyBadge = el("span", "key-badge keycap", String(i + 1));
+          btn.append(keyBadge, el("span", undefined, text));
+          btn.onclick = () => onPick(i);
           optionsWrap.appendChild(btn);
+          return btn;
         });
       },
-      setCharge: (progress01: number) => {
-        chargeFill.style.width = `${Math.round(THREE_clamp01(progress01) * 100)}%`;
+      showStatus: (text) => {
+        panel.style.display = "flex";
+        sender.style.display = "none";
+        situation.textContent = text;
+        optionsWrap.innerHTML = "";
+        feedback.style.display = "none";
+        buttons = [];
       },
-      setTimeLeft: (p: number | null) => {
+      setEnergy: (pct) => {
+        const v = Math.round(Math.min(100, Math.max(0, pct)));
+        energyFill.style.width = `${v}%`;
+        energyCaption.textContent = `ENERGÍA DEL ORBE · ${v} %`;
+      },
+      setTimeLeft: (p, seconds) => {
         const show = p !== null;
         timeCaption.style.display = timeTrack.style.display = show ? "block" : "none";
-        if (show) timeFill.style.width = `${Math.round(THREE_clamp01(p) * 100)}%`;
+        if (show) {
+          timeFill.style.width = `${Math.round(THREE_clamp01(p) * 100)}%`;
+          timeCaption.textContent = seconds !== undefined ? `TIEMPO PARA DECIDIR · ${Math.ceil(seconds)} s` : "TIEMPO PARA DECIDIR";
+        }
+      },
+      reveal: (correctIndex, pickedIndex, text) => {
+        buttons.forEach((b, i) => {
+          b.disabled = true;
+          if (i === correctIndex) b.classList.add("correct");
+          else if (i === pickedIndex) b.classList.add("wrong");
+        });
+        feedback.textContent = text;
+        feedback.style.display = "block";
       },
       hide: () => {
         panel.style.display = "none";
@@ -455,143 +560,145 @@ export class UIManager {
     };
   }
 
-  // ---------------- Results ----------------
+  // ---------------- Resultados ----------------
 
-  async showMinigameResults(opts: {
+  /** Resultados de un desafío: podio 3D (stage) + tabla con los mismos datos. */
+  showMinigameResults(opts: {
+    step: number;
     minigameTitle: string;
-    roundRanking: RankingEntry[];
-    totalRanking: RankingEntry[];
-    colorOf: (id: string) => number;
+    /** puntos de este desafío, ya ordenados con empates compartiendo puesto */
+    round: RankingEntry[];
+    /** acumulado tras este desafío */
+    totals: Map<string, number>;
+    humanId: string;
     isLast: boolean;
   }): Promise<void> {
     this.clear();
     return new Promise((resolve) => {
-      const screen = el("div", "screen");
-      const card = el("div", "panel results-card");
-      card.appendChild(el("div", "results-title", `Resultados · ${opts.minigameTitle}`));
-
-      const podium = el("div", "podium");
-      const order = orderForPodium(opts.roundRanking);
-      // aseguremos que el 1° quede al centro visualmente: reordenamos a [2,1,3,4]
-      for (const entry of order) {
-        const step = el("div", "podium-step");
-        const block = el("div", `podium-block rank-${entry.rank}`, `#${entry.rank}`);
-        const swatch = el("div", "podium-avatar");
-        swatch.style.background = colorHex(opts.colorOf(entry.participantId));
-        step.appendChild(swatch);
-        step.appendChild(el("div", "podium-name", entry.name));
-        step.appendChild(el("div", "podium-score", `${entry.score} pts`));
-        step.appendChild(block);
-        podium.appendChild(step);
-      }
-      card.appendChild(podium);
-      revealPodium(podium);
-
-      const summing = el("div", "summing-label", "SUMANDO AL TOTAL…");
-      card.appendChild(summing);
-
-      const table = el("div", "ranking-table");
-      table.style.display = "none";
-      for (const entry of opts.totalRanking) {
-        const row = el("div", "ranking-row");
-        row.appendChild(el("span", "rank-num", `#${entry.rank}`));
-        row.appendChild(el("span", "rank-name", entry.name));
-        row.appendChild(el("span", "rank-score", `${entry.score} pts`));
-        table.appendChild(row);
-      }
-      card.appendChild(table);
-
-      const btn = el("button", "btn", opts.isLast ? "Ver ranking final" : "Continuar") as HTMLButtonElement;
-      btn.style.display = "none";
-      card.appendChild(btn);
-      btn.onclick = () => resolve();
-
-      screen.appendChild(card);
-      this.root.appendChild(screen);
-
-      setTimeout(() => {
-        summing.style.display = "none";
-        table.style.display = "flex";
-        btn.style.display = "inline-block";
-      }, 1900);
-    });
-  }
-
-  async showFinalResults(finalRanking: RankingEntry[], colorOf: (id: string) => number, stats: MatchSummaryStats): Promise<void> {
-    this.clear();
-    return new Promise((resolve) => {
-      const screen = el("div", "screen");
-      const card = el("div", "panel results-card");
-      card.appendChild(el("div", "results-title", "🏆 Ranking final"));
-
-      const podium = el("div", "podium");
-      const order = orderForPodium(finalRanking);
-      for (const entry of order) {
-        const step = el("div", "podium-step");
-        const block = el("div", `podium-block rank-${entry.rank}`, `#${entry.rank}`);
-        const swatch = el("div", "podium-avatar");
-        swatch.style.background = colorHex(colorOf(entry.participantId));
-        step.appendChild(swatch);
-        step.appendChild(el("div", "podium-name", entry.name));
-        step.appendChild(el("div", "podium-score", `${entry.score} pts`));
-        step.appendChild(block);
-        podium.appendChild(step);
-      }
-      card.appendChild(podium);
-      revealPodium(podium);
-
-      const btn = el("button", "btn", "Ver tu resumen") as HTMLButtonElement;
-      btn.onclick = () => resolve();
-      card.appendChild(btn);
-
-      screen.appendChild(card);
-      this.root.appendChild(screen);
-      void stats;
-    });
-  }
-
-  showMatchSummary(stats: MatchSummaryStats): Promise<"replay"> {
-    this.clear();
-    return new Promise((resolve) => {
-      const screen = el("div", "screen");
-      const card = el("div", "panel summary-card");
-      card.appendChild(el("div", "results-title", "Tu partida"));
-
-      const det = stats.detections;
+      const screen = el("div", "screen results-screen");
+      const card = el("div", "panel results-panel");
+      card.appendChild(el("div", "instructions-step", `DESAFÍO ${opts.step} DE 3 · TERMINADO`));
+      card.appendChild(el("div", "results-title", opts.minigameTitle));
       card.appendChild(
-        summaryStat(`Detectaste ${det.correct}/${det.total} señales engañosas o ambiguas`)
+        rankingTable(
+          ["#", "Jugador", "Este desafío", "Acumulado"],
+          opts.round.map((e) => ({
+            rank: e.rank,
+            name: e.name,
+            cells: [fmtPts(e.score), fmtPts(opts.totals.get(e.participantId) ?? 0)],
+            human: e.participantId === opts.humanId
+          }))
+        )
+      );
+      card.appendChild(button(opts.isLast ? "Ver ranking final" : "Continuar al siguiente desafío", "primary big", () => resolve()));
+      screen.appendChild(card);
+      this.root.appendChild(screen);
+    });
+  }
+
+  /** Ranking final: acumulado de los 3 desafíos (con desglose verificable) y ganador. */
+  showFinalResults(opts: {
+    ranking: RankingEntry[];
+    /** puntos por desafío, en orden de juego */
+    perMinigame: Map<string, number[]>;
+    humanId: string;
+    stats: MatchSummaryStats;
+  }): Promise<"menu" | "replay"> {
+    this.clear();
+    return new Promise((resolve) => {
+      const screen = el("div", "screen results-screen final-screen");
+      const card = el("div", "panel results-panel");
+      const winners = opts.ranking.filter((r) => r.rank === 1);
+      const humanWon = winners.some((w) => w.participantId === opts.humanId);
+      card.appendChild(el("div", "instructions-step", "COMPETENCIA TERMINADA"));
+      card.appendChild(el("div", "results-title", "🏆 Ranking final"));
+      card.appendChild(
+        el(
+          "div",
+          "winner-banner",
+          winners.length > 1
+            ? `Empate en el primer puesto: ${winners.map((w) => w.name).join(" y ")}`
+            : humanWon
+              ? `¡Ganaste la competencia, ${winners[0].name}!`
+              : `Ganador: ${winners[0].name}`
+        )
+      );
+      card.appendChild(
+        rankingTable(
+          ["#", "Jugador", "Atrapa", "Caza", "Presión", "Total"],
+          opts.ranking.map((e) => ({
+            rank: e.rank,
+            name: e.name,
+            cells: [...(opts.perMinigame.get(e.participantId) ?? [0, 0, 0]).map(fmtPts), fmtPts(e.score)],
+            human: e.participantId === opts.humanId
+          }))
+        )
       );
 
-      const categories = Object.entries(stats.categoryPerformance)
+      const stats = el("div", "final-stats");
+      const det = opts.stats.detections;
+      stats.appendChild(summaryStat(`Mensajes evaluados bien: ${det.correct} de ${det.total}`));
+      const categories = Object.entries(opts.stats.categoryPerformance)
         .filter(([, v]) => v.total > 0)
         .sort((a, b) => b[1].correct / b[1].total - a[1].correct / a[1].total);
-      if (categories.length > 0) {
-        const best = categories[0];
+      if (categories.length > 1) {
         const worst = categories[categories.length - 1];
-        card.appendChild(summaryStat(`Mejor categoría: ${prettyCategory(best[0])} (${best[1].correct}/${best[1].total})`));
-        if (categories.length > 1) {
-          card.appendChild(summaryStat(`Para reforzar: ${prettyCategory(worst[0])} (${worst[1].correct}/${worst[1].total})`));
-        }
+        stats.appendChild(summaryStat(`Para reforzar: ${prettyCategory(worst[0])} (${worst[1].correct}/${worst[1].total})`));
       }
-
-      const pa = stats.pressureAccuracy;
-      card.appendChild(summaryStat(`Bajo presión: ${pa.correct}/${pa.total} buenas decisiones`));
-
-      const msg = el(
-        "div",
-        "summary-message",
-        "Recuerda: si algo te incomoda, no es tu culpa. Puedes bloquear, reportar y contárselo a un adulto de confianza."
+      const pa = opts.stats.pressureAccuracy;
+      stats.appendChild(summaryStat(`Bajo Presión: ${pa.correct} de ${pa.total} respuestas correctas`));
+      card.appendChild(stats);
+      card.appendChild(
+        el("div", "summary-message", "Recuerda: si algo te incomoda, no es tu culpa. Puedes bloquear, reportar y contárselo a un adulto de confianza.")
       );
-      card.appendChild(msg);
 
-      const btn = el("button", "btn coral", "Jugar otra partida") as HTMLButtonElement;
-      btn.onclick = () => resolve("replay");
-      card.appendChild(btn);
-
+      const actions = el("div", "custom-actions");
+      actions.append(
+        button("Volver al menú", "ghost", () => resolve("menu")),
+        button("Nueva competencia", "primary", () => resolve("replay"))
+      );
+      card.appendChild(actions);
       screen.appendChild(card);
       this.root.appendChild(screen);
     });
   }
+
+}
+
+/** Botón reutilizable (variantes: primary, ghost, small, big…). */
+function button(label: string, variant: string, onClick: () => void): HTMLButtonElement {
+  const b = el("button", `btn ${variant}`, label) as HTMLButtonElement;
+  b.type = "button";
+  b.onclick = onClick;
+  return b;
+}
+
+function fmtPts(n: number): string {
+  return `${n > 0 ? "+" : ""}${n}`;
+}
+
+interface TableRow {
+  rank: number;
+  name: string;
+  cells: string[];
+  human: boolean;
+}
+
+/** Tabla de clasificación reutilizable; el jugador humano queda resaltado. */
+function rankingTable(headers: string[], rows: TableRow[]): HTMLElement {
+  const table = el("div", "rank-table");
+  table.style.setProperty("--cols", String(headers.length));
+  const head = el("div", "rank-row rank-head");
+  headers.forEach((h) => head.appendChild(el("span", undefined, h)));
+  table.appendChild(head);
+  for (const r of rows) {
+    const row = el("div", `rank-row${r.human ? " me" : ""}`);
+    row.appendChild(el("span", "rank-pos", `#${r.rank}`));
+    row.appendChild(el("span", "rank-who", r.human ? `${r.name} (tú)` : r.name));
+    r.cells.forEach((c, i) => row.appendChild(el("span", i === r.cells.length - 1 ? "rank-total" : undefined, c)));
+    table.appendChild(row);
+  }
+  return table;
 }
 
 function summaryStat(text: string): HTMLDivElement {
@@ -599,10 +706,7 @@ function summaryStat(text: string): HTMLDivElement {
 }
 
 function prettyCategory(cat: string): string {
-  return cat
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  return CATEGORY_LABEL[cat as CategoryId] ?? cat;
 }
 
 function THREE_clamp01(v: number): number {

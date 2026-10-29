@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { Participant } from "../src/entities/Participant";
 import { ScoreManager } from "../src/core/ScoreManager";
-import { NPC_AVATARS, buildHumanAvatar, PLAYER_AVATAR_OPTIONS } from "../src/data/characters";
+import { NPC_AVATARS, buildHumanAvatar, DEFAULT_APPEARANCE } from "../src/data/characters";
 
 function makeRoster(): Participant[] {
-  const human = new Participant("human", buildHumanAvatar(PLAYER_AVATAR_OPTIONS[0], "Ceci"), "human");
+  const human = new Participant("human", buildHumanAvatar(DEFAULT_APPEARANCE, "Ceci"), "human");
   const nova = new Participant("nova", NPC_AVATARS.nova, "ai");
   const kiro = new Participant("kiro", NPC_AVATARS.kiro, "ai");
   const pixel = new Participant("pixel", NPC_AVATARS.pixel, "ai");

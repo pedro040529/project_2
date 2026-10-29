@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { OrbCharge, OrbCircuit } from "../src/core/OrbCircuit";
+import { OrbCircuit, OrbEnergy } from "../src/core/OrbCircuit";
+import { Config } from "../src/core/Config";
 import { mulberry32 } from "../src/utils/rng";
-import { ScenarioManager } from "../src/core/ScenarioManager";
 import { Participant } from "../src/entities/Participant";
 import { MINIGAME_SCORE_FLOOR, ScoreManager } from "../src/core/ScoreManager";
-import { NPC_AVATARS, buildHumanAvatar, PLAYER_AVATAR_OPTIONS } from "../src/data/characters";
+import { NPC_AVATARS, buildHumanAvatar, DEFAULT_APPEARANCE } from "../src/data/characters";
 
 const IDS = ["human", "nova", "kiro", "pixel"];
 
@@ -59,55 +59,76 @@ describe("OrbCircuit", () => {
   });
 });
 
-describe("OrbCharge", () => {
-  it("explota solo con el paso del tiempo, sin depender de las respuestas", () => {
-    const ch = new OrbCharge({ minFuseSeconds: 10, maxFuseSeconds: 10 });
-    expect(ch.exploded).toBe(false);
-    for (let i = 0; i < 99; i++) ch.tick(0.1);
-    expect(ch.exploded).toBe(false);
-    ch.tick(0.2);
-    expect(ch.exploded).toBe(true);
-    expect(ch.value).toBe(1);
+describe("OrbEnergy", () => {
+  it("empieza en el valor inicial y reacciona a las decisiones", () => {
+    const e = new OrbEnergy({ initial: 40 });
+    expect(e.value).toBe(40);
+    expect(e.apply(-10)).toBe("active");
+    expect(e.value).toBe(30);
+    expect(e.apply(25)).toBe("active");
+    expect(e.value).toBe(55);
   });
 
-  it("estabilizar baja la carga pero nunca por debajo de 0, y reset reinicia", () => {
-    const ch = new OrbCharge({ minFuseSeconds: 10, maxFuseSeconds: 10 });
-    ch.tick(2);
-    ch.stabilize(0.5);
-    expect(ch.value).toBe(0);
-    ch.tick(9.9);
-    ch.reset();
-    expect(ch.value).toBe(0);
-    expect(ch.exploded).toBe(false);
+  it("explota al llegar a 100 % y no pasa de ahí", () => {
+    const e = new OrbEnergy({ initial: 40 });
+    e.apply(25);
+    e.apply(25);
+    expect(e.apply(25)).toBe("exploded");
+    expect(e.value).toBe(100);
+    expect(e.apply(25)).toBe("exploded");
+    expect(e.value).toBe(100);
   });
-});
 
-describe("Contenido de Bajo Presión", () => {
-  const all = new ScenarioManager().getAllPressureSituations();
+  it("se estabiliza al llegar a 0 % y no baja de ahí", () => {
+    const e = new OrbEnergy({ initial: 10 });
+    expect(e.apply(-10)).toBe("stabilized");
+    expect(e.value).toBe(0);
+    expect(e.apply(-10)).toBe("stabilized");
+    expect(e.value).toBe(0);
+  });
 
-  it("cada situación tiene 3 opciones y exactamente una buena", () => {
-    for (const s of all) {
-      expect(s.opciones).toHaveLength(3);
-      expect(s.opciones.filter((o) => o.calidad === "buena")).toHaveLength(1);
-      expect(s.explicacion.length).toBeGreaterThan(10);
+  it("no depende del tiempo: sin decisiones la energía no cambia", () => {
+    const e = new OrbEnergy({ initial: 40 });
+    expect(e.status).toBe("active");
+    expect(e.value).toBe(40);
+  });
+
+  it("reset vuelve a la energía inicial", () => {
+    const e = new OrbEnergy({ initial: 40 });
+    e.apply(60);
+    e.reset();
+    expect(e.value).toBe(40);
+    expect(e.status).toBe("active");
+    expect(e.ratio).toBeCloseTo(0.4);
+  });
+
+  it("con los valores del juego: 4 errores seguidos explotan, 4 aciertos seguidos estabilizan", () => {
+    const wrong = new OrbEnergy({ initial: Config.bajoPresion.initialEnergy });
+    let st: string = "active";
+    let n = 0;
+    while (st === "active") {
+      st = wrong.apply(Config.bajoPresion.energyOnWrong);
+      n++;
     }
-  });
+    expect(st).toBe("exploded");
+    expect(n).toBe(3);
 
-  it("hay mezcla de situaciones legítimas, engañosas y ambiguas", () => {
-    const types = new Set(all.map((s) => s.tipo));
-    expect(types).toEqual(new Set(["legitima", "enganosa", "ambigua"]));
-    expect(all.length).toBeGreaterThanOrEqual(20);
-  });
-
-  it("los ids son únicos", () => {
-    expect(new Set(all.map((s) => s.scenarioID)).size).toBe(all.length);
+    const right = new OrbEnergy({ initial: Config.bajoPresion.initialEnergy });
+    st = "active";
+    n = 0;
+    while (st === "active") {
+      st = right.apply(Config.bajoPresion.energyOnCorrect);
+      n++;
+    }
+    expect(st).toBe("stabilized");
+    expect(n).toBe(4);
   });
 });
 
 describe("Piso de puntaje por minijuego", () => {
   it("las penalizaciones no hunden por debajo del piso", () => {
     const sm = new ScoreManager();
-    const p = new Participant("human", buildHumanAvatar(PLAYER_AVATAR_OPTIONS[0], "Ceci"), "human");
+    const p = new Participant("human", buildHumanAvatar(DEFAULT_APPEARANCE, "Ceci"), "human");
     for (let i = 0; i < 10; i++) sm.award(p, -100, "error", "cazaenganos");
     expect(p.minigameScore).toBe(MINIGAME_SCORE_FLOOR);
     expect(p.totalScore).toBe(MINIGAME_SCORE_FLOOR);

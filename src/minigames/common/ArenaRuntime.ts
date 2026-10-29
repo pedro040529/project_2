@@ -21,6 +21,8 @@ export class ArenaRuntime {
   readonly cameraRig: CameraRig;
   readonly rigs: Map<string, CharacterRig> = new Map();
   readonly group = new THREE.Group();
+  /** Si se define, reemplaza la cámara en tercera persona (p. ej. la vista de escenario de Bajo Presión). */
+  stageCamera: ((camera: THREE.PerspectiveCamera, dt: number) => void) | null = null;
 
   constructor(
     private ctx: MinigameContext,
@@ -98,7 +100,9 @@ export class ArenaRuntime {
     for (const rig of this.rigs.values()) rig.postStep(dt);
 
     const human = this.getHumanRig();
-    if (human) {
+    if (this.stageCamera) {
+      this.stageCamera(this.ctx.camera, dt);
+    } else if (human) {
       const isMoving = human.controller.moveIntent.x !== 0 || human.controller.moveIntent.z !== 0;
       this.cameraRig.update(dt, new THREE.Vector3(...human.participant.position), this.arena.collidables, {
         heading: human.participant.heading,

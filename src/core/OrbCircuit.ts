@@ -75,50 +75,50 @@ export class OrbCircuit {
   }
 }
 
-export interface OrbChargeOptions {
-  minFuseSeconds?: number;
-  maxFuseSeconds?: number;
-  rand?: () => number;
+export type OrbStatus = "active" | "exploded" | "stabilized";
+
+export interface OrbEnergyOptions {
+  initial: number;
+  max?: number;
 }
 
-/** Carga 0..1 del orbe. Solo sube con el tiempo; decisiones buenas pueden estabilizarlo un poco. */
-export class OrbCharge {
-  private readonly minFuse: number;
-  private readonly maxFuse: number;
-  private readonly rand: () => number;
-  private fuse: number;
-  private elapsed = 0;
+/**
+ * Energía del orbe (0..100 %). No depende del tiempo: solo cambia con las
+ * decisiones. Al llegar a 100 explota; al llegar a 0 se estabiliza y termina
+ * esa ronda. Quien lo cambia queda registrado para penalizar / premiar.
+ */
+export class OrbEnergy {
+  private _value: number;
+  private readonly initial: number;
+  private readonly max: number;
 
-  constructor(opts: OrbChargeOptions = {}) {
-    this.minFuse = opts.minFuseSeconds ?? 13;
-    this.maxFuse = opts.maxFuseSeconds ?? 22;
-    this.rand = opts.rand ?? Math.random;
-    this.fuse = this.rollFuse();
-  }
-
-  private rollFuse(): number {
-    return this.minFuse + this.rand() * (this.maxFuse - this.minFuse);
+  constructor(opts: OrbEnergyOptions) {
+    this.initial = opts.initial;
+    this.max = opts.max ?? 100;
+    this._value = opts.initial;
   }
 
   get value(): number {
-    return Math.min(1, this.elapsed / this.fuse);
+    return this._value;
   }
 
-  get exploded(): boolean {
-    return this.elapsed >= this.fuse;
+  get ratio(): number {
+    return this._value / this.max;
   }
 
-  tick(dt: number): void {
-    this.elapsed += dt;
+  get status(): OrbStatus {
+    if (this._value >= this.max) return "exploded";
+    if (this._value <= 0) return "stabilized";
+    return "active";
   }
 
-  /** Una buena decisión baja la carga (ventaja); nunca provoca ni evita por sí sola una explosión inminente. */
-  stabilize(fraction: number): void {
-    this.elapsed = Math.max(0, this.elapsed - this.fuse * fraction);
+  /** Suma `delta` puntos porcentuales (negativo = enfría) y devuelve el nuevo estado. */
+  apply(delta: number): OrbStatus {
+    this._value = Math.min(this.max, Math.max(0, this._value + delta));
+    return this.status;
   }
 
   reset(): void {
-    this.elapsed = 0;
-    this.fuse = this.rollFuse();
+    this._value = this.initial;
   }
 }

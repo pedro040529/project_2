@@ -35,36 +35,57 @@ npm run preview   # sirve dist/ localmente para probarlo tal cual se va a public
 hosting estático (Netlify, Vercel, GitHub Pages, S3+CloudFront, nginx, etc.)
 sin configuración de servidor especial.
 
+## Flujo de la competencia
+
+Menú principal → Personalización → Presentación de participantes → (Instrucciones → Partida → Resultados) × 3 → Ranking final → Volver al menú o Nueva competencia.
+
+El orden de los desafíos es obligatorio: **Atrapa o evita → Cazaengaños → Bajo Presión**. No hay selección libre.
+
 ## Tests
 
 ```bash
-npm test          # vitest run — puntuación, ranking, sorteo de escenarios
+npm test          # vitest run — puntuación, ranking, banco educativo, orbe, calidad, ajustes
 npm run typecheck # tsc --noEmit
+npm run build && npx vite preview --port 4199 &
+node scripts/full-playtest.mjs   # competencia completa en un navegador real (usa ?ts=0.12 para acortar las rondas)
+node scripts/perf-fps.mjs        # FPS del menú y del primer desafío
 ```
+
+`?q=high|medium|low` fuerza la calidad gráfica y `?ts=0.12` acorta las rondas (solo para pruebas).
 
 ## Controles
 
 | Tecla / acción | Efecto |
 |---|---|
-| `WASD` | Moverse |
-| Mouse | Apuntar con cursor libre |
+| `W` `A` `S` `D` | Moverse (arriba / izquierda / abajo / derecha) |
 | Mover el mouse | Girar la cámara (el primer clic captura el mouse; `Esc` lo libera) |
-| Clic izquierdo | Disparar (Cazaengaños); también puedes hacer clic en el mensaje visible |
-| `E` | Pasar el objeto (Bajo Presión) |
-| `1` `2` `3` | Elegir opción bajo presión |
+| Clic | Disparar (Cazaengaños) |
+| `1` `2` `3` | Elegir respuesta (Bajo Presión) |
+
+## Reglas de puntuación
+
+- **Atrapa o evita** y **Cazaengaños**: +100 por la acción correcta, −50 por la incorrecta; dejar pasar un mensaje no cuesta nada.
+- **Bajo Presión**: +100 por respuesta correcta (−10 % de energía del orbe), −50 por incorrecta o sin responder (+25 %). El orbe parte en 40 %, explota al 100 % y se estabiliza al 0 %. La penalización extra por explosión y el bono por estabilización (`Config.bajoPresion.points`) son valores provisionales pendientes de definir.
+- Piso de −200 por minijuego. La dificultad no multiplica los puntos.
+
+## Contenido educativo
+
+El banco de 72 situaciones (24 por minijuego, v2.1) está en `src/data/*Situations.json`; el feedback por categoría en `src/data/feedback.ts`. **CA-20 y CA-22** están marcadas `pendienteRevision` y no entran al juego hasta su revisión editorial.
 
 ## Estructura del código
 
 ```
 src/
-  core/        GameManager, MatchManager, ScoreManager, ScenarioManager,
-               UIManager, ResultsManager, Config (balance), types
+  core/        GameManager, MatchManager, ScoreManager, ScenarioManager, OrbCircuit (lógica pura del orbe),
+               UIManager, Settings, Profile, Quality, Config (balance), types
   entities/    Participant + controladores (Human/AI/Network)
-  world/       Arena, personajes, cámara, física, input, materiales, labels
+  world/       Guardián Digital (CharacterFactory), escenarios de menú (Stages), arenas temáticas
+               (ThemedArenas), cámara, física, input, partículas
   minigames/   AtrapaOEvita, Cazaenganos, BajoPresion + ArenaRuntime común
   audio/       AudioManager (síntesis Web Audio, sin archivos de sonido)
-  data/        rewards.json, messages.json, pressureSituations.json, characters.ts
-scripts/       descarga/procesado de texturas CC0 + playtest automatizado
+  data/        atrapaSituations.json, cazaSituations.json, bajoPresionSituations.json, feedback.ts, characters.ts
+  styles/      main.css (base) + nexora.css (sistema visual común)
+scripts/       texturas CC0, playtest de competencia completa y medición de FPS
 tests/         pruebas unitarias (vitest)
 docs/playtest/ capturas y video del playtest automatizado
 ```

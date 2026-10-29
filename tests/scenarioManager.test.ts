@@ -1,83 +1,107 @@
 import { describe, expect, it } from "vitest";
 import { ScenarioManager } from "../src/core/ScenarioManager";
-import { Config } from "../src/core/Config";
+import { CATEGORY_FEEDBACK, feedbackFor } from "../src/data/feedback";
 
-describe("ScenarioManager — contenido y sorteo", () => {
-  it("expone el tamaño de pool pedido por el brief (24 rewards / 40 messages / 25 pressure)", () => {
-    const sm = new ScenarioManager(1);
-    expect(sm.getAllRewards()).toHaveLength(24);
-    expect(sm.getAllMessages()).toHaveLength(40);
-    expect(sm.getAllPressureSituations()).toHaveLength(25);
+describe("Banco educativo (72 situaciones, v2.1)", () => {
+  const sm = new ScenarioManager(1);
+  const at = sm.getAtrapaSituations();
+  const ca = sm.getAllCazaSituations();
+  const bp = sm.getBajoPresionSituations();
+
+  it("tiene 24 situaciones por minijuego", () => {
+    expect(at).toHaveLength(24);
+    expect(ca).toHaveLength(24);
+    expect(bp).toHaveLength(24);
   });
 
-  it("cada escenario está clasificado como legitima, ambigua o enganosa", () => {
-    const sm = new ScenarioManager(1);
-    const valid = new Set(["legitima", "ambigua", "enganosa"]);
-    for (const r of sm.getAllRewards()) expect(valid.has(r.tipo)).toBe(true);
-    for (const m of sm.getAllMessages()) expect(valid.has(m.tipo)).toBe(true);
-    for (const p of sm.getAllPressureSituations()) expect(valid.has(p.tipo)).toBe(true);
+  it("los IDs son únicos y siguen el formato del documento", () => {
+    const ids = [...at, ...ca, ...bp].map((s) => s.id);
+    expect(new Set(ids).size).toBe(72);
+    expect(at.every((s) => /^AT-\d\d$/.test(s.id))).toBe(true);
+    expect(ca.every((s) => /^CA-\d\d$/.test(s.id))).toBe(true);
+    expect(bp.every((s) => /^BP-\d\d$/.test(s.id))).toBe(true);
   });
 
-  it("cada escenario trae justificación de diseño (explicacion) y no está vacía", () => {
-    const sm = new ScenarioManager(1);
-    for (const m of sm.getAllMessages()) {
-      expect(m.explicacion.length).toBeGreaterThan(10);
-      expect(m.senales.length).toBeGreaterThan(0);
+  it("cada categoría tiene feedback base", () => {
+    for (const s of [...at, ...ca, ...bp]) {
+      expect(CATEGORY_FEEDBACK[s.categoria]).toBeTruthy();
+      expect(feedbackFor(s.categoria, true).length).toBeGreaterThan(5);
+      expect(feedbackFor(s.categoria, false)).toBe(CATEGORY_FEEDBACK[s.categoria]);
     }
   });
 
-  it("drawMessageSet respeta la composición pedida (ej. 4 legítimos, 5 engañosos, 3 ambiguos)", () => {
-    const sm = new ScenarioManager(42);
-    const composition = { legitima: 4, enganosa: 5, ambigua: 3 };
-    const drawn = sm.drawMessageSet(composition);
-
-    expect(drawn).toHaveLength(12);
-    expect(drawn.filter((m) => m.tipo === "legitima")).toHaveLength(4);
-    expect(drawn.filter((m) => m.tipo === "enganosa")).toHaveLength(5);
-    expect(drawn.filter((m) => m.tipo === "ambigua")).toHaveLength(3);
+  it("dificultad 1-3 repartida por tercios (8 de cada una por minijuego)", () => {
+    for (const list of [at, ca, bp]) {
+      for (const d of [1, 2, 3]) expect(list.filter((s) => s.dificultad === d)).toHaveLength(8);
+    }
   });
 
-  it("drawMessageSet nunca repite el mismo scenarioID dentro del mismo sorteo", () => {
-    const sm = new ScenarioManager(7);
-    const drawn = sm.drawMessageSet(Config.cazaenganos.composition);
-    const ids = drawn.map((m) => m.scenarioID);
-    expect(new Set(ids).size).toBe(ids.length);
+  it("Atrapa: mezcla de mensajes para recoger y para evitar, con remitente y contexto", () => {
+    expect(at.filter((s) => s.accionCorrecta === "recoger")).toHaveLength(12);
+    expect(at.filter((s) => s.accionCorrecta === "evitar")).toHaveLength(12);
+    for (const s of at) {
+      expect(s.remitente.length).toBeGreaterThan(0);
+      expect(s.contexto.length).toBeGreaterThan(0);
+      expect(s.texto.length).toBeGreaterThan(10);
+    }
   });
 
-  it("dos partidas con semillas distintas producen selecciones distintas (varían entre partidas)", () => {
-    const a = new ScenarioManager(1).drawMessageSet(Config.cazaenganos.composition).map((m) => m.scenarioID);
-    const b = new ScenarioManager(2).drawMessageSet(Config.cazaenganos.composition).map((m) => m.scenarioID);
+  it("Cazaengaños: CA-20 y CA-22 se conservan pero NO entran al juego (pendientes de revisión editorial)", () => {
+    const pending = ca.filter((s) => s.pendienteRevision).map((s) => s.id);
+    expect(pending).toEqual(["CA-20", "CA-22"]);
+    const playable = sm.getCazaSituations();
+    expect(playable).toHaveLength(22);
+    expect(playable.some((s) => s.id === "CA-20" || s.id === "CA-22")).toBe(false);
+  });
+
+  it("Cazaengaños: hay publicaciones para disparar y para dejar pasar", () => {
+    const playable = sm.getCazaSituations();
+    expect(playable.some((s) => s.accionCorrecta === "disparar")).toBe(true);
+    expect(playable.some((s) => s.accionCorrecta === "no_disparar")).toBe(true);
+  });
+
+  it("Bajo Presión: 3 opciones A/B/C y exactamente una correcta que existe", () => {
+    for (const s of bp) {
+      expect(s.opciones.map((o) => o.id)).toEqual(["A", "B", "C"]);
+      expect(s.opciones.filter((o) => o.id === s.correcta)).toHaveLength(1);
+      expect(s.pregunta.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("Bajo Presión: la respuesta correcta no está siempre en la misma letra", () => {
+    const letters = new Set(bp.map((s) => s.correcta));
+    expect(letters).toEqual(new Set(["A", "B", "C"]));
+  });
+});
+
+describe("Mazos", () => {
+  it("reparten todas las situaciones antes de repetir cualquiera", () => {
+    const deck = new ScenarioManager(5).atrapaDeck();
+    const first = Array.from({ length: 24 }, () => deck.draw().id);
+    expect(new Set(first).size).toBe(24);
+  });
+
+  it("nunca repiten la misma situación dos veces seguidas, ni al volver a barajar", () => {
+    const deck = new ScenarioManager(9).cazaDeck();
+    let prev = "";
+    for (let i = 0; i < 200; i++) {
+      const id = deck.draw().id;
+      expect(id).not.toBe(prev);
+      prev = id;
+    }
+  });
+
+  it("dos semillas distintas dan órdenes distintos", () => {
+    const a = Array.from({ length: 10 }, ((d) => () => d.draw().id)(new ScenarioManager(1).bajoPresionDeck()));
+    const b = Array.from({ length: 10 }, ((d) => () => d.draw().id)(new ScenarioManager(2).bajoPresionDeck()));
     expect(a).not.toEqual(b);
   });
 
-  it("drawMessageSet lanza si se pide más de lo que el pool de ese tipo tiene", () => {
-    const sm = new ScenarioManager(1);
-    expect(() => sm.drawMessageSet({ legitima: 999, enganosa: 1, ambigua: 1 })).toThrow();
-  });
-
-  it("drawPressureSequence devuelve exactamente la cantidad pedida, incluso mayor al pool", () => {
-    const sm = new ScenarioManager(3);
-    const seq = sm.drawPressureSequence(20);
-    expect(seq).toHaveLength(20);
-  });
-
-  it("getRewardsByType separa correctamente legítimas, ambiguas y engañosas", () => {
-    const sm = new ScenarioManager(1);
-    const leg = sm.getRewardsByType("legitima");
-    const amb = sm.getRewardsByType("ambigua");
-    const eng = sm.getRewardsByType("enganosa");
-    expect(leg.length + amb.length + eng.length).toBe(24);
-    expect(leg.every((r) => r.tipo === "legitima")).toBe(true);
-    expect(amb.every((r) => r.tipo === "ambigua")).toBe(true);
-    expect(eng.every((r) => r.tipo === "enganosa")).toBe(true);
-  });
-
-  it("las situaciones de presión traen 3 opciones con al menos una buena y una mala", () => {
-    const sm = new ScenarioManager(1);
-    for (const s of sm.getAllPressureSituations()) {
-      expect(s.opciones).toHaveLength(3);
-      expect(s.opciones.some((o) => o.calidad === "buena")).toBe(true);
-      expect(s.opciones.some((o) => o.calidad === "mala")).toBe(true);
-    }
+  it("el mazo de Cazaengaños excluye las situaciones pendientes", () => {
+    const deck = new ScenarioManager(3).cazaDeck();
+    const ids = new Set(Array.from({ length: 80 }, () => deck.draw().id));
+    expect(ids.has("CA-20")).toBe(false);
+    expect(ids.has("CA-22")).toBe(false);
+    expect(ids.size).toBe(22);
   });
 });

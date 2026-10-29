@@ -1,0 +1,220 @@
+[
+  {
+    "id": "CA-01",
+    "dificultad": 1,
+    "categoria": "anuncios_fuentes",
+    "remitente": "NEXORA",
+    "contexto": "Oficial verificado",
+    "texto": "¡Ya comenzó el evento de fin de semana! Las partidas completadas darán el doble de experiencia.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-02",
+    "dificultad": 1,
+    "categoria": "enlaces_externos",
+    "remitente": "ArenaNews",
+    "contexto": "Noticias",
+    "texto": "La actualización ya salió, pero a algunos no les aparece. Dejamos una versión alternativa en nuestro perfil.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-03",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "MapasConLeo",
+    "contexto": "Creador de mapas",
+    "texto": "¡Terminé mi nuevo mapa de obstáculos! Búsquenlo con el código 4821 en el explorador del juego.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-04",
+    "dificultad": 1,
+    "categoria": "enlaces_externos",
+    "remitente": "LigaNEX",
+    "contexto": "Comunidad de torneos",
+    "texto": "Ya tenemos los resultados de ayer. Los equipos finalistas pueden confirmar su premio desde el formulario de nuestro perfil.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-05",
+    "dificultad": 1,
+    "categoria": "interacciones_seguras",
+    "remitente": "PixelZone",
+    "contexto": "Comunidad",
+    "texto": "¡Esta noche jugaremos escondidas! La sala aparecerá en el buscador con el nombre PixelZone.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-06",
+    "dificultad": 1,
+    "categoria": "enlaces_externos",
+    "remitente": "GameBoost",
+    "contexto": "Creador de contenido",
+    "texto": "Probé una herramienta que mejora bastante los FPS. La dejé en la descripción para quien quiera usarla.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-07",
+    "dificultad": 1,
+    "categoria": "anuncios_fuentes",
+    "remitente": "NEXORA",
+    "contexto": "Oficial verificado",
+    "texto": "El mantenimiento terminó. Ya puedes volver a entrar a las partidas con normalidad.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-08",
+    "dificultad": 1,
+    "categoria": "enlaces_externos",
+    "remitente": "CofresArena",
+    "contexto": "Recompensas",
+    "texto": "Los cofres del aniversario se están entregando por tandas. Si no recibiste el tuyo, revisa la solicitud de nuestra biografía.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-09",
+    "dificultad": 2,
+    "categoria": "interacciones_seguras",
+    "remitente": "CreadorNico",
+    "contexto": "Creador",
+    "texto": "¡Mi mapa llegó a mil jugadores! Agregué una zona secreta. La encuentran detrás de la torre central.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-10",
+    "dificultad": 2,
+    "categoria": "enlaces_externos",
+    "remitente": "Nexora_Eventos",
+    "contexto": "Comunidad no verificada",
+    "texto": "Se liberaron más cupos para el torneo. Estamos confirmando equipos desde la página que aparece en nuestro perfil.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-11",
+    "dificultad": 2,
+    "categoria": "interacciones_seguras",
+    "remitente": "ArenaTips",
+    "contexto": "Guías",
+    "texto": "Si todavía no encuentras las tres llaves del evento, subimos una guía con sus ubicaciones en el mapa.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-12",
+    "dificultad": 2,
+    "categoria": "suplantacion",
+    "remitente": "NEX0RA_Soporte",
+    "contexto": "No verificado (cero en lugar de O)",
+    "texto": "Algunos inventarios no se actualizaron tras el parche. Estamos revisando los perfiles afectados desde nuestro portal.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-13",
+    "dificultad": 2,
+    "categoria": "interacciones_seguras",
+    "remitente": "LigaPixel",
+    "contexto": "Torneo",
+    "texto": "¡Inscripciones abiertas para el torneo de dúos! Busquen nuestra sala en el juego y anoten su nombre de jugador.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-14",
+    "dificultad": 2,
+    "categoria": "intercambios_recompensas",
+    "remitente": "SkinArchive",
+    "contexto": "Coleccionista",
+    "texto": "Encontramos la tienda de una temporada antigua. Todavía permite conseguir algunos diseños que ya no aparecen en el juego.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-15",
+    "dificultad": 2,
+    "categoria": "anuncios_fuentes",
+    "remitente": "NEXORA",
+    "contexto": "Oficial verificado",
+    "texto": "La próxima temporada cambiará el sistema de clasificación. Los puntos actuales se mantendrán hasta el cierre.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-16",
+    "dificultad": 2,
+    "categoria": "enlaces_externos",
+    "remitente": "ArenaNews",
+    "contexto": "Noticias",
+    "texto": "Parece que el parche está llegando por regiones. Si tu cuenta sigue atrasada, tenemos una opción para sincronizarla.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-17",
+    "dificultad": 3,
+    "categoria": "interacciones_seguras",
+    "remitente": "MaxBuilder",
+    "contexto": "Creador",
+    "texto": "La versión nueva del laberinto ya está publicada. Mantiene el mismo código, así que no necesitan buscar otro acceso.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-18",
+    "dificultad": 3,
+    "categoria": "suplantacion",
+    "remitente": "NEXORA_Ayuda",
+    "contexto": "No verificado",
+    "texto": "Estamos revisando por qué algunos premios no llegaron. Si te pasó, completa el reporte desde nuestro perfil.",
+    "accionCorrecta": "disparar"
+  },
+  {
+    "id": "CA-19",
+    "dificultad": 3,
+    "categoria": "anuncios_fuentes",
+    "remitente": "TorneoCentral",
+    "contexto": "Organizador",
+    "texto": "Publicamos los horarios de las semifinales. Cada equipo puede consultar su partida buscando su nombre en la tabla.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-20",
+    "dificultad": 3,
+    "categoria": "enlaces_externos",
+    "remitente": "BetaArena",
+    "contexto": "Pruebas",
+    "texto": "El nuevo modo ya está en pruebas. Nos quedan algunos accesos y estamos activándolos por orden de registro.",
+    "accionCorrecta": "disparar",
+    "pendienteRevision": true
+  },
+  {
+    "id": "CA-21",
+    "dificultad": 3,
+    "categoria": "anuncios_fuentes",
+    "remitente": "NEXORA",
+    "contexto": "Oficial verificado",
+    "texto": "Las recompensas del campeonato se enviarán al inventario. No es necesario reclamarlas desde otra página.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-22",
+    "dificultad": 3,
+    "categoria": "intercambios_recompensas",
+    "remitente": "InventarioPlus",
+    "contexto": "Consejos",
+    "texto": "Después del último parche, varios jugadores perdieron objetos. Encontramos una forma de recuperar el inventario anterior.",
+    "accionCorrecta": "disparar",
+    "pendienteRevision": true
+  },
+  {
+    "id": "CA-23",
+    "dificultad": 3,
+    "categoria": "interacciones_seguras",
+    "remitente": "KiraMaps",
+    "contexto": "Creador",
+    "texto": "Mi mapa de carreras tendrá una ronda especial esta noche. El código sigue fijado en mi perfil del juego.",
+    "accionCorrecta": "no_disparar"
+  },
+  {
+    "id": "CA-24",
+    "dificultad": 3,
+    "categoria": "enlaces_externos",
+    "remitente": "NX_Rewards",
+    "contexto": "Eventos",
+    "texto": "Estamos comprobando qué cuentas antiguas califican para los premios del aniversario. Los resultados aparecerán en nuestro portal.",
+    "accionCorrecta": "disparar"
+  }
+]

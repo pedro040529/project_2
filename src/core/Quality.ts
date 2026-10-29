@@ -19,10 +19,16 @@ export class QualityMonitor {
   constructor(
     private onChange: (tier: QualityTier) => void,
     initial: QualityTier = "high",
-    private readonly adaptive = true,
+    private adaptive = true,
     private readonly targetFps = 50
   ) {
     this.tier = initial;
+  }
+
+  setAdaptive(on: boolean): void {
+    this.adaptive = on;
+    this.frames = [];
+    this.sinceChange = 0;
   }
 
   /** Llamar una vez por fotograma con el dt real (segundos, SIN recortar). */

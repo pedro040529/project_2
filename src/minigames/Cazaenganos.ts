@@ -1,14 +1,16 @@
 import * as THREE from "three";
 import { Config } from "../core/Config";
-import type { MessageDef } from "../core/types";
+import type { CazaSituation } from "../core/types";
+import type { Deck } from "../core/ScenarioManager";
+import { feedbackFor } from "../data/feedback";
 import type { InstructionsSpec, HudHandle } from "../core/UIManager";
 import type { IMinigame, MinigameContext } from "./IMinigame";
 import { ArenaRuntime } from "./common/ArenaRuntime";
 import { gsap } from "gsap";
-import { feltFlat, CraftPalette } from "../world/Materials";
 import { buildHoloRange } from "../world/ThemedArenas";
 import { BurstSystem } from "../world/Burst";
-import { mulberry32, shuffle } from "../utils/rng";
+import { mulberry32 } from "../utils/rng";
+import { testTimeScale } from "../utils/testHooks";
 
 interface TargetSlot {
   position: THREE.Vector3;
@@ -16,7 +18,7 @@ interface TargetSlot {
   base: THREE.Vector3;
   filled: boolean;
   cooldown: number;
-  current: MessageDef | null;
+  current: CazaSituation | null;
   mesh: THREE.Group | null;
   label: ReturnType<import("../world/LabelRenderer").LabelRenderer["createLabel"]> | null;
   instanceId: number;
@@ -33,24 +35,32 @@ interface PendingAiShot {
 }
 
 function blasterMesh(): THREE.Group {
-  // Blaster de juguete artesanal: mismo aspecto para los 4, es solo utilería.
-  // Un poco más grande de lo "realista" a propósito, para que se note bien
-  // a la distancia de cámara habitual del juego.
+  // Blaster futurista (utilería idéntica para los 4): cuerpo oscuro, anillos y punta luminosos.
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.13, 0.36), feltFlat(CraftPalette.cardboardDark, 0.6));
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1b2144, roughness: 0.35, metalness: 0.6 });
+  const glow = new THREE.MeshStandardMaterial({ color: 0x39e1ff, emissive: 0x39e1ff, emissiveIntensity: 2.2 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.15, 0.4), dark);
   g.add(body);
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.22, 8), feltFlat(CraftPalette.cardboard, 0.5));
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.3, 10), dark);
   barrel.rotation.x = Math.PI / 2;
-  barrel.position.z = -0.27;
+  barrel.position.z = -0.32;
   g.add(barrel);
-  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.2, 0.1), feltFlat(CraftPalette.coralFelt, 0.75));
-  grip.position.set(0, -0.15, 0.07);
+  for (const z of [-0.2, -0.34]) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.012, 6, 14), glow);
+    ring.position.z = z;
+    g.add(ring);
+  }
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), glow);
+  tip.position.z = -0.48;
+  g.add(tip);
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.2, 0.09), dark);
+  grip.position.set(0, -0.15, 0.08);
   grip.rotation.x = 0.3;
   g.add(grip);
-  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), feltFlat(CraftPalette.mustardFelt, 0.5));
-  tip.position.z = -0.39;
-  g.add(tip);
-  g.scale.setScalar(1.8);
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.145, 0.03, 0.2), glow);
+  stripe.position.set(0, 0.08, 0.04);
+  g.add(stripe);
+  g.scale.setScalar(1.6);
   return g;
 }
 
@@ -86,16 +96,15 @@ export class Cazaenganos implements IMinigame {
   private arenaRuntime!: ArenaRuntime;
   private hud!: HudHandle;
   private slots: TargetSlot[] = [];
-  private deck: MessageDef[] = [];
-  private deckCursor = 0;
-  private timeRemaining = Config.cazaenganos.durationSeconds;
+  private deck!: Deck<CazaSituation>;
+  private readonly duration = Config.cazaenganos.durationSeconds * testTimeScale();
+  private timeRemaining = this.duration;
   private finished = false;
   private started = false;
   private rand = mulberry32((Date.now() + 777) & 0xffffffff);
   private nextInstanceId = 1;
   private aiTimers = new Map<string, number>();
   private pendingAiShots: PendingAiShot[] = [];
-  private streak = 0;
   private raycaster = new THREE.Raycaster();
   private tracers: Tracer[] = [];
   private bursts!: BurstSystem;
@@ -109,7 +118,7 @@ export class Cazaenganos implements IMinigame {
     this.arenaRuntime = new ArenaRuntime(ctx, Config.arena.sharedRadius, buildHoloRange);
     this.bursts = new BurstSystem(this.arenaRuntime.group);
     this.hud = ctx.ui.mountHUD();
-    this.hud.setObjective("Haz click una vez para capturar el mouse; apunta con la mira y haz click para destruir los mensajes engañosos. No dispares a los legítimos.");
+    this.hud.setObjective("Lee quién escribe y de dónde viene. Dispara solo a los engaños; dejar pasar una publicación no cuesta puntos.");
     // El cursor del sistema hace de mira: no se necesita pointer lock ni
     // capturar el mouse para apuntar, así que un crosshair fijo al centro
     // de pantalla ya no representaría dónde apunta realmente el disparo.
@@ -120,7 +129,7 @@ export class Cazaenganos implements IMinigame {
       rig.character.attachToRightHand(blasterMesh());
     }
 
-    this.deck = shuffle(this.ctx.scenarios.drawMessageSet(Config.cazaenganos.composition), this.rand);
+    this.deck = this.ctx.scenarios.cazaDeck();
 
     const radius = this.arenaRuntime.arena.radius * 0.7;
     for (let i = 0; i < Config.cazaenganos.targetsOnScreen; i++) {
@@ -158,12 +167,11 @@ export class Cazaenganos implements IMinigame {
     return available[Math.floor(this.rand() * available.length)]!;
   }
 
-  private nextDeckMessage(): MessageDef {
-    if (this.deckCursor >= this.deck.length) {
-      this.deck = shuffle(this.deck, this.rand);
-      this.deckCursor = 0;
-    }
-    return this.deck[this.deckCursor++];
+  private nextDeckMessage(): CazaSituation {
+    // nunca dos veces la misma publicación a la vez
+    let sit = this.deck.draw();
+    for (let tries = 0; tries < 6 && this.slots.some((x) => x.current?.id === sit.id); tries++) sit = this.deck.draw();
+    return sit;
   }
 
   private fillSlot(slot: TargetSlot): void {
@@ -183,7 +191,7 @@ export class Cazaenganos implements IMinigame {
     gsap.fromTo(mesh.scale, { x: 0.01, y: 0.01, z: 0.01 }, { x: 1, y: 1, z: 1, duration: 0.55, ease: "back.out(2)" });
     this.bursts.emit(slot.position.clone(), 0x39e1ff, 10, 2.5, 0.7);
 
-    const label = this.ctx.labelRenderer.createLabel(msg.autor, msg.texto);
+    const label = this.ctx.labelRenderer.createLabel(`${msg.remitente} · ${msg.contexto}`, msg.texto);
     label.position.set(0, 0.55, 0);
     label.element.dataset.instanceId = String(slot.instanceId);
     mesh.add(label);
@@ -211,13 +219,20 @@ export class Cazaenganos implements IMinigame {
 
   getInstructions(): InstructionsSpec {
     return {
+      id: this.id,
+      step: 2,
       title: "Cazaengaños",
-      goal: "Lee el mensaje de cada objetivo. Si es un intento de engaño, destrúyelo antes que tus rivales. Si es un mensaje normal, déjalo: destruirlo resta puntos, y disparar sin leer rompe tu racha.",
+      goal: "Publicaciones holográficas aparecen en la arena con su autor y su procedencia. Dispara solo a las que sean un engaño, antes que tus rivales.",
+      rules: [
+        { points: "+100", text: "Disparar a un engaño", tone: "good" },
+        { points: "−50", text: "Disparar a una publicación normal", tone: "bad" },
+        { points: "0", text: "Dejar pasar una publicación", tone: "neutral" }
+      ],
       controls: [
+        { key: "WASD", label: "Moverse" },
         { key: "Mira", label: "Apuntar con el centro de la pantalla" },
         { key: "Click", label: "Disparar (hay un breve enfriamiento)" },
-        { key: "WASD", label: "Moverse" },
-        { key: "Mouse", label: "Mover para girar la cámara (primer clic lo captura, Esc lo libera)" }
+        { key: "Mouse", label: "Girar la cámara (el primer clic captura el mouse, Esc lo libera)" }
       ]
     };
   }
@@ -229,15 +244,8 @@ export class Cazaenganos implements IMinigame {
 
   /** 0 la mayor parte de la ronda, sube a 1 en el último 35% del tiempo — la música se acelera cuando se acaba. */
   private musicIntensity(): number {
-    const ratio = 1 - this.timeRemaining / Config.cazaenganos.durationSeconds;
+    const ratio = 1 - this.timeRemaining / this.duration;
     return Math.min(1, Math.max(0, (ratio - 0.65) / 0.35));
-  }
-
-  private pointsFor(msg: MessageDef): number {
-    const p = Config.cazaenganos.points;
-    if (msg.tipo === "enganosa") return p.enganosoDestruido;
-    if (msg.tipo === "legitima") return p.legitimoDestruido;
-    return msg.accionEsperada === "destruir" ? p.ambiguoDestruidoBien : p.ambiguoDestruidoMal;
   }
 
   private screenPosOf(worldPos: THREE.Vector3): { x: number; y: number } {
@@ -250,29 +258,16 @@ export class Cazaenganos implements IMinigame {
     if (!slot.current) return;
     const msg = slot.current;
     const participant = this.ctx.participants.find((p) => p.id === participantId)!;
-    const wasCorrect = msg.accionEsperada === "destruir";
-    let points = this.pointsFor(msg);
+    const wasCorrect = msg.accionCorrecta === "disparar";
+    const points = wasCorrect ? Config.cazaenganos.points.correcta : Config.cazaenganos.points.incorrecta;
+    if (participant.controllerKind === "human") this.ctx.summary.recordDetection(wasCorrect, msg.categoria);
 
-    if (participant.controllerKind === "human") {
-      if (wasCorrect && Config.cazaenganos.streak.enabled) {
-        this.streak++;
-        if (this.streak >= 2) {
-          const bonus = Config.cazaenganos.streak.bonuses[Math.min(this.streak - 2, Config.cazaenganos.streak.bonuses.length - 1)];
-          points += bonus;
-          this.hud.setStreak(this.streak, bonus);
-        }
-      } else if (Config.cazaenganos.streak.breakOnWrongHit) {
-        this.streak = 0;
-        this.hud.hideStreak();
-      }
-      this.ctx.summary.recordDetection(wasCorrect, msg.categoria);
-    }
-
-    this.ctx.scoreManager.award(participant, points, msg.scenarioID, "cazaenganos");
+    this.ctx.scoreManager.award(participant, points, msg.id, "cazaenganos");
 
     const screenPos = this.screenPosOf(slot.position);
     if (participant.controllerKind === "human") {
       this.hud.showScorePopup(screenPos.x, screenPos.y, `${points > 0 ? "+" : ""}${points}`, points > 0);
+      this.hud.showFeedback(`${points > 0 ? "+" : ""}${points} · ${feedbackFor(msg.categoria, wasCorrect)}`, wasCorrect);
     } else {
       this.hud.showRivalPing(participant.name, `${points > 0 ? "+" : ""}${points}`);
     }
@@ -353,8 +348,6 @@ export class Cazaenganos implements IMinigame {
     if (best) {
       this.fire(best.slot, "human");
     } else {
-      this.streak = 0;
-      this.hud.hideStreak();
       this.ctx.audio.shoot();
       this.arenaRuntime.getHumanRig()?.character.triggerShot();
       // erró: igual se ve la bolita viajando, para que el disparo se sienta real.
@@ -399,7 +392,7 @@ export class Cazaenganos implements IMinigame {
         pending.timeLeft -= dt;
         if (pending.timeLeft <= 0 && slot.age >= 7) {
           const correct = this.rand() < Math.max(0.2, traits.accuracy - 0.1 * ((slot.current!.dificultad ?? 1) - 1));
-          const wantsShot = slot.current!.accionEsperada === "destruir";
+          const wantsShot = slot.current!.accionCorrecta === "disparar";
           if (correct ? wantsShot : !wantsShot) this.fire(slot, participant.id);
           this.pendingAiShots = this.pendingAiShots.filter(s => s !== pending);
           participant.state = "idle";
@@ -428,7 +421,7 @@ export class Cazaenganos implements IMinigame {
   /** Oleadas: tres momentos de mayor intensidad en los que los objetivos reaparecen mucho más rápido. */
   private updateWaves(dt: number): void {
     if (this.waveTimeLeft > 0) this.waveTimeLeft -= dt;
-    const elapsed = 1 - this.timeRemaining / Config.cazaenganos.durationSeconds;
+    const elapsed = 1 - this.timeRemaining / this.duration;
     const marks = Config.cazaenganos.waveAtProgress;
     if (this.wavesTriggered < marks.length && elapsed >= marks[this.wavesTriggered]) {
       this.wavesTriggered++;
@@ -488,7 +481,6 @@ export class Cazaenganos implements IMinigame {
     this.bursts.dispose();
     for (const tr of this.tracers) tr.mesh.removeFromParent();
     this.tracers = [];
-    this.hud.hideStreak();
     this.hud.unmount();
     this.arenaRuntime.dispose();
     this.ctx.renderer.domElement.style.cursor = "default";
