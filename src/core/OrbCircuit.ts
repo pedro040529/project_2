@@ -122,3 +122,42 @@ export class OrbEnergy {
     this._value = this.initial;
   }
 }
+
+/**
+ * Puerta de respuesta de un turno humano: solo acepta una respuesta si el turno está abierto,
+ * no se respondió ya y pasó un breve margen desde que apareció la pregunta (evita que una
+ * pulsación anterior o accidental conteste por el jugador). Una respuesta por pregunta.
+ */
+export class AnswerGate {
+  private elapsed = 0;
+  private opened = false;
+  private answered = false;
+
+  constructor(private readonly delaySeconds = 0.4) {}
+
+  /** Abre un turno nuevo (nueva pregunta). */
+  open(): void {
+    this.elapsed = 0;
+    this.opened = true;
+    this.answered = false;
+  }
+
+  close(): void {
+    this.opened = false;
+  }
+
+  tick(dt: number): void {
+    this.elapsed += dt;
+  }
+
+  get isOpen(): boolean {
+    return this.opened && !this.answered && this.elapsed >= this.delaySeconds;
+  }
+
+  /** Devuelve true (y bloquea nuevas respuestas) solo si la respuesta es aceptable. */
+  tryAnswer(): boolean {
+    if (!this.isOpen) return false;
+    this.answered = true;
+    return true;
+  }
+}

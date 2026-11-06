@@ -51,3 +51,8 @@ También se corrigió un fallo previo del podio que omitía participantes cuando
 - **Banco educativo v2.1 (72 situaciones)** integrado con +100/−50; Bajo Presión con la mecánica de energía del orbe (40 %, +25/−10, 15 s por decisión). CA-20 y CA-22 excluidas hasta su revisión.
 - **Sistema visual común** (`src/styles/nexora.css`): mismos paneles, botones, tablas y tipografía en todas las pantallas.
 - **Pruebas**: 55 pruebas unitarias; `scripts/full-playtest.mjs` recorre la competencia completa y comprueba que podio, tabla, acumulados y desglose coinciden. Se eliminaron los scripts de playtest anteriores, que dependían de pantallas que ya no existen.
+
+## Ajustes de enganche (feedback del profesor)
+- Nuevo orden obligatorio: Bajo Presión → Cazaengaños → Atrapa o evita (`Config.match.minigameOrder`; el número de desafío lo asigna MatchManager).
+- Cazaengaños: la mira ahora sigue al cursor (antes estaba fija al centro mientras el disparo iba al cursor), se pone amarilla y agranda la publicación al apuntarla, mayor ayuda de puntería, los disparos sin objetivo impactan en el suelo con destello y pista.
+- Racha visible (🔥) en Bajo Presión y Cazaengaños; es solo visual, no cambia los puntos.

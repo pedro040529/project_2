@@ -49,6 +49,11 @@ export class HumanController implements IController {
     return this.input.consumeInteract();
   }
 
+  /** Descarta teclas y clics pendientes. */
+  clearPending(): void {
+    this.input.clearPending();
+  }
+
   consumeNumberKey(): 1 | 2 | 3 | null {
     return this.input.consumeNumberKey();
   }

@@ -112,6 +112,7 @@ export class Cazaenganos implements IMinigame {
   private clock = 0;
   private waveTimeLeft = 0;
   private wavesTriggered = 0;
+  private streak = 0;
 
   async load(ctx: MinigameContext): Promise<void> {
     this.ctx = ctx;
@@ -199,6 +200,7 @@ export class Cazaenganos implements IMinigame {
   }
 
   private clearSlot(slot: TargetSlot): void {
+    if (this.hovered === slot) this.hovered = null;
     slot.mesh?.traverse(obj => {
       if (obj instanceof THREE.Mesh) {
         obj.geometry.dispose();
@@ -220,7 +222,7 @@ export class Cazaenganos implements IMinigame {
   getInstructions(): InstructionsSpec {
     return {
       id: this.id,
-      step: 2,
+      step: 2, // el orden real lo fija MatchManager
       title: "Cazaengaños",
       goal: "Publicaciones holográficas aparecen en la arena con su autor y su procedencia. Dispara solo a las que sean un engaño, antes que tus rivales.",
       rules: [
@@ -230,7 +232,7 @@ export class Cazaenganos implements IMinigame {
       ],
       controls: [
         { key: "WASD", label: "Moverse" },
-        { key: "Mira", label: "Apuntar con el centro de la pantalla" },
+        { key: "Mira", label: "Sigue al cursor: se pone amarilla sobre una publicación" },
         { key: "Click", label: "Disparar (hay un breve enfriamiento)" },
         { key: "Mouse", label: "Girar la cámara (el primer clic captura el mouse, Esc lo libera)" }
       ]
@@ -260,7 +262,12 @@ export class Cazaenganos implements IMinigame {
     const participant = this.ctx.participants.find((p) => p.id === participantId)!;
     const wasCorrect = msg.accionCorrecta === "disparar";
     const points = wasCorrect ? Config.cazaenganos.points.correcta : Config.cazaenganos.points.incorrecta;
-    if (participant.controllerKind === "human") this.ctx.summary.recordDetection(wasCorrect, msg.categoria);
+    if (participant.controllerKind === "human") {
+      this.ctx.summary.recordDetection(wasCorrect, msg.categoria);
+      this.streak = wasCorrect ? this.streak + 1 : 0;
+      this.hud.setStreak(this.streak, 0);
+      if (wasCorrect && this.streak > 0 && this.streak % 3 === 0) this.hud.showEventBanner(`¡Racha de ${this.streak} engaños detectados!`, 1800);
+    }
 
     this.ctx.scoreManager.award(participant, points, msg.id, "cazaenganos");
 
@@ -312,6 +319,52 @@ export class Cazaenganos implements IMinigame {
     }
   }
 
+  /** Posición del cursor en píxeles de pantalla (donde se dibuja la mira). */
+  private cursorClient(): { x: number; y: number } {
+    const ndc = this.ctx.input.getMouseNDC();
+    const view = this.ctx.renderer.domElement.getBoundingClientRect();
+    return { x: view.left + (ndc.x + 1) * view.width / 2, y: view.top + (1 - ndc.y) * view.height / 2 };
+  }
+
+  /** Objetivo bajo la mira (con ayuda de puntería generosa, pensada para jugadores jóvenes). */
+  private findTarget(ray: THREE.Ray): TargetSlot | null {
+    let best: { slot: TargetSlot; screenDist: number } | null = null;
+    const { x: mx, y: my } = this.cursorClient();
+    for (const slot of this.slots) {
+      if (!slot.filled || !slot.mesh || slot.claimed) continue;
+      if (slot.position.clone().project(this.ctx.camera).z > 1) continue;
+      const toTarget = slot.position.clone().sub(ray.origin);
+      if (toTarget.dot(ray.direction) <= 0) continue;
+      const dist = toTarget.length();
+      const proj = ray.direction.clone().multiplyScalar(toTarget.dot(ray.direction));
+      const angularDist = toTarget.clone().sub(proj).length() / Math.max(1, dist);
+      const rect = slot.label?.element.getBoundingClientRect();
+      const labelHit = slot.label?.element.style.visibility !== "hidden" && rect && mx >= rect.left - 8 && mx <= rect.right + 8 && my >= rect.top - 8 && my <= rect.bottom + 8;
+      if (labelHit) return slot;
+      if (angularDist < Math.min(0.16, Math.max(0.07, 1.0 / dist))) {
+        if (!best || angularDist < best.screenDist) best = { slot, screenDist: angularDist };
+      }
+    }
+    return best?.slot ?? null;
+  }
+
+  private hovered: TargetSlot | null = null;
+  private missHints = 0;
+
+  /** La mira sigue al cursor y se ilumina al apuntar a una publicación; ésta se agranda. */
+  private updateAim(): void {
+    const human = this.arenaRuntime.getHumanController();
+    if (!human) return;
+    const target = this.findTarget(human.getAimRay(this.ctx.camera));
+    const c = this.cursorClient();
+    this.hud.aimCrosshair(c.x, c.y, !!target);
+    if (target !== this.hovered) {
+      if (this.hovered?.mesh) gsap.to(this.hovered.mesh.scale, { x: 1, y: 1, z: 1, duration: 0.12 });
+      if (target?.mesh) gsap.to(target.mesh.scale, { x: 1.3, y: 1.3, z: 1.3, duration: 0.12 });
+      this.hovered = target;
+    }
+  }
+
   private handleHumanShoot(): void {
     const human = this.arenaRuntime.getHumanController();
     if (!human) return;
@@ -321,42 +374,29 @@ export class Cazaenganos implements IMinigame {
     this.lastShotAt = this.clock;
 
     const ray = human.getAimRay(this.ctx.camera);
-    let best: { slot: TargetSlot; screenDist: number } | null = null;
-
-    for (const slot of this.slots) {
-      if (!slot.filled || !slot.mesh || slot.claimed) continue;
-      if (slot.position.clone().project(this.ctx.camera).z > 1) continue;
-      const toTarget = slot.position.clone().sub(ray.origin);
-      if (toTarget.dot(ray.direction) <= 0) continue;
-      const dist = toTarget.length();
-      const proj = ray.direction.clone().multiplyScalar(toTarget.dot(ray.direction));
-      const perp = toTarget.clone().sub(proj);
-      const angularDist = perp.length() / Math.max(1, dist);
-      const rect = slot.label?.element.getBoundingClientRect();
-      const ndc = this.ctx.input.getMouseNDC();
-      const view = this.ctx.renderer.domElement.getBoundingClientRect();
-      const mx = view.left + (ndc.x + 1) * view.width / 2;
-      const my = view.top + (1 - ndc.y) * view.height / 2;
-      const labelHit = slot.label?.element.style.visibility !== "hidden" && rect && mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom;
-      if (labelHit) { best = { slot, screenDist: 0 }; break; }
-      // tolerancia proporcional al tamaño aparente del objetivo (más generosa de lejos)
-      if (angularDist < Math.min(0.12, Math.max(0.05, 0.75 / dist))) {
-        if (!best || angularDist < best.screenDist) best = { slot, screenDist: angularDist };
-      }
-    }
+    const best = this.findTarget(ray);
 
     if (best) {
-      this.fire(best.slot, "human");
-    } else {
-      this.ctx.audio.shoot();
-      this.arenaRuntime.getHumanRig()?.character.triggerShot();
-      // erró: igual se ve la bolita viajando, para que el disparo se sienta real.
-      const humanRig = this.arenaRuntime.getHumanRig();
-      if (humanRig) {
-        humanRig.faceTarget(ray.origin.clone().add(ray.direction.clone().multiplyScalar(18)));
-        const handPos = humanRig.character.getRightHandWorldPosition(new THREE.Vector3());
-        this.spawnTracer(handPos, ray.origin.clone().add(ray.direction.clone().multiplyScalar(18)));
-      }
+      this.fire(best, "human");
+      return;
+    }
+    // Sin objetivo bajo la mira: el disparo llega al suelo con un destello y una pista,
+    // en lugar de perderse en el aire.
+    this.ctx.audio.shoot();
+    const humanRig = this.arenaRuntime.getHumanRig();
+    humanRig?.character.triggerShot();
+    const end = new THREE.Vector3();
+    if (!ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.1), end) || end.distanceTo(ray.origin) > 40) {
+      end.copy(ray.origin).addScaledVector(ray.direction, 18);
+    }
+    if (humanRig) {
+      humanRig.faceTarget(end);
+      const handPos = humanRig.character.getRightHandWorldPosition(new THREE.Vector3());
+      this.spawnTracer(handPos, end, () => this.bursts.emit(end.clone(), 0x9aa7c7, 8, 2, 0.5));
+    }
+    if (this.missHints < 3) {
+      this.missHints++;
+      this.hud.showFeedback("Apunta a una publicación: la mira se pone amarilla cuando puedes disparar.", false, 2200);
     }
   }
 
@@ -458,6 +498,7 @@ export class Cazaenganos implements IMinigame {
 
     this.updateAI(dt);
     this.arenaRuntime.update(dt);
+    this.updateAim();
     this.handleHumanShoot();
     this.updateTracers(dt);
     this.bursts.update(dt);

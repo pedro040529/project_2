@@ -39,7 +39,7 @@ sin configuración de servidor especial.
 
 Menú principal → Personalización → Presentación de participantes → (Instrucciones → Partida → Resultados) × 3 → Ranking final → Volver al menú o Nueva competencia.
 
-El orden de los desafíos es obligatorio: **Atrapa o evita → Cazaengaños → Bajo Presión**. No hay selección libre.
+El orden de los desafíos es obligatorio: **Bajo Presión → Cazaengaños → Atrapa o evita**. No hay selección libre.
 
 ## Tests
 

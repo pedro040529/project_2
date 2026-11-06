@@ -44,6 +44,9 @@ export class InputManager {
 
   private handleKeyDown = (e: KeyboardEvent) => {
     this.keys.add(e.code);
+    // Mantener una tecla apretada repite keydown: una pulsación = una sola acción (si no, una tecla
+    // mantenida quedaba en cola y respondía sola la siguiente pregunta de Bajo Presión).
+    if (e.repeat) return;
     if (e.code === "KeyE") this.interactPending = true;
     if (e.code === "Digit1") this.numberKeyPending = 1;
     if (e.code === "Digit2") this.numberKeyPending = 2;
@@ -157,6 +160,13 @@ export class InputManager {
       return true;
     }
     return false;
+  }
+
+  /** Descarta teclas y clics pendientes (p. ej. pulsados mientras no tocaba responder). */
+  clearPending(): void {
+    this.clickPending = false;
+    this.interactPending = false;
+    this.numberKeyPending = null;
   }
 
   consumeInteract(): boolean {

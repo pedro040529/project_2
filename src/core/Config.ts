@@ -3,7 +3,7 @@
 
 export const Config = {
   match: {
-    minigameOrder: ["atrapa_o_evita", "cazaenganos", "bajo_presion"] as const
+    minigameOrder: ["bajo_presion", "cazaenganos", "atrapa_o_evita"] as const
   },
 
   arena: {

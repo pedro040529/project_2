@@ -19,46 +19,46 @@
       "rows": [
         {
           "rank": "#1",
-          "who": "Kiro",
+          "who": "Nova",
           "cells": [
-            "+150",
-            "+150"
+            "0",
+            "0"
           ],
           "me": false
         },
         {
-          "rank": "#2",
-          "who": "Pedro (tú)",
+          "rank": "#1",
+          "who": "Kiro",
           "cells": [
-            "+100",
-            "+100"
+            "0",
+            "0"
           ],
-          "me": true
+          "me": false
         },
         {
-          "rank": "#2",
+          "rank": "#1",
           "who": "Pixel",
           "cells": [
-            "+100",
-            "+100"
+            "0",
+            "0"
           ],
           "me": false
         },
         {
           "rank": "#4",
-          "who": "Nova",
+          "who": "Pedro (tú)",
           "cells": [
-            "+50",
-            "+50"
+            "-50",
+            "-50"
           ],
-          "me": false
+          "me": true
         }
       ],
       "podiumLabels": [
-        "#2 · TÚ\nPedro · 100 pts",
-        "#1\nKiro · 150 pts",
-        "#2\nPixel · 100 pts",
-        "#4\nNova · 50 pts"
+        "#1\nKiro · 0 pts",
+        "#1\nNova · 0 pts",
+        "#1\nPixel · 0 pts",
+        "#4 · TÚ\nPedro · -50 pts"
       ]
     },
     {
@@ -68,59 +68,10 @@
       "rows": [
         {
           "rank": "#1",
-          "who": "Pedro (tú)",
-          "cells": [
-            "0",
-            "+100"
-          ],
-          "me": true
-        },
-        {
-          "rank": "#1",
-          "who": "Nova",
-          "cells": [
-            "0",
-            "+50"
-          ],
-          "me": false
-        },
-        {
-          "rank": "#1",
-          "who": "Pixel",
-          "cells": [
-            "0",
-            "+100"
-          ],
-          "me": false
-        },
-        {
-          "rank": "#4",
           "who": "Kiro",
           "cells": [
-            "-50",
-            "+100"
-          ],
-          "me": false
-        }
-      ],
-      "podiumLabels": [
-        "#1\nNova · 0 pts",
-        "#1 · TÚ\nPedro · 0 pts",
-        "#1\nPixel · 0 pts",
-        "#4\nKiro · -50 pts"
-      ]
-    },
-    {
-      "humanTurns": 2,
-      "explosions": 0,
-      "stabilized": 0,
-      "rows": [
-        {
-          "rank": "#1",
-          "who": "Pixel",
-          "cells": [
             "+100",
-            "+200"
+            "+100"
           ],
           "me": false
         },
@@ -128,80 +79,129 @@
           "rank": "#2",
           "who": "Pedro (tú)",
           "cells": [
-            "+50",
-            "+150"
+            "0",
+            "-50"
           ],
           "me": true
         },
         {
-          "rank": "#3",
-          "who": "Nova",
+          "rank": "#2",
+          "who": "Pixel",
           "cells": [
             "0",
-            "+50"
+            "0"
           ],
           "me": false
         },
         {
           "rank": "#4",
-          "who": "Kiro",
+          "who": "Nova",
           "cells": [
             "-50",
-            "+50"
+            "-50"
           ],
           "me": false
         }
       ],
       "podiumLabels": [
-        "#2 · TÚ\nPedro · 50 pts",
-        "#1\nPixel · 100 pts",
-        "#3\nNova · 0 pts",
-        "#4\nKiro · -50 pts"
+        "#2 · TÚ\nPedro · 0 pts",
+        "#1\nKiro · 100 pts",
+        "#2\nPixel · 0 pts",
+        "#4\nNova · -50 pts"
+      ]
+    },
+    {
+      "humanTurns": 0,
+      "explosions": 0,
+      "stabilized": 0,
+      "rows": [
+        {
+          "rank": "#1",
+          "who": "Pixel",
+          "cells": [
+            "+450",
+            "+450"
+          ],
+          "me": false
+        },
+        {
+          "rank": "#2",
+          "who": "Kiro",
+          "cells": [
+            "+400",
+            "+500"
+          ],
+          "me": false
+        },
+        {
+          "rank": "#3",
+          "who": "Pedro (tú)",
+          "cells": [
+            "0",
+            "-50"
+          ],
+          "me": true
+        },
+        {
+          "rank": "#4",
+          "who": "Nova",
+          "cells": [
+            "-50",
+            "-100"
+          ],
+          "me": false
+        }
+      ],
+      "podiumLabels": [
+        "#2\nKiro · 400 pts",
+        "#1\nPixel · 450 pts",
+        "#3 · TÚ\nPedro · 0 pts",
+        "#4\nNova · -50 pts"
       ]
     }
   ],
   "final": [
     {
       "rank": "#1",
-      "who": "Pixel",
+      "who": "Kiro",
       "cells": [
-        "+100",
         "0",
         "+100",
-        "+200"
+        "+400",
+        "+500"
       ],
       "me": false
     },
     {
       "rank": "#2",
-      "who": "Pedro (tú)",
+      "who": "Pixel",
       "cells": [
-        "+100",
-        "0",
-        "+50",
-        "+150"
-      ],
-      "me": true
-    },
-    {
-      "rank": "#3",
-      "who": "Nova",
-      "cells": [
-        "+50",
         "0",
         "0",
-        "+50"
+        "+450",
+        "+450"
       ],
       "me": false
     },
     {
       "rank": "#3",
-      "who": "Kiro",
+      "who": "Pedro (tú)",
       "cells": [
-        "+150",
+        "-50",
+        "0",
+        "0",
+        "-50"
+      ],
+      "me": true
+    },
+    {
+      "rank": "#4",
+      "who": "Nova",
+      "cells": [
+        "0",
         "-50",
         "-50",
-        "+50"
+        "-100"
       ],
       "me": false
     }

@@ -70,6 +70,8 @@ export interface HudHandle {
   setStreak(count: number, bonus: number): void;
   hideStreak(): void;
   showCrosshair(show: boolean): void;
+  /** Mira que sigue al cursor; `locked` = hay un objetivo bajo la mira. */
+  aimCrosshair(clientX: number, clientY: number, locked: boolean): void;
   showPointerHint(text: string | null): void;
   unmount(): void;
 }
@@ -467,12 +469,17 @@ export class UIManager {
           streak.classList.remove("show");
           return;
         }
-        streak.textContent = `RACHA x${count} · +${bonus}`;
+        streak.textContent = bonus > 0 ? `RACHA x${count} · +${bonus}` : `🔥 RACHA x${count}`;
         streak.classList.add("show");
       },
       hideStreak: () => streak.classList.remove("show"),
       showCrosshair: (show: boolean) => {
         crosshair.style.display = show ? "block" : "none";
+      },
+      aimCrosshair: (x: number, y: number, locked: boolean) => {
+        crosshair.style.left = `${x}px`;
+        crosshair.style.top = `${y}px`;
+        crosshair.classList.toggle("locked", locked);
       },
       showPointerHint: (text: string | null) => {
         pointerHint.style.display = text ? "block" : "none";

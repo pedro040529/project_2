@@ -19,7 +19,7 @@ function roster(): Participant[] {
 
 describe("Orden de la competencia", () => {
   it("es obligatorio: Atrapa o evita → Cazaengaños → Bajo Presión", () => {
-    expect([...Config.match.minigameOrder]).toEqual(["atrapa_o_evita", "cazaenganos", "bajo_presion"]);
+    expect([...Config.match.minigameOrder]).toEqual(["bajo_presion", "cazaenganos", "atrapa_o_evita"]);
   });
 
   it("todos los desafíos usan +100 / −50 sin multiplicar por dificultad", () => {
@@ -55,7 +55,7 @@ describe("Puntuación y ranking: una única fuente de datos", () => {
     for (const p of ps) {
       expect(per.get(p.id)!.reduce((a, b) => a + b, 0)).toBe(p.totalScore);
     }
-    expect(per.get("human")).toEqual([50, 100, -50]);
+    expect(per.get("human")).toEqual([-50, 100, 50]);
   });
 
   it("las penalizaciones del piso también se reflejan en el desglose (puntos reales aplicados)", () => {

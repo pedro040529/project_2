@@ -954,3 +954,14 @@ body {
     font-size: 13.5px;
   }
 }
+
+/* Mira que sigue al cursor y se "engancha" a los objetivos */
+.hud-crosshair { transition: width .08s, height .08s, border-color .08s, background .08s; pointer-events: none; }
+.hud-crosshair.locked {
+  width: 38px; height: 38px;
+  border-color: #ffd23f;
+  background: rgba(255, 210, 63, .18);
+  box-shadow: 0 0 14px 2px rgba(255, 210, 63, .7);
+}
+.hud-streak.show { animation: streakPop .35s ease-out; }
+@keyframes streakPop { 0% { transform: translateX(-50%) scale(.6); } 60% { transform: translateX(-50%) scale(1.25); } 100% { transform: translateX(-50%) scale(1); } }

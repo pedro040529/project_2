@@ -9,7 +9,7 @@ import type { Participant } from "../entities/Participant";
 import { ArenaRuntime } from "./common/ArenaRuntime";
 import { buildOrbChamber, ORB_SEAT_COLORS } from "../world/ThemedArenas";
 import { BurstSystem } from "../world/Burst";
-import { OrbCircuit, OrbEnergy } from "../core/OrbCircuit";
+import { AnswerGate, OrbCircuit, OrbEnergy } from "../core/OrbCircuit";
 import { feedbackFor } from "../data/feedback";
 import { mulberry32 } from "../utils/rng";
 import { testTimeScale } from "../utils/testHooks";
@@ -69,6 +69,8 @@ export class BajoPresion implements IMinigame {
   private holdLimit = 0;
   private situation: BajoPresionSituation | null = null;
   private answered = false;
+  private gate = new AnswerGate(0.4);
+  private streak = 0;
   private calmUntil = 0; // brillo tranquilo tras estabilizarse
   private tickTimer = 0;
   private flight = { from: new THREE.Vector3(), to: new THREE.Vector3(), target: "" };
@@ -208,10 +210,16 @@ export class BajoPresion implements IMinigame {
     gsap.fromTo(this.orb.scale, { x: 1.5, y: 0.7, z: 1.5 }, { x: 1, y: 1, z: 1, duration: 0.45, ease: "elastic.out(1, 0.5)" });
 
     this.situation = this.deck.draw();
+    this.gate.close();
+    this.arenaRuntime.getHumanController()?.clearPending(); // nada pulsado antes cuenta como respuesta
     if (id === "human") {
       this.holdLimit = Config.bajoPresion.decisionSeconds;
       const sit = this.situation;
-      this.panel.show(`${sit.remitente} te escribe`, sit.pregunta, sit.opciones.map((o) => o.texto), (i) => this.resolve(i));
+      this.gate.open();
+      // el botón solo vale para ESTA pregunta (un botón viejo nunca responde una nueva)
+      this.panel.show(`${sit.remitente} te escribe`, sit.pregunta, sit.opciones.map((o) => o.texto), (i) => {
+        if (this.situation === sit && this.circuit.holderId === "human" && this.gate.tryAnswer()) this.resolve(i);
+      });
       this.panel.setTimeLeft(1, this.holdLimit);
     } else {
       // los bots tardan según su personalidad (Pixel analiza más; Nova se precipita)
@@ -241,7 +249,11 @@ export class BajoPresion implements IMinigame {
     this.lastAnswerer = holderId;
 
     this.ctx.scoreManager.award(holder, points, `${sit.id}:${index === null ? "timeout" : sit.opciones[index].id}`, "bajo_presion");
-    if (isHuman) this.ctx.summary.recordPressureDecision(correct ? "buena" : "mala");
+    if (isHuman) {
+      this.ctx.summary.recordPressureDecision(correct ? "buena" : "mala");
+      this.streak = correct ? this.streak + 1 : 0;
+      this.hud.setStreak(this.streak, 0);
+    }
     const status = this.energy.apply(delta);
     this.panel.setEnergy(this.energy.value);
 
@@ -370,7 +382,10 @@ export class BajoPresion implements IMinigame {
     this.timeRemaining -= dt;
     this.hud.setTimer(this.timeRemaining);
     this.phaseT += dt;
+    this.gate.tick(dt);
     const isHumanTurn = this.circuit.holderId === "human";
+    // fuera de tu turno, cualquier tecla o clic se descarta (no queda en cola para la próxima pregunta)
+    if (!(this.phase === "holding" && isHumanTurn)) this.arenaRuntime.getHumanController()?.clearPending();
 
     switch (this.phase) {
       case "holding":
@@ -378,7 +393,10 @@ export class BajoPresion implements IMinigame {
           const left = Math.max(0, this.holdLimit - this.phaseT);
           this.panel.setTimeLeft(left / this.holdLimit, left);
           this.handleHumanInput();
-          if (this.phaseT >= this.holdLimit) this.resolve(null);
+          if (this.phaseT >= this.holdLimit) {
+            this.gate.tryAnswer();
+            this.resolve(null);
+          }
         } else if (this.phaseT >= this.holdLimit) {
           this.resolveNpc();
         }
@@ -428,8 +446,9 @@ export class BajoPresion implements IMinigame {
     const human = this.arenaRuntime.getHumanController();
     if (!human || !this.situation || this.answered) return;
     const key = human.consumeNumberKey();
-    if (key && this.situation.opciones[key - 1]) this.resolve(key - 1);
     human.consumeClick();
+    // durante el margen inicial la tecla se descarta; después, una sola respuesta por pregunta
+    if (key && this.situation.opciones[key - 1] && this.gate.tryAnswer()) this.resolve(key - 1);
   }
 
   private updateOrbVisuals(dt: number): void {

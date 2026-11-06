@@ -106,7 +106,7 @@ export class MatchManager {
         participants.forEach((p) => p.resetForNewMinigame());
 
         const mg = this.minigameManager.create(id);
-        await ui.showInstructions(mg.getInstructions());
+        await ui.showInstructions({ ...mg.getInstructions(), step: i + 1 });
         await mg.load(ctx);
         audio.transition();
         mg.start();
