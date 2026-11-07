@@ -75,16 +75,28 @@ interface Tracer {
 
 function orbMesh(): THREE.Group {
   // Holograma/orbe neutro: MISMA forma y color para todos los mensajes (RNF06).
+  // Grande y con haz de luz hasta el suelo para que se vea claramente que es un BLANCO.
   const g = new THREE.Group();
   const core = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(0.32, 1),
-    new THREE.MeshStandardMaterial({ color: 0xdfe8ff, emissive: 0x4f6bff, emissiveIntensity: 0.9, roughness: 0.3, transparent: true, opacity: 0.92 })
+    new THREE.IcosahedronGeometry(0.5, 1),
+    new THREE.MeshStandardMaterial({ color: 0xdfe8ff, emissive: 0x4f6bff, emissiveIntensity: 1.2, roughness: 0.3, transparent: true, opacity: 0.95 })
   );
   core.castShadow = true;
   g.add(core);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.02, 6, 20), new THREE.MeshStandardMaterial({ color: 0x39e1ff, emissive: 0x39e1ff, emissiveIntensity: 1.8 }));
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0x39e1ff, emissive: 0x39e1ff, emissiveIntensity: 2.2 });
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.035, 6, 28), ringMat);
   ring.rotation.x = Math.PI / 2.4;
   g.add(ring);
+  const beam = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06, 0.06, 1.7, 8, 1, true),
+    new THREE.MeshBasicMaterial({ color: 0x39e1ff, transparent: true, opacity: 0.35, depthWrite: false })
+  );
+  beam.position.y = -0.85;
+  g.add(beam);
+  const floor = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.6, 24), new THREE.MeshBasicMaterial({ color: 0x39e1ff, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -1.68;
+  g.add(floor);
   return g;
 }
 
@@ -193,7 +205,7 @@ export class Cazaenganos implements IMinigame {
     this.bursts.emit(slot.position.clone(), 0x39e1ff, 10, 2.5, 0.7);
 
     const label = this.ctx.labelRenderer.createLabel(`${msg.remitente} · ${msg.contexto}`, msg.texto);
-    label.position.set(0, 0.55, 0);
+    label.position.set(0, 1.05, 0);
     label.element.dataset.instanceId = String(slot.instanceId);
     mesh.add(label);
     slot.label = label;
@@ -358,7 +370,12 @@ export class Cazaenganos implements IMinigame {
     const target = this.findTarget(human.getAimRay(this.ctx.camera));
     const c = this.cursorClient();
     this.hud.aimCrosshair(c.x, c.y, !!target);
+    this.hud.showPointerHint(this.ctx.input.pointerLocked
+      ? "Mueve el mouse para apuntar · clic para disparar · Esc libera el mouse"
+      : "Haz clic una vez para activar la mira · después, clic dispara");
     if (target !== this.hovered) {
+      this.hovered?.label?.element.classList.remove("aimed");
+      target?.label?.element.classList.add("aimed");
       if (this.hovered?.mesh) gsap.to(this.hovered.mesh.scale, { x: 1, y: 1, z: 1, duration: 0.12 });
       if (target?.mesh) gsap.to(target.mesh.scale, { x: 1.3, y: 1.3, z: 1.3, duration: 0.12 });
       this.hovered = target;
