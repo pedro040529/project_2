@@ -261,82 +261,84 @@ export function buildHoloRange(radius: number, physics: PhysicsWorld): ArenaBuil
 export const ORB_SEAT_COLORS = [NeonPalette.cyan, NeonPalette.orange, NeonPalette.magenta, NeonPalette.gold] as const;
 
 export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaBuild {
-  // Estilo "fiesta": isla flotante de colores, bordes inflados, globos y nubes (en la línea de Fall Guys / Party Animals).
+  // Escenario de videojuego: isla oscura con neón, anillos luminosos y luces de pista. Un solo ambiente, sin objetos sueltos.
   const group = new THREE.Group();
   const collidables: THREE.Object3D[] = [];
-  const std = (color: number, rough = 0.65) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0 });
+  const dark = (color: number, rough = 0.45, metal = 0.35) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
 
-  // Suelo en cuñas de colores caramelo
+  // Suelo: azul noche con rejilla tenue y un resplandor radial hacia el centro
   const size = 1024;
   const c = document.createElement("canvas");
   c.width = c.height = size;
   const g = c.getContext("2d")!;
-  const wedge = ["#7fd8c8", "#62c7b6"];
-  const wedges = 24;
-  for (let i = 0; i < wedges; i++) {
-    g.beginPath();
-    g.moveTo(size / 2, size / 2);
-    g.arc(size / 2, size / 2, size / 2, (i / wedges) * Math.PI * 2, ((i + 1) / wedges) * Math.PI * 2);
-    g.closePath();
-    g.fillStyle = wedge[i % wedge.length];
-    g.fill();
+  const rg = g.createRadialGradient(size / 2, size / 2, 20, size / 2, size / 2, size / 2);
+  rg.addColorStop(0, "#3a3fa8");
+  rg.addColorStop(0.55, "#1d2260");
+  rg.addColorStop(1, "#10143d");
+  g.fillStyle = rg;
+  g.fillRect(0, 0, size, size);
+  g.strokeStyle = "rgba(120,140,255,.28)";
+  g.lineWidth = 3;
+  for (let i = 1; i < 16; i++) {
+    g.beginPath(); g.moveTo((i * size) / 16, 0); g.lineTo((i * size) / 16, size);
+    g.moveTo(0, (i * size) / 16); g.lineTo(size, (i * size) / 16); g.stroke();
   }
-  g.strokeStyle = "rgba(255,255,255,.75)";
-  g.lineWidth = 10;
-  for (const f of [0.34, 0.68]) {
-    g.beginPath();
-    g.arc(size / 2, size / 2, (size / 2) * f, 0, Math.PI * 2);
-    g.stroke();
-  }
+  g.strokeStyle = "rgba(57,225,255,.55)";
+  g.lineWidth = 6;
+  for (const f of [0.34, 0.68]) { g.beginPath(); g.arc(size / 2, size / 2, (size / 2) * f, 0, Math.PI * 2); g.stroke(); }
   const floorTex = new THREE.CanvasTexture(c);
   floorTex.colorSpace = THREE.SRGBColorSpace;
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(radius, 64), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.7 }));
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(radius, 64), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.5, metalness: 0.15 }));
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   group.add(floor);
 
-  // Cuerpo de la isla (flota sobre las nubes)
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.2, radius * 0.5, 6, 48), std(0x6f86d6, 0.8));
-  body.position.y = -3.05;
+  // Cuerpo de la isla con aros de luz que lo hacen flotar
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.2, radius * 0.5, 5, 48), dark(0x141a4a, 0.6, 0.4));
+  body.position.y = -2.55;
   group.add(body);
-  const band = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.35, radius + 0.35, 0.5, 48), std(0xfff4dc, 0.6));
-  band.position.y = -0.27;
-  group.add(band);
-
-  // Borde inflado: bolas de colores alrededor
-  const bumperColors = [0xffffff, 0x8fc2ff];
-  const bumperGeo = new THREE.SphereGeometry(0.55, 14, 10);
-  const bumperMats = bumperColors.map((col) => std(col, 0.45));
-  const nBump = 28;
-  for (let i = 0; i < nBump; i++) {
-    const a = (i / nBump) * Math.PI * 2;
-    const m = new THREE.Mesh(bumperGeo, bumperMats[i % bumperMats.length]);
-    m.position.set(Math.cos(a) * (radius + 0.1), 0.35, Math.sin(a) * (radius + 0.1));
-    m.castShadow = true;
-    group.add(m);
+  const edge = new THREE.Mesh(new THREE.TorusGeometry(radius + 0.2, 0.16, 10, 96), glow(NeonPalette.magenta, 2.4));
+  edge.rotation.x = Math.PI / 2;
+  edge.position.y = 0.02;
+  group.add(edge);
+  for (const [y, f, col] of [[-1.4, 0.88, NeonPalette.cyan], [-3.2, 0.68, NeonPalette.magenta]] as const) {
+    const under = new THREE.Mesh(new THREE.TorusGeometry(radius * f, 0.1, 8, 80), glow(col, 1.8));
+    under.rotation.x = Math.PI / 2;
+    under.position.y = y;
+    group.add(under);
   }
 
-  // Puestos: plataforma blanca con aro y centro del color del jugador, unidos al centro por una cinta
+  // Luces de pista alrededor del borde
+  const lampGeo = new THREE.SphereGeometry(0.22, 10, 8);
+  const nLamp = 36;
+  for (let i = 0; i < nLamp; i++) {
+    const a = (i / nLamp) * Math.PI * 2;
+    const lamp = new THREE.Mesh(lampGeo, glow(i % 2 ? NeonPalette.cyan : NeonPalette.white, 2.6));
+    lamp.position.set(Math.cos(a) * (radius - 0.55), 0.22, Math.sin(a) * (radius - 0.55));
+    group.add(lamp);
+  }
+
+  // Puestos: plataforma oscura con aro de neón del color del jugador y cinta de energía hacia el centro
   const seatR = radius * 0.68;
   for (let i = 0; i < 4; i++) {
     const a = (i / 4) * Math.PI * 2;
     const x = Math.cos(a) * seatR;
     const z = Math.sin(a) * seatR;
     const col = ORB_SEAT_COLORS[i];
-    const pad = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.75, 0.28, 36), std(0xffffff, 0.5));
+    const pad = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.75, 0.28, 36), dark(0x0f1338, 0.4, 0.5));
     pad.position.set(x, 0.14, z);
     pad.castShadow = true;
     pad.receiveShadow = true;
     group.add(pad);
-    const inner = new THREE.Mesh(new THREE.CircleGeometry(1.25, 32), std(col, 0.5));
+    const inner = new THREE.Mesh(new THREE.CircleGeometry(1.3, 32), new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.55, roughness: 0.5 }));
     inner.rotation.x = -Math.PI / 2;
     inner.position.set(x, 0.29, z);
     group.add(inner);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.12, 8, 40), std(col, 0.4));
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.1, 8, 40), glow(col, 2.4));
     rim.rotation.x = Math.PI / 2;
     rim.position.set(x, 0.3, z);
     group.add(rim);
-    const lane = new THREE.Mesh(new THREE.PlaneGeometry(0.45, seatR - 1.9), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85 }));
+    const lane = new THREE.Mesh(new THREE.PlaneGeometry(0.3, seatR - 1.9), glow(col, 1.3));
     lane.rotation.x = -Math.PI / 2;
     lane.rotation.z = -a + Math.PI / 2;
     lane.position.set(Math.cos(a) * seatR * 0.5, 0.04, Math.sin(a) * seatR * 0.5);
@@ -344,43 +346,29 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
   }
 
   // Pedestal central con anillos que giran
-  const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.65, 0.55, 28), std(0xffffff, 0.5));
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.65, 0.55, 28), dark(0x0f1338, 0.35, 0.6));
   ped.position.y = 0.27;
   ped.castShadow = true;
   group.add(ped);
-  const pedTop = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.06, 28), std(0xffffff, 0.4));
-  pedTop.position.y = 0.58;
-  group.add(pedTop);
-  const ringCols = [0xffffff, 0xcfe6ff, 0xffffff];
+  const pedRing = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.07, 8, 40), glow(NeonPalette.cyan, 2.4));
+  pedRing.rotation.x = Math.PI / 2;
+  pedRing.position.y = 0.56;
+  group.add(pedRing);
+  const ringCols = [NeonPalette.cyan, NeonPalette.magenta, NeonPalette.gold];
   for (let i = 0; i < 3; i++) {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.0 + i * 0.35, 0.05, 8, 48), glow(ringCols[i], 0.8));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.0 + i * 0.35, 0.04, 8, 48), glow(ringCols[i], 1.5));
     ring.position.y = 1.4;
     ring.rotation.x = Math.PI / 2 + i * 0.5;
     ring.userData.spin = 0.8 + i * 0.4;
     group.add(ring);
   }
 
-  // Nubes bajo y alrededor de la isla
-  const cloudMat = std(0xffffff, 1);
-  const cloudGeo = new THREE.SphereGeometry(1, 12, 9);
-  for (let i = 0; i < 9; i++) {
-    const a = (i / 9) * Math.PI * 2 + Math.random() * 0.3;
-    const r = radius + 12 + Math.random() * 22;
-    const cloud = new THREE.Group();
-    const puffs = 4 + Math.floor(Math.random() * 3);
-    for (let k = 0; k < puffs; k++) {
-      const p = new THREE.Mesh(cloudGeo, cloudMat);
-      p.scale.set(1.8 + Math.random() * 1.6, 1.1 + Math.random() * 0.7, 1.6 + Math.random());
-      p.position.set((k - puffs / 2) * 1.8, Math.random() * 0.6, Math.random() * 1.2);
-      cloud.add(p);
-    }
-    cloud.position.set(Math.cos(a) * r, -10 + Math.random() * 3, Math.sin(a) * r);
-    group.add(cloud);
-  }
-
-  const light = new THREE.PointLight(0xfff2d6, 30, radius * 3, 1.6);
-  light.position.set(0, 9, 0);
-  group.add(light);
+  // Luces de ambiente de color (sin objetos): magenta y cian a los lados
+  const l1 = new THREE.PointLight(0xff4fd8, 60, radius * 2.5, 1.7);
+  l1.position.set(-radius * 0.8, 5, -radius * 0.5);
+  const l2 = new THREE.PointLight(0x39e1ff, 60, radius * 2.5, 1.7);
+  l2.position.set(radius * 0.8, 5, radius * 0.5);
+  group.add(l1, l2);
   const animate = makeAnimator(group);
   return { group, collidables, radius, update: animate };
 }

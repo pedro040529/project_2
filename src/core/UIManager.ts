@@ -6,6 +6,7 @@ import { CATEGORY_LABEL } from "../data/feedback";
 import type { CategoryId } from "./types";
 import { BODY_COLORS, EXTRA_ACCESSORIES, HEAD_ACCESSORIES, colorDef } from "../data/characters";
 import { Settings, type QualitySetting } from "./Settings";
+import { Config } from "./Config";
 import type { PlayerProfile } from "./Profile";
 import type { Appearance, MinigameId } from "./types";
 
@@ -103,6 +104,12 @@ function revealPodium(podium: HTMLElement): void {
   gsap.from(podium.children, { y: 60, opacity: 0, duration: 0.6, ease: "back.out(1.6)", stagger: 0.18 });
 }
 
+const MINIGAME_TITLES: Record<MinigameId, string> = {
+  atrapa_o_evita: "Atrapa o evita",
+  cazaenganos: "Cazaengaños",
+  bajo_presion: "Bajo Presión"
+};
+
 export class UIManager {
   private root: HTMLElement;
 
@@ -139,7 +146,7 @@ export class UIManager {
       );
 
       const route = el("div", "lobby-route");
-      [["1", "Atrapa o evita"], ["2", "Cazaengaños"], ["3", "Bajo Presión"]].forEach(([n, name], i) => {
+      Config.match.minigameOrder.map((id, i) => [String(i + 1), MINIGAME_TITLES[id]]).forEach(([n, name], i) => {
         if (i > 0) route.appendChild(el("span", "route-arrow", "›"));
         const step = el("div", "route-step");
         step.append(el("span", "route-num", n), el("span", "route-name", name));
@@ -305,7 +312,7 @@ export class UIManager {
       const screen = el("div", "screen roster-screen");
       const top = el("div", "roster-top panel");
       top.appendChild(el("div", "select-title", "Los participantes"));
-      top.appendChild(el("div", "roster-sub", "Tres desafíos seguidos: Atrapa o evita → Cazaengaños → Bajo Presión. Gana quien sume más puntos."));
+      top.appendChild(el("div", "roster-sub", `Tres desafíos seguidos: ${Config.match.minigameOrder.map((id) => MINIGAME_TITLES[id]).join(" → ")}. Gana quien sume más puntos.`));
       const bottom = el("div", "roster-bottom");
       bottom.appendChild(button("Comenzar competencia", "primary big", () => resolve()));
       screen.append(top, bottom);
