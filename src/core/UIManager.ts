@@ -111,6 +111,9 @@ const MINIGAME_TITLES: Record<MinigameId, string> = {
 };
 
 export class UIManager {
+  /** Se ejecuta dentro del clic en "Listo" de las instrucciones (p. ej. para capturar el mouse). */
+  onInstructionsAccepted: (() => void) | null = null;
+
   private root: HTMLElement;
 
   constructor(rootId = "ui-root") {
@@ -348,7 +351,10 @@ export class UIManager {
         controls.appendChild(chip);
       }
       card.appendChild(controls);
-      card.appendChild(button("Listo", "primary big", () => resolve()));
+      card.appendChild(button("Listo", "primary big", () => {
+        this.onInstructionsAccepted?.(); // dentro del clic: el navegador permite capturar el mouse aquí
+        resolve();
+      }));
       screen.appendChild(card);
       this.root.appendChild(screen);
     });

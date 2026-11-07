@@ -150,6 +150,9 @@ export class AtrapaOEvita implements IMinigame {
 
   start(): void {
     this.started = true;
+    // Estilo shooter en tercera persona: se captura el mouse al empezar (aprovecha el clic de "Listo");
+    // si el navegador no lo permite, el primer clic en la pantalla lo captura.
+    this.ctx.input.requestPointerLock();
     this.ctx.audio.playMinigameMusic(() => this.musicIntensity());
   }
 
@@ -255,6 +258,8 @@ export class AtrapaOEvita implements IMinigame {
     if (!this.started || this.finished) return;
     this.timeRemaining -= dt;
     this.hud.setTimer(this.timeRemaining);
+    const hr = this.arenaRuntime.getHumanRig();
+    if (hr) hr.facingYaw = this.arenaRuntime.cameraRig.getYaw(); // el personaje mira hacia donde apunta la cámara
     this.updateEvents();
 
     for (const slot of this.slots) {

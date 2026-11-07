@@ -106,7 +106,10 @@ export class MatchManager {
         participants.forEach((p) => p.resetForNewMinigame());
 
         const mg = this.minigameManager.create(id);
+        // Cazaengaños y Atrapa o evita se juegan con el mouse capturado (cámara estilo shooter).
+        ui.onInstructionsAccepted = mg.id === "bajo_presion" ? null : () => this.deps.input.requestPointerLock();
         await ui.showInstructions({ ...mg.getInstructions(), step: i + 1 });
+        ui.onInstructionsAccepted = null;
         await mg.load(ctx);
         audio.transition();
         mg.start();

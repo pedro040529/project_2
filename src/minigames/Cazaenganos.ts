@@ -255,6 +255,9 @@ export class Cazaenganos implements IMinigame {
 
   start(): void {
     this.started = true;
+    // Estilo shooter en tercera persona: se captura el mouse al empezar (aprovecha el clic de "Listo");
+    // si el navegador no lo permite, el primer clic en la pantalla lo captura.
+    this.ctx.input.requestPointerLock();
     this.ctx.audio.playMinigameMusic(() => this.musicIntensity());
   }
 
