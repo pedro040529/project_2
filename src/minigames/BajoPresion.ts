@@ -71,6 +71,8 @@ export class BajoPresion implements IMinigame {
   private answered = false;
   private gate = new AnswerGate(0.4);
   private streak = 0;
+  private prevBackground: THREE.Scene["background"] = null;
+  private prevFog: THREE.Scene["fog"] = null;
   private calmUntil = 0; // brillo tranquilo tras estabilizarse
   private tickTimer = 0;
   private flight = { from: new THREE.Vector3(), to: new THREE.Vector3(), target: "" };
@@ -91,9 +93,26 @@ export class BajoPresion implements IMinigame {
     // anchas el panel de preguntas va a la derecha, así que el escenario se corre un poco a la izquierda.
     this.arenaRuntime.stageCamera = (cam) => {
       const sideShift = window.innerWidth >= 1000 ? -3.6 : 0;
-      cam.position.set(15, 13, sideShift);
-      cam.lookAt(1.5, 0, sideShift);
+      cam.position.set(14.5, 10.5, sideShift);
+      cam.lookAt(1.2, 0, sideShift);
     };
+    // Cielo de día, luminoso y alegre (el resto del juego usa el cielo nocturno).
+    this.prevBackground = this.ctx.scene.background;
+    this.prevFog = this.ctx.scene.fog;
+    const sky = document.createElement("canvas");
+    sky.width = 8;
+    sky.height = 256;
+    const sg = sky.getContext("2d")!;
+    const grad = sg.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, "#4aa8ff");
+    grad.addColorStop(0.6, "#9fd8ff");
+    grad.addColorStop(1, "#e9f7ff");
+    sg.fillStyle = grad;
+    sg.fillRect(0, 0, 8, 256);
+    const skyTex = new THREE.CanvasTexture(sky);
+    skyTex.colorSpace = THREE.SRGBColorSpace;
+    this.ctx.scene.background = skyTex;
+    this.ctx.scene.fog = new THREE.Fog(0xcfeeff, 60, 140);
     // Se responde con teclado o clic en los botones: el clic no debe capturar el mouse.
     this.ctx.input.captureOnClick = false;
     this.ctx.input.exitPointerLock();
@@ -509,5 +528,8 @@ export class BajoPresion implements IMinigame {
     this.orbLabelText.parentElement?.remove();
     this.arenaRuntime.dispose();
     this.ctx.input.captureOnClick = true;
+    (this.ctx.scene.background as THREE.Texture | null)?.dispose?.();
+    this.ctx.scene.background = this.prevBackground;
+    this.ctx.scene.fog = this.prevFog;
   }
 }

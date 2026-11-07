@@ -261,49 +261,146 @@ export function buildHoloRange(radius: number, physics: PhysicsWorld): ArenaBuil
 export const ORB_SEAT_COLORS = [NeonPalette.cyan, NeonPalette.orange, NeonPalette.magenta, NeonPalette.gold] as const;
 
 export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaBuild {
+  // Estilo "fiesta": isla flotante de colores, bordes inflados, globos y nubes (en la línea de Fall Guys / Party Animals).
   const group = new THREE.Group();
   const collidables: THREE.Object3D[] = [];
-  group.add(floorDisc(radius, "#26306b", "#6a58d6", 8, 4));
-  outerVoid(radius, group);
-  group.add(neonRing(radius, NeonPalette.magenta, 0.05, 0.14));
-  group.add(neonRing(radius * 0.34, NeonPalette.cyan, 0.03, 0.08));
+  const std = (color: number, rough = 0.65) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0 });
 
+  // Suelo en cuñas de colores caramelo
+  const size = 1024;
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d")!;
+  const wedge = ["#ff9ec4", "#ffd166", "#7be0c3", "#8fd0ff"];
+  const wedges = 16;
+  for (let i = 0; i < wedges; i++) {
+    g.beginPath();
+    g.moveTo(size / 2, size / 2);
+    g.arc(size / 2, size / 2, size / 2, (i / wedges) * Math.PI * 2, ((i + 1) / wedges) * Math.PI * 2);
+    g.closePath();
+    g.fillStyle = wedge[i % wedge.length];
+    g.fill();
+  }
+  g.strokeStyle = "rgba(255,255,255,.75)";
+  g.lineWidth = 10;
+  for (const f of [0.34, 0.68]) {
+    g.beginPath();
+    g.arc(size / 2, size / 2, (size / 2) * f, 0, Math.PI * 2);
+    g.stroke();
+  }
+  const floorTex = new THREE.CanvasTexture(c);
+  floorTex.colorSpace = THREE.SRGBColorSpace;
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(radius, 64), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.7 }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  group.add(floor);
+
+  // Cuerpo de la isla (flota sobre las nubes)
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.2, radius * 0.5, 6, 48), std(0x8a5cf0, 0.8));
+  body.position.y = -3.05;
+  group.add(body);
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.35, radius + 0.35, 0.5, 48), std(0xfff4dc, 0.6));
+  band.position.y = -0.27;
+  group.add(band);
+
+  // Borde inflado: bolas de colores alrededor
+  const bumperColors = [0xffffff, 0xff5c9a, 0xffd166, 0x4fb8ff];
+  const bumperGeo = new THREE.SphereGeometry(0.55, 14, 10);
+  const bumperMats = bumperColors.map((col) => std(col, 0.45));
+  const nBump = 28;
+  for (let i = 0; i < nBump; i++) {
+    const a = (i / nBump) * Math.PI * 2;
+    const m = new THREE.Mesh(bumperGeo, bumperMats[i % bumperMats.length]);
+    m.position.set(Math.cos(a) * (radius + 0.1), 0.35, Math.sin(a) * (radius + 0.1));
+    m.castShadow = true;
+    group.add(m);
+  }
+
+  // Puestos: plataforma blanca con aro y centro del color del jugador, unidos al centro por una cinta
   const seatR = radius * 0.68;
   for (let i = 0; i < 4; i++) {
     const a = (i / 4) * Math.PI * 2;
     const x = Math.cos(a) * seatR;
     const z = Math.sin(a) * seatR;
-    const platform = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.7, 0.12, 32), new THREE.MeshStandardMaterial({ color: NeonPalette.nightLight, roughness: 0.4, metalness: 0.3 }));
-    platform.position.set(x, 0.06, z);
-    platform.castShadow = true;
-    platform.receiveShadow = true;
-    group.add(platform);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.07, 8, 40), glow(ORB_SEAT_COLORS[i], 2));
+    const col = ORB_SEAT_COLORS[i];
+    const pad = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.75, 0.28, 36), std(0xffffff, 0.5));
+    pad.position.set(x, 0.14, z);
+    pad.castShadow = true;
+    pad.receiveShadow = true;
+    group.add(pad);
+    const inner = new THREE.Mesh(new THREE.CircleGeometry(1.25, 32), std(col, 0.5));
+    inner.rotation.x = -Math.PI / 2;
+    inner.position.set(x, 0.29, z);
+    group.add(inner);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.12, 8, 40), std(col, 0.4));
     rim.rotation.x = Math.PI / 2;
-    rim.position.set(x, 0.13, z);
+    rim.position.set(x, 0.3, z);
     group.add(rim);
-    // haz de energía que conecta cada plataforma con el centro
-    const beam = new THREE.Mesh(new THREE.PlaneGeometry(0.18, seatR - 1.9), glow(ORB_SEAT_COLORS[i], 0.9));
-    beam.rotation.x = -Math.PI / 2;
-    beam.rotation.z = -a + Math.PI / 2;
-    beam.position.set(Math.cos(a) * seatR * 0.5, 0.03, Math.sin(a) * seatR * 0.5);
-    group.add(beam);
+    const lane = new THREE.Mesh(new THREE.PlaneGeometry(0.45, seatR - 1.9), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85 }));
+    lane.rotation.x = -Math.PI / 2;
+    lane.rotation.z = -a + Math.PI / 2;
+    lane.position.set(Math.cos(a) * seatR * 0.5, 0.04, Math.sin(a) * seatR * 0.5);
+    group.add(lane);
   }
-  // pedestal central
-  const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, 0.4, 24), new THREE.MeshStandardMaterial({ color: NeonPalette.night, roughness: 0.3, metalness: 0.5 }));
-  ped.position.y = 0.2;
+
+  // Pedestal central con anillos que giran
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.65, 0.55, 28), std(0xffffff, 0.5));
+  ped.position.y = 0.27;
+  ped.castShadow = true;
   group.add(ped);
+  const pedTop = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.06, 28), std(0xff5c9a, 0.4));
+  pedTop.position.y = 0.58;
+  group.add(pedTop);
+  const ringCols = [0xffd166, 0xff5c9a, 0x4fb8ff];
   for (let i = 0; i < 3; i++) {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.0 + i * 0.35, 0.04, 8, 48), glow(NeonPalette.cyan, 1.4));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.0 + i * 0.35, 0.05, 8, 48), glow(ringCols[i], 0.8));
     ring.position.y = 1.4;
     ring.rotation.x = Math.PI / 2 + i * 0.5;
     ring.userData.spin = 0.8 + i * 0.4;
     group.add(ring);
   }
-  // Cámara de energía bien iluminada: nada flotando alrededor que distraiga del orbe.
-  const glowLight = new THREE.PointLight(0xbfd2ff, 90, radius * 3, 1.6);
-  glowLight.position.set(0, 9, 0);
-  group.add(glowLight);
+
+  // Nubes bajo y alrededor de la isla
+  const cloudMat = std(0xffffff, 1);
+  const cloudGeo = new THREE.SphereGeometry(1, 12, 9);
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 + Math.random() * 0.3;
+    const r = radius + 4 + Math.random() * 22;
+    const cloud = new THREE.Group();
+    const puffs = 4 + Math.floor(Math.random() * 3);
+    for (let k = 0; k < puffs; k++) {
+      const p = new THREE.Mesh(cloudGeo, cloudMat);
+      p.scale.set(1.8 + Math.random() * 1.6, 1.1 + Math.random() * 0.7, 1.6 + Math.random());
+      p.position.set((k - puffs / 2) * 1.8, Math.random() * 0.6, Math.random() * 1.2);
+      cloud.add(p);
+    }
+    cloud.position.set(Math.cos(a) * r, -7 + Math.random() * 3, Math.sin(a) * r);
+    group.add(cloud);
+  }
+
+  // Globos que flotan alrededor (decoración de fiesta)
+  const balloonCols = [0xff5c9a, 0xffd166, 0x4fb8ff, 0x7be0c3, 0xff8a3d];
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2 + 0.3;
+    const r = radius + 5 + Math.random() * 4;
+    const balloon = new THREE.Group();
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 12), std(balloonCols[i % balloonCols.length], 0.35));
+    ball.scale.y = 1.2;
+    ball.position.y = 2.2;
+    balloon.add(ball);
+    const string = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.2, 4), std(0xffffff, 1));
+    string.position.y = 0.9;
+    balloon.add(string);
+    balloon.position.set(Math.cos(a) * r, 1 + Math.random() * 3, Math.sin(a) * r);
+    balloon.userData.spin = 0.3;
+    balloon.userData.bob = Math.random() * 6;
+    balloon.userData.baseY = balloon.position.y;
+    group.add(balloon);
+  }
+
+  const light = new THREE.PointLight(0xfff2d6, 30, radius * 3, 1.6);
+  light.position.set(0, 9, 0);
+  group.add(light);
   const animate = makeAnimator(group);
   return { group, collidables, radius, update: animate };
 }
