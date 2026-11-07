@@ -72,6 +72,7 @@ export class BajoPresion implements IMinigame {
   private gate = new AnswerGate(0.4);
   private streak = 0;
   private prevFov = 60;
+  private prevFog: { near: number; far: number } | null = null;
   private calmUntil = 0; // brillo tranquilo tras estabilizarse
   private tickTimer = 0;
   private flight = { from: new THREE.Vector3(), to: new THREE.Vector3(), target: "" };
@@ -91,16 +92,40 @@ export class BajoPresion implements IMinigame {
     // Vista de escenario: desde atrás y arriba del jugador se ven los 4 puestos y el orbe. En pantallas
     // anchas el panel de preguntas va a la derecha, así que el escenario se corre un poco a la izquierda.
     this.arenaRuntime.stageCamera = (cam) => {
-      const sideShift = window.innerWidth >= 1000 ? -3.6 : 0;
       // Cámara estilo "party game": detrás de tu puesto, ángulo suave y lente cerrada (poca deformación).
       if (cam.fov !== 38) {
         cam.fov = 38;
         cam.updateProjectionMatrix();
       }
-      cam.position.set(22.5, 14.5, sideShift);
-      cam.lookAt(-1.5, 0.2, sideShift);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const aspect = w / h;
+      const dir = new THREE.Vector3(18, 19.5, 0);
+      const dist = dir.length();
+      const halfH = dist * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
+      const halfW = halfH * aspect;
+      // Zona libre para el escenario: en pantallas anchas el panel va a la derecha; en estrechas, abajo.
+      const wide = w >= 1000;
+      const panelW = wide ? Math.min(640, Math.max(470, w * 0.36)) + 20 : 0;
+      const freeW = (w - panelW) / w;
+      const freeH = wide ? 1 : 0.5;
+      // Alejar lo necesario para que el disco (≈26 u) quepa en la zona libre.
+      const needW = 30 / (2 * halfW * freeW);
+      const needH = 22 / (2 * halfH * freeH);
+      const k = Math.max(1, needW, needH);
+      const side = wide ? -(panelW / w) * halfW * k : 0;
+      const lift = wide ? 0 : 5.5 * k; // en estrechas, mirar más cerca para que la escena suba sobre el panel
+      cam.position.set(dir.x * k, dir.y * k, side);
+      cam.lookAt(-1.5 + lift, 0.2, side);
     };
     this.prevFov = this.ctx.camera.fov;
+    // La cámara queda lejos: sin niebla cercana para que el escenario no se desvanezca.
+    const fog = this.ctx.scene.fog as THREE.Fog | null;
+    if (fog) {
+      this.prevFog = { near: fog.near, far: fog.far };
+      fog.near = 150;
+      fog.far = 400;
+    }
     // Se responde con teclado o clic en los botones: el clic no debe capturar el mouse.
     this.ctx.input.captureOnClick = false;
     this.ctx.input.exitPointerLock();
@@ -516,6 +541,11 @@ export class BajoPresion implements IMinigame {
     this.orbLabelText.parentElement?.remove();
     this.arenaRuntime.dispose();
     this.ctx.input.captureOnClick = true;
+    const fogNow = this.ctx.scene.fog as THREE.Fog | null;
+    if (fogNow && this.prevFog) {
+      fogNow.near = this.prevFog.near;
+      fogNow.far = this.prevFog.far;
+    }
     this.ctx.camera.fov = this.prevFov;
     this.ctx.camera.updateProjectionMatrix();
   }

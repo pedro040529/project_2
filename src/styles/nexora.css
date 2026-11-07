@@ -983,3 +983,29 @@ body {
   transform-origin: center bottom;
 }
 .pointer-hint { font-weight: 700; }
+
+/* Panel de decisión más grande y legible (público infantil) */
+.decision-sender { font-size: 15px; padding: 5px 16px; }
+.decision-situation { font-size: clamp(18px, 1.55vw, 24px); padding: 16px 22px; line-height: 1.35; }
+.decision-btn { font-size: clamp(16px, 1.3vw, 20px); padding: 14px 18px; gap: 14px; border-radius: 16px; }
+.decision-btn .keycap { width: 36px; height: 36px; font-size: 18px; border-radius: 10px; }
+.decision-feedback { font-size: clamp(15px, 1.15vw, 18px); padding: 12px 18px; }
+.decision-panel .charge-meter-track { height: 18px; }
+.decision-panel .charge-caption { font-size: 14px; letter-spacing: .8px; font-weight: 800; }
+@media (min-width: 1000px) {
+  .decision-panel {
+    width: clamp(470px, 36vw, 640px);
+    top: 150px;
+    max-height: calc(100vh - 166px);
+    gap: 12px;
+  }
+  .decision-btn { font-size: clamp(16px, 1.3vw, 20px); }
+}
+
+/* Pantallas estrechas: el panel va abajo, ocupa el ancho y no tapa toda la escena */
+@media (max-width: 999px) {
+  .decision-panel { width: min(640px, 94vw); max-height: 52vh; overflow-y: auto; bottom: 10px; }
+  .decision-situation { font-size: clamp(15px, 3.6vw, 20px); padding: 10px 14px; }
+  .decision-btn { font-size: clamp(14px, 3.4vw, 18px); padding: 10px 12px; }
+  .decision-btn .keycap { width: 30px; height: 30px; font-size: 15px; }
+}
