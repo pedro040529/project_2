@@ -83,7 +83,7 @@ export class CharacterRig {
     const speed01 = THREE.MathUtils.clamp(speed / this.maxSpeed, 0, 1);
     this.lastSpeed01 = THREE.MathUtils.lerp(this.lastSpeed01, speed01, 1 - Math.exp(-14 * dt));
 
-    if (this.facingYaw !== null && this.aimTime <= 0) {
+    if (this.facingYaw != null && this.aimTime <= 0) {
       this.currentHeading = smoothAngle(this.currentHeading, this.facingYaw, 1 - Math.exp(-dt * 16));
       this.character.setHeading(this.currentHeading);
       this.participant.heading = this.currentHeading;
@@ -91,7 +91,7 @@ export class CharacterRig {
 
     if (speed > 0.35) {
       const targetHeading = Math.atan2(vx, vz);
-      if (this.aimTime <= 0 && this.facingYaw === null) this.currentHeading = smoothAngle(this.currentHeading, targetHeading, 1 - Math.exp(-dt * Config.player.turnSmoothing));
+      if (this.aimTime <= 0 && this.facingYaw == null) this.currentHeading = smoothAngle(this.currentHeading, targetHeading, 1 - Math.exp(-dt * Config.player.turnSmoothing));
       this.character.setHeading(this.currentHeading);
       this.participant.heading = this.currentHeading;
       if (this.participant.state === "idle") this.participant.state = "running";
