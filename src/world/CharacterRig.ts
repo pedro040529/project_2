@@ -18,6 +18,8 @@ export class CharacterRig {
   private aimTime = 0;
   /** Con el movimiento bloqueado el personaje se queda en su puesto (Bajo Presión). */
   movementLocked = false;
+  /** Si no es null, el personaje mira siempre hacia ese rumbo (la cámara), aunque se desplace en otra dirección. */
+  facingYaw: number | null = null;
 
   faceTarget(target: THREE.Vector3, duration = 0.35): void {
     this.currentHeading = Math.atan2(target.x - this.root.position.x, target.z - this.root.position.z);
@@ -81,9 +83,15 @@ export class CharacterRig {
     const speed01 = THREE.MathUtils.clamp(speed / this.maxSpeed, 0, 1);
     this.lastSpeed01 = THREE.MathUtils.lerp(this.lastSpeed01, speed01, 1 - Math.exp(-14 * dt));
 
+    if (this.facingYaw !== null && this.aimTime <= 0) {
+      this.currentHeading = smoothAngle(this.currentHeading, this.facingYaw, 1 - Math.exp(-dt * 16));
+      this.character.setHeading(this.currentHeading);
+      this.participant.heading = this.currentHeading;
+    }
+
     if (speed > 0.35) {
       const targetHeading = Math.atan2(vx, vz);
-      if (this.aimTime <= 0) this.currentHeading = smoothAngle(this.currentHeading, targetHeading, 1 - Math.exp(-dt * Config.player.turnSmoothing));
+      if (this.aimTime <= 0 && this.facingYaw === null) this.currentHeading = smoothAngle(this.currentHeading, targetHeading, 1 - Math.exp(-dt * Config.player.turnSmoothing));
       this.character.setHeading(this.currentHeading);
       this.participant.heading = this.currentHeading;
       if (this.participant.state === "idle") this.participant.state = "running";

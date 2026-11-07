@@ -136,10 +136,9 @@ export class Cazaenganos implements IMinigame {
     // capturar el mouse para apuntar, así que un crosshair fijo al centro
     // de pantalla ya no representaría dónde apunta realmente el disparo.
     this.hud.showCrosshair(true);
-    // Se apunta con el cursor y el primer clic ya dispara (sin capturar el mouse).
-    this.ctx.input.captureOnClick = false;
-    this.ctx.input.edgeTurn = true;
-    this.ctx.input.exitPointerLock();
+    // Tercera persona: el primer clic captura el mouse; después el mouse gira la cámara (y al personaje)
+    // y la mira queda en el centro de la pantalla.
+    this.hud.showEventBanner("Haz clic en la pantalla para controlar la cámara con el mouse", 4500);
 
     // Blaster de juguete en la mano de los 4 — antes disparaban "de la nada".
     for (const rig of this.arenaRuntime.rigs.values()) {
@@ -248,9 +247,8 @@ export class Cazaenganos implements IMinigame {
       ],
       controls: [
         { key: "WASD", label: "Moverse" },
-        { key: "Mouse", label: "Mover la mira: se pone amarilla sobre una tarjeta" },
-        { key: "Clic", label: "Disparar a la tarjeta que tengas en la mira" },
-        { key: "Q E", label: "Girar la cámara (también acercando el cursor a los bordes)" }
+        { key: "Mouse", label: "Mirar alrededor: la cámara y tu personaje giran hacia donde mueves el mouse (primer clic para activarlo, Esc lo libera)" },
+        { key: "Clic", label: "Disparar a la tarjeta que tengas en la mira (se pone amarilla)" }
       ]
     };
   }
@@ -374,7 +372,9 @@ export class Cazaenganos implements IMinigame {
     const target = this.findTarget(human.getAimRay(this.ctx.camera));
     const c = this.cursorClient();
     this.hud.aimCrosshair(c.x, c.y, !!target);
-    this.hud.showPointerHint("Mira amarilla = clic para disparar · Girar cámara: cursor en los bordes, Q/E o clic derecho · WASD: moverte");
+    this.hud.showPointerHint(this.ctx.input.pointerLocked
+      ? "Mueve el mouse para mirar · clic para disparar (mira amarilla = hay una tarjeta) · WASD: moverte · Esc: soltar el mouse"
+      : "Haz clic en la pantalla para activar la cámara con el mouse");
     if (target !== this.hovered) {
       this.hovered?.label?.element.classList.remove("aimed");
       target?.label?.element.classList.add("aimed");
@@ -517,6 +517,8 @@ export class Cazaenganos implements IMinigame {
 
     this.updateAI(dt);
     this.arenaRuntime.update(dt);
+    const hr = this.arenaRuntime.getHumanRig();
+    if (hr) hr.facingYaw = this.arenaRuntime.cameraRig.getYaw();
     this.updateAim();
     this.handleHumanShoot();
     this.updateTracers(dt);
@@ -545,7 +547,6 @@ export class Cazaenganos implements IMinigame {
     this.arenaRuntime.dispose();
     this.ctx.renderer.domElement.style.cursor = "default";
     this.ctx.input.captureOnClick = true;
-    this.ctx.input.edgeTurn = false;
     void this.raycaster;
   }
 }

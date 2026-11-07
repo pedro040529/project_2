@@ -25,9 +25,6 @@ export class InputManager {
   private _pointerLocked = false;
   /** Si es false, el primer clic NO captura el mouse: cuenta como clic normal (minijuegos que apuntan o responden con el cursor). */
   captureOnClick = true;
-  /** Si es true y el mouse NO está capturado, la cámara gira al acercar el cursor a los bordes y con Q/E. */
-  edgeTurn = false;
-  private lastDeltaAt = 0;
   private el: HTMLElement;
 
   onPointerLockChange: ((locked: boolean) => void) | null = null;
@@ -147,21 +144,6 @@ export class InputManager {
   }
 
   consumeMouseDelta(): { dx: number; dy: number } {
-    const now = performance.now();
-    const dt = Math.min(0.1, Math.max(0, (now - (this.lastDeltaAt || now)) / 1000));
-    this.lastDeltaAt = now;
-    if (this.edgeTurn && !this._pointerLocked) {
-      const SPEED = 700; // "píxeles" de giro por segundo a máxima intensidad
-      if (this.hasMousePosition) {
-        const edge = 0.72; // el 14 % exterior de cada lado
-        const a = Math.abs(this.ndcX);
-        if (a > edge) this.mouseDX += Math.sign(this.ndcX) * Math.min(1, (a - edge) / (1 - edge)) * SPEED * dt;
-        const v = Math.abs(this.ndcY);
-        if (v > 0.9) this.mouseDY += -Math.sign(this.ndcY) * Math.min(1, (v - 0.9) / 0.1) * SPEED * 0.5 * dt;
-      }
-      if (this.keys.has("KeyQ")) this.mouseDX -= SPEED * 0.8 * dt;
-      if (this.keys.has("KeyE")) this.mouseDX += SPEED * 0.8 * dt;
-    }
     const d = { dx: this.mouseDX, dy: this.mouseDY };
     this.mouseDX = 0;
     this.mouseDY = 0;
