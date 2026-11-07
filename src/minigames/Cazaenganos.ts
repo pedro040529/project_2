@@ -138,6 +138,7 @@ export class Cazaenganos implements IMinigame {
     this.hud.showCrosshair(true);
     // Se apunta con el cursor y el primer clic ya dispara (sin capturar el mouse).
     this.ctx.input.captureOnClick = false;
+    this.ctx.input.edgeTurn = true;
     this.ctx.input.exitPointerLock();
 
     // Blaster de juguete en la mano de los 4 — antes disparaban "de la nada".
@@ -248,7 +249,8 @@ export class Cazaenganos implements IMinigame {
       controls: [
         { key: "WASD", label: "Moverse" },
         { key: "Mouse", label: "Mover la mira: se pone amarilla sobre una tarjeta" },
-        { key: "Clic", label: "Disparar a la tarjeta que tengas en la mira" }
+        { key: "Clic", label: "Disparar a la tarjeta que tengas en la mira" },
+        { key: "Q E", label: "Girar la cámara (también acercando el cursor a los bordes)" }
       ]
     };
   }
@@ -372,7 +374,7 @@ export class Cazaenganos implements IMinigame {
     const target = this.findTarget(human.getAimRay(this.ctx.camera));
     const c = this.cursorClient();
     this.hud.aimCrosshair(c.x, c.y, !!target);
-    this.hud.showPointerHint("Pon la mira sobre una tarjeta (se pone amarilla) y haz clic para disparar · WASD para moverte");
+    this.hud.showPointerHint("Mira amarilla = clic para disparar · Girar cámara: cursor en los bordes, Q/E o clic derecho · WASD: moverte");
     if (target !== this.hovered) {
       this.hovered?.label?.element.classList.remove("aimed");
       target?.label?.element.classList.add("aimed");
@@ -543,6 +545,7 @@ export class Cazaenganos implements IMinigame {
     this.arenaRuntime.dispose();
     this.ctx.renderer.domElement.style.cursor = "default";
     this.ctx.input.captureOnClick = true;
+    this.ctx.input.edgeTurn = false;
     void this.raycaster;
   }
 }
