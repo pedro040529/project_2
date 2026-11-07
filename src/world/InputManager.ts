@@ -23,6 +23,8 @@ export class InputManager {
   private interactPending = false;
   private numberKeyPending: 1 | 2 | 3 | null = null;
   private _pointerLocked = false;
+  /** Si es false, el primer clic NO captura el mouse: cuenta como clic normal (minijuegos que apuntan o responden con el cursor). */
+  captureOnClick = true;
   private el: HTMLElement;
 
   onPointerLockChange: ((locked: boolean) => void) | null = null;
@@ -96,7 +98,7 @@ export class InputManager {
     // El primer clic sobre la escena captura el mouse: desde ahí la cámara
     // sigue el movimiento del mouse sin mantener ningún botón. Ese clic solo
     // captura (no cuenta como disparo/pase). Esc devuelve el cursor.
-    if (!this._pointerLocked) {
+    if (!this._pointerLocked && this.captureOnClick) {
       this.requestPointerLock();
       return;
     }

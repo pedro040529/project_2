@@ -136,6 +136,9 @@ export class Cazaenganos implements IMinigame {
     // capturar el mouse para apuntar, así que un crosshair fijo al centro
     // de pantalla ya no representaría dónde apunta realmente el disparo.
     this.hud.showCrosshair(true);
+    // Se apunta con el cursor y el primer clic ya dispara (sin capturar el mouse).
+    this.ctx.input.captureOnClick = false;
+    this.ctx.input.exitPointerLock();
 
     // Blaster de juguete en la mano de los 4 — antes disparaban "de la nada".
     for (const rig of this.arenaRuntime.rigs.values()) {
@@ -244,9 +247,8 @@ export class Cazaenganos implements IMinigame {
       ],
       controls: [
         { key: "WASD", label: "Moverse" },
-        { key: "Mira", label: "Sigue al cursor: se pone amarilla sobre una publicación" },
-        { key: "Click", label: "Disparar (hay un breve enfriamiento)" },
-        { key: "Mouse", label: "Girar la cámara (el primer clic captura el mouse, Esc lo libera)" }
+        { key: "Mouse", label: "Mover la mira: se pone amarilla sobre una tarjeta" },
+        { key: "Clic", label: "Disparar a la tarjeta que tengas en la mira" }
       ]
     };
   }
@@ -370,9 +372,7 @@ export class Cazaenganos implements IMinigame {
     const target = this.findTarget(human.getAimRay(this.ctx.camera));
     const c = this.cursorClient();
     this.hud.aimCrosshair(c.x, c.y, !!target);
-    this.hud.showPointerHint(this.ctx.input.pointerLocked
-      ? "Mueve el mouse para apuntar · clic para disparar · Esc libera el mouse"
-      : "Haz clic una vez para activar la mira · después, clic dispara");
+    this.hud.showPointerHint("Pon la mira sobre una tarjeta (se pone amarilla) y haz clic para disparar · WASD para moverte");
     if (target !== this.hovered) {
       this.hovered?.label?.element.classList.remove("aimed");
       target?.label?.element.classList.add("aimed");
@@ -542,6 +542,7 @@ export class Cazaenganos implements IMinigame {
     this.hud.unmount();
     this.arenaRuntime.dispose();
     this.ctx.renderer.domElement.style.cursor = "default";
+    this.ctx.input.captureOnClick = true;
     void this.raycaster;
   }
 }

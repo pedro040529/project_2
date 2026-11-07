@@ -253,7 +253,6 @@ export function buildHoloRange(radius: number, physics: PhysicsWorld): ArenaBuil
   for (let i = 0; i < 8; i++) {
     group.add(screenPanel(radius + 2.4, (i / 8) * Math.PI * 2 + 0.2, ["SCAN", "ALERTA", "CHAT", "ANÁLISIS"][i % 4], i % 2 ? NeonPalette.magenta : NeonPalette.lime, 3.2));
   }
-  floatingCubes(group, radius, 18, [NeonPalette.cyan, NeonPalette.lime, NeonPalette.white]);
   const animate = makeAnimator(group);
   return { group, collidables, radius, update: animate };
 }
@@ -264,7 +263,7 @@ export const ORB_SEAT_COLORS = [NeonPalette.cyan, NeonPalette.orange, NeonPalett
 export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaBuild {
   const group = new THREE.Group();
   const collidables: THREE.Object3D[] = [];
-  group.add(floorDisc(radius, "#171c45", "#4b3ba8", 8, 4));
+  group.add(floorDisc(radius, "#26306b", "#6a58d6", 8, 4));
   outerVoid(radius, group);
   group.add(neonRing(radius, NeonPalette.magenta, 0.05, 0.14));
   group.add(neonRing(radius * 0.34, NeonPalette.cyan, 0.03, 0.08));
@@ -289,7 +288,6 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
     beam.rotation.z = -a + Math.PI / 2;
     beam.position.set(Math.cos(a) * seatR * 0.5, 0.03, Math.sin(a) * seatR * 0.5);
     group.add(beam);
-    group.add(pillar(Math.cos(a + Math.PI / 4) * (radius + 1.2), Math.sin(a + Math.PI / 4) * (radius + 1.2), ORB_SEAT_COLORS[i], 3.8));
   }
   // pedestal central
   const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, 0.4, 24), new THREE.MeshStandardMaterial({ color: NeonPalette.night, roughness: 0.3, metalness: 0.5 }));
@@ -302,7 +300,10 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
     ring.userData.spin = 0.8 + i * 0.4;
     group.add(ring);
   }
-  floatingCubes(group, radius, 16, [NeonPalette.magenta, NeonPalette.cyan, NeonPalette.gold]);
+  // Cámara de energía bien iluminada: nada flotando alrededor que distraiga del orbe.
+  const glowLight = new THREE.PointLight(0xbfd2ff, 90, radius * 3, 1.6);
+  glowLight.position.set(0, 9, 0);
+  group.add(glowLight);
   const animate = makeAnimator(group);
   return { group, collidables, radius, update: animate };
 }

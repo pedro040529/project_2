@@ -91,9 +91,12 @@ export class BajoPresion implements IMinigame {
     // anchas el panel de preguntas va a la derecha, así que el escenario se corre un poco a la izquierda.
     this.arenaRuntime.stageCamera = (cam) => {
       const sideShift = window.innerWidth >= 1000 ? -3.6 : 0;
-      cam.position.set(14, 8.6, sideShift);
-      cam.lookAt(4.5, 0.4, sideShift);
+      cam.position.set(15, 13, sideShift);
+      cam.lookAt(1.5, 0, sideShift);
     };
+    // Se responde con teclado o clic en los botones: el clic no debe capturar el mouse.
+    this.ctx.input.captureOnClick = false;
+    this.ctx.input.exitPointerLock();
 
     // Cada quien se queda en su puesto mirando al centro: el orbe viaja, los jugadores no.
     const center = new THREE.Vector3(0, 0, 0);
@@ -153,8 +156,8 @@ export class BajoPresion implements IMinigame {
         { points: "💥", text: "Si explota, quien lo desencadenó pierde puntos extra", tone: "neutral" }
       ],
       controls: [
-        { key: "1-3", label: "Elegir la respuesta (o clic en ella tras pulsar Esc)" },
-        { key: "Mouse", label: "Mover para mirar alrededor" }
+        { key: "1-3", label: "Elegir la respuesta con el teclado" },
+        { key: "Clic", label: "…o hacer clic sobre la respuesta" }
       ]
     };
   }
@@ -505,5 +508,6 @@ export class BajoPresion implements IMinigame {
     this.orb.removeFromParent();
     this.orbLabelText.parentElement?.remove();
     this.arenaRuntime.dispose();
+    this.ctx.input.captureOnClick = true;
   }
 }
