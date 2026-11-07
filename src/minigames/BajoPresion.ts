@@ -71,6 +71,7 @@ export class BajoPresion implements IMinigame {
   private answered = false;
   private gate = new AnswerGate(0.4);
   private streak = 0;
+  private prevFov = 60;
   private prevBackground: THREE.Scene["background"] = null;
   private prevFog: THREE.Scene["fog"] = null;
   private calmUntil = 0; // brillo tranquilo tras estabilizarse
@@ -93,10 +94,16 @@ export class BajoPresion implements IMinigame {
     // anchas el panel de preguntas va a la derecha, así que el escenario se corre un poco a la izquierda.
     this.arenaRuntime.stageCamera = (cam) => {
       const sideShift = window.innerWidth >= 1000 ? -3.6 : 0;
-      cam.position.set(14.5, 10.5, sideShift);
-      cam.lookAt(1.2, 0, sideShift);
+      // Cámara estilo "party game": detrás de tu puesto, ángulo suave y lente cerrada (poca deformación).
+      if (cam.fov !== 38) {
+        cam.fov = 38;
+        cam.updateProjectionMatrix();
+      }
+      cam.position.set(22.5, 14.5, sideShift);
+      cam.lookAt(-1.5, 0.2, sideShift);
     };
     // Cielo de día, luminoso y alegre (el resto del juego usa el cielo nocturno).
+    this.prevFov = this.ctx.camera.fov;
     this.prevBackground = this.ctx.scene.background;
     this.prevFog = this.ctx.scene.fog;
     const sky = document.createElement("canvas");
@@ -529,6 +536,8 @@ export class BajoPresion implements IMinigame {
     this.arenaRuntime.dispose();
     this.ctx.input.captureOnClick = true;
     (this.ctx.scene.background as THREE.Texture | null)?.dispose?.();
+    this.ctx.camera.fov = this.prevFov;
+    this.ctx.camera.updateProjectionMatrix();
     this.ctx.scene.background = this.prevBackground;
     this.ctx.scene.fog = this.prevFog;
   }

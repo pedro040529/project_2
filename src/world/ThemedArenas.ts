@@ -271,8 +271,8 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
   const c = document.createElement("canvas");
   c.width = c.height = size;
   const g = c.getContext("2d")!;
-  const wedge = ["#ff9ec4", "#ffd166", "#7be0c3", "#8fd0ff"];
-  const wedges = 16;
+  const wedge = ["#7fd8c8", "#62c7b6"];
+  const wedges = 24;
   for (let i = 0; i < wedges; i++) {
     g.beginPath();
     g.moveTo(size / 2, size / 2);
@@ -296,7 +296,7 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
   group.add(floor);
 
   // Cuerpo de la isla (flota sobre las nubes)
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.2, radius * 0.5, 6, 48), std(0x8a5cf0, 0.8));
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.2, radius * 0.5, 6, 48), std(0x6f86d6, 0.8));
   body.position.y = -3.05;
   group.add(body);
   const band = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.35, radius + 0.35, 0.5, 48), std(0xfff4dc, 0.6));
@@ -304,7 +304,7 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
   group.add(band);
 
   // Borde inflado: bolas de colores alrededor
-  const bumperColors = [0xffffff, 0xff5c9a, 0xffd166, 0x4fb8ff];
+  const bumperColors = [0xffffff, 0x8fc2ff];
   const bumperGeo = new THREE.SphereGeometry(0.55, 14, 10);
   const bumperMats = bumperColors.map((col) => std(col, 0.45));
   const nBump = 28;
@@ -348,10 +348,10 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
   ped.position.y = 0.27;
   ped.castShadow = true;
   group.add(ped);
-  const pedTop = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.06, 28), std(0xff5c9a, 0.4));
+  const pedTop = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.06, 28), std(0xffffff, 0.4));
   pedTop.position.y = 0.58;
   group.add(pedTop);
-  const ringCols = [0xffd166, 0xff5c9a, 0x4fb8ff];
+  const ringCols = [0xffffff, 0xcfe6ff, 0xffffff];
   for (let i = 0; i < 3; i++) {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.0 + i * 0.35, 0.05, 8, 48), glow(ringCols[i], 0.8));
     ring.position.y = 1.4;
@@ -363,9 +363,9 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
   // Nubes bajo y alrededor de la isla
   const cloudMat = std(0xffffff, 1);
   const cloudGeo = new THREE.SphereGeometry(1, 12, 9);
-  for (let i = 0; i < 16; i++) {
-    const a = (i / 16) * Math.PI * 2 + Math.random() * 0.3;
-    const r = radius + 4 + Math.random() * 22;
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2 + Math.random() * 0.3;
+    const r = radius + 12 + Math.random() * 22;
     const cloud = new THREE.Group();
     const puffs = 4 + Math.floor(Math.random() * 3);
     for (let k = 0; k < puffs; k++) {
@@ -374,28 +374,8 @@ export function buildOrbChamber(radius: number, _physics?: PhysicsWorld): ArenaB
       p.position.set((k - puffs / 2) * 1.8, Math.random() * 0.6, Math.random() * 1.2);
       cloud.add(p);
     }
-    cloud.position.set(Math.cos(a) * r, -7 + Math.random() * 3, Math.sin(a) * r);
+    cloud.position.set(Math.cos(a) * r, -10 + Math.random() * 3, Math.sin(a) * r);
     group.add(cloud);
-  }
-
-  // Globos que flotan alrededor (decoración de fiesta)
-  const balloonCols = [0xff5c9a, 0xffd166, 0x4fb8ff, 0x7be0c3, 0xff8a3d];
-  for (let i = 0; i < 9; i++) {
-    const a = (i / 9) * Math.PI * 2 + 0.3;
-    const r = radius + 5 + Math.random() * 4;
-    const balloon = new THREE.Group();
-    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 12), std(balloonCols[i % balloonCols.length], 0.35));
-    ball.scale.y = 1.2;
-    ball.position.y = 2.2;
-    balloon.add(ball);
-    const string = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.2, 4), std(0xffffff, 1));
-    string.position.y = 0.9;
-    balloon.add(string);
-    balloon.position.set(Math.cos(a) * r, 1 + Math.random() * 3, Math.sin(a) * r);
-    balloon.userData.spin = 0.3;
-    balloon.userData.bob = Math.random() * 6;
-    balloon.userData.baseY = balloon.position.y;
-    group.add(balloon);
   }
 
   const light = new THREE.PointLight(0xfff2d6, 30, radius * 3, 1.6);
